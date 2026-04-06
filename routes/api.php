@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\JWTAuthController;
+use App\Http\Controllers\Frontend\SliderController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,9 @@ Route::group(['prefix' => 'v1'], function () {
     // Public Routes
     Route::get('/categories', [\App\Modules\Catalog\src\Http\Controllers\CategoryController::class, 'index']);
     Route::get('/categories/{slug}', [\App\Modules\Catalog\src\Http\Controllers\CategoryController::class, 'show']);
+    
+    // Sliders / Banners (Frontend)
+    Route::get('/sliders', [SliderController::class, 'index']);
     
     // Products API (Enhanced)
     Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);

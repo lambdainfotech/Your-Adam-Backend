@@ -24,6 +24,7 @@
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Category</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Unit</th>
+                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Size Type</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Sizes</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -35,6 +36,11 @@
                     <td class="px-6 py-4 font-medium">{{ $chart->name }}</td>
                     <td class="px-6 py-4">{{ $chart->category?->name }}</td>
                     <td class="px-6 py-4">{{ $chart->unit }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs rounded-full {{ $chart->size_type === 'european' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                            {{ $chart->size_type === 'european' ? 'European' : 'Asian' }}
+                        </span>
+                    </td>
                     <td class="px-6 py-4">{{ $chart->rows->count() }}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 text-xs rounded-full {{ $chart->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
@@ -51,7 +57,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No size charts found</td></tr>
+                <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No size charts found</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -28,14 +28,14 @@ class JWTAuthController extends Controller
      */
     public function showLoginForm(): \Illuminate\View\View|RedirectResponse
     {
-        // If user has a valid JWT token in cookie, redirect to dashboard
+        // If user has a valid JWT token in cookie, redirect to intended page or dashboard
         // Use JWTAuth directly to avoid triggering auth middleware
         try {
             $token = request()->cookie('jwt_token');
             if ($token) {
                 \PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::setToken($token);
                 if (\PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::check()) {
-                    return redirect()->route('admin.dashboard');
+                    return redirect()->intended(route('admin.dashboard'));
                 }
             }
         } catch (\Exception $e) {
@@ -111,9 +111,12 @@ class JWTAuthController extends Controller
         }
 
         // Login successful - return appropriate response
+        // Get intended URL from session
+        $intendedUrl = session()->pull('url.intended');
+        
         return $this->createLoginResponse(
             tokenData: $tokenData,
-            redirectRoute: 'admin.dashboard',
+            redirectRoute: $intendedUrl ?? 'admin.dashboard',
             message: 'Login successful'
         );
     }
@@ -133,45 +136,54 @@ class JWTAuthController extends Controller
     }
 
     /**
-     * Refresh access token (API only)
+     * Refresh access token
      * 
-     * Returns new access token using refresh token
+     * Returns new access token using current token from cookie or header
      */
     public function refresh(Request $request): JsonResponse
     {
         try {
-            $refreshToken = $request->input('refresh_token');
+            // Try to get token from cookie first (web), then from header (API)
+            $token = $request->cookie('jwt_token');
             
-            if (!$refreshToken) {
+            if (!$token) {
+                $token = JWTAuth::getToken();
+            }
+            
+            if (!$token) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Refresh token is required',
-                    'error_code' => 'REFRESH_TOKEN_MISSING',
-                ], 400);
+                    'message' => 'No token provided',
+                    'error_code' => 'TOKEN_MISSING',
+                ], 401);
             }
 
-            $tokenData = $this->refreshAccessToken($refreshToken);
+            JWTAuth::setToken($token);
+            $tokenData = $this->refreshAccessToken($token);
 
             if (!$tokenData) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid or expired refresh token',
+                    'message' => 'Invalid or expired token',
                     'error_code' => 'TOKEN_REFRESH_FAILED',
                 ], 401);
             }
 
-            return response()->json([
+            // Create response with new cookie for web requests
+            $cookie = $this->createTokenCookie($tokenData['access_token']);
+            
+            $response = response()->json([
                 'success' => true,
                 'message' => 'Token refreshed successfully',
                 'data' => [
-                    'tokens' => [
-                        'access_token' => $tokenData['access_token'],
-                        'refresh_token' => $tokenData['refresh_token'],
-                        'token_type' => $tokenData['token_type'],
-                        'expires_in' => $tokenData['expires_in'],
-                    ],
+                    'expires_in' => $tokenData['expires_in'],
                 ],
             ]);
+            
+            // Attach the new cookie
+            $response->headers->setCookie($cookie);
+            
+            return $response;
 
         } catch (\Exception $e) {
             return response()->json([

@@ -105,6 +105,16 @@ trait JWTAuthTrait
         // Web request - set cookie and redirect
         $cookie = $this->createTokenCookie($tokenData['access_token']);
 
+        // Check if $redirectRoute is a full URL or a route name
+        if (filter_var($redirectRoute, FILTER_VALIDATE_URL) || str_starts_with($redirectRoute, 'http')) {
+            // It's a URL, use redirect()->to()
+            return redirect()
+                ->to($redirectRoute)
+                ->with('success', $message)
+                ->cookie($cookie);
+        }
+
+        // It's a route name, use redirect()->route()
         return redirect()
             ->route($redirectRoute)
             ->with('success', $message)
@@ -197,16 +207,18 @@ trait JWTAuthTrait
                 JWTAuth::setToken($refreshToken);
             }
 
-            // Check if token is valid
-            if (!JWTAuth::check()) {
-                return null;
-            }
-
-            // Get the user from the token
+            // Check if token is valid (even if expired, we can refresh)
             $user = JWTAuth::authenticate();
             
             if (!$user) {
                 return null;
+            }
+
+            // Invalidate the old token
+            try {
+                JWTAuth::invalidate($refreshToken);
+            } catch (\Exception $e) {
+                // Token might already be invalid, continue
             }
 
             // Generate new access token

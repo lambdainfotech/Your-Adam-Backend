@@ -108,6 +108,8 @@ class JWTAuthMiddleware
             return false;
 
         } catch (TokenExpiredException $e) {
+            // Token expired - let the caller handle this
+            // We don't auto-refresh here to avoid side effects in middleware
             return false;
         } catch (TokenInvalidException $e) {
             return false;
@@ -143,7 +145,7 @@ class JWTAuthMiddleware
             ], 401);
         }
 
-        // For web requests, redirect to login page
+        // For web requests, store intended URL and redirect to login page
         return redirect()->guest(route('admin.login'));
     }
 }

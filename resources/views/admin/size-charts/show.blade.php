@@ -18,10 +18,16 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-4 gap-4 mb-6">
             <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-500">Unit</p>
                 <p class="font-medium">{{ $sizeChart->unit === 'inch' ? 'Inch' : 'Centimeter' }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-500">Size Type</p>
+                <span class="px-2 py-1 text-xs rounded-full {{ $sizeChart->size_type === 'european' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                    {{ $sizeChart->size_type === 'european' ? 'European' : 'Asian' }}
+                </span>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
                 <p class="text-sm text-gray-500">Number of Sizes</p>
@@ -44,24 +50,32 @@
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center">
             <h3 class="font-semibold">Size Measurements ({{ $sizeChart->unit }})</h3>
+            <span class="px-3 py-1 text-sm rounded-full {{ $sizeChart->size_type === 'european' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                {{ $sizeChart->size_type === 'european' ? 'European Size' : 'Asian Size' }}
+            </span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Size</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Chest</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Length</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Shoulder</th>
-                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Sleeve</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Size <span class="text-gray-400">({{ $sizeChart->size_type === 'european' ? 'EU' : 'ASIA' }})</span></th>
+                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Chest ({{ $sizeChart->unit }})</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Length ({{ $sizeChart->unit }})</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Shoulder ({{ $sizeChart->unit }})</th>
+                        <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Sleeve ({{ $sizeChart->unit }})</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($sizeChart->rows as $row)
                     <tr>
-                        <td class="px-6 py-4 font-medium">{{ $row->size_name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="font-medium">{{ $row->size_name }}</span>
+                            <span class="ml-2 px-1.5 py-0.5 text-xs rounded {{ $sizeChart->size_type === 'european' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
+                                {{ $sizeChart->size_type === 'european' ? 'EU' : 'ASIA' }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4">{{ $row->measurements['chest'] ?? '-' }}</td>
                         <td class="px-6 py-4">{{ $row->measurements['length'] ?? '-' }}</td>
                         <td class="px-6 py-4">{{ $row->measurements['shoulder'] ?? '-' }}</td>

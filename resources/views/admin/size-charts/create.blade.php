@@ -47,7 +47,27 @@
                 </select>
             </div>
             
-            <div class="flex items-center pt-8">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Size Type *</label>
+                <div class="flex items-center gap-4 mt-2">
+                    @foreach($sizeTypes as $key => $label)
+                        <label class="inline-flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {{ old('size_type', 'asian') == $key ? 'border-blue-500 bg-blue-50' : 'border-gray-300' }}">
+                            <input type="radio" name="size_type" value="{{ $key }}" 
+                                {{ old('size_type', 'asian') == $key ? 'checked' : '' }}
+                                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                onchange="updateSizeTypeStyle(this)">
+                            <span class="ml-2 text-sm font-medium {{ old('size_type', 'asian') == $key ? 'text-blue-700' : 'text-gray-700' }}">{{ $label }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('size_type')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex items-center">
                 <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                     class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                 <label class="ml-2 text-sm font-medium text-gray-700">Active</label>
@@ -135,6 +155,24 @@ function removeRow(btn) {
 
 // Add first row by default
 addRow();
+
+// Update size type radio button styles
+function updateSizeTypeStyle(radio) {
+    document.querySelectorAll('input[name="size_type"]').forEach(input => {
+        const label = input.closest('label');
+        if (input.checked) {
+            label.classList.remove('border-gray-300');
+            label.classList.add('border-blue-500', 'bg-blue-50');
+            label.querySelector('span').classList.remove('text-gray-700');
+            label.querySelector('span').classList.add('text-blue-700');
+        } else {
+            label.classList.remove('border-blue-500', 'bg-blue-50');
+            label.classList.add('border-gray-300');
+            label.querySelector('span').classList.remove('text-blue-700');
+            label.querySelector('span').classList.add('text-gray-700');
+        }
+    });
+}
 </script>
 @endpush
 @endsection

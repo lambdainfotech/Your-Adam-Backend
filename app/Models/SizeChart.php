@@ -16,12 +16,14 @@ class SizeChart extends Model
         'category_id',
         'name',
         'unit',
+        'size_type',
         'description',
         'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'size_type' => 'string',
     ];
 
     public function category(): BelongsTo

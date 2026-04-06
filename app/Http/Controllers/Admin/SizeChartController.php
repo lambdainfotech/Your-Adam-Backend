@@ -31,8 +31,9 @@ class SizeChartController extends Controller
     {
         $categories = Category::active()->select('id', 'name')->get();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
+        $sizeTypes = ['asian' => 'Asian Size', 'european' => 'European Size'];
         
-        return view('admin.size-charts.create', compact('categories', 'units'));
+        return view('admin.size-charts.create', compact('categories', 'units', 'sizeTypes'));
     }
 
     public function store(Request $request)
@@ -41,6 +42,7 @@ class SizeChartController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:100',
             'unit' => 'required|in:inch,cm',
+            'size_type' => 'required|in:asian,european',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'rows' => 'required|array|min:1',
@@ -76,8 +78,9 @@ class SizeChartController extends Controller
         $sizeChart->load('rows');
         $categories = Category::active()->select('id', 'name')->get();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
+        $sizeTypes = ['asian' => 'Asian Size', 'european' => 'European Size'];
         
-        return view('admin.size-charts.edit', compact('sizeChart', 'categories', 'units'));
+        return view('admin.size-charts.edit', compact('sizeChart', 'categories', 'units', 'sizeTypes'));
     }
 
     public function update(Request $request, SizeChart $sizeChart)
@@ -86,6 +89,7 @@ class SizeChartController extends Controller
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:100',
             'unit' => 'required|in:inch,cm',
+            'size_type' => 'required|in:asian,european',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
             'rows' => 'required|array|min:1',

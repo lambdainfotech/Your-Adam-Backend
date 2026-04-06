@@ -130,6 +130,11 @@
                     <span class="ml-3 sidebar-text">Campaigns</span>
                 </a>
                 
+                <a href="{{ route('admin.sliders.index') }}" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-images w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Sliders</span>
+                </a>
+                
                 <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Inventory</div>
                 
                 <a href="{{ route('admin.stock-in.bulk') }}" class="nav-item {{ request()->routeIs('admin.stock-in.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">

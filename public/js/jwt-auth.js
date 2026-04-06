@@ -2,7 +2,7 @@
  * JWT Authentication Helper
  * 
  * Handles JWT token management for the admin panel web interface.
- * Works with HTTP-Only cookies for web and provides fallback handling.
+ * Works with HTTP-Only cookies for web and provides automatic token refresh.
  */
 
 (function(window) {
@@ -18,7 +18,17 @@
         config: {
             cookieName: 'jwt_token',
             csrfToken: document.querySelector('meta[name="csrf-token"]')?.content,
-            refreshThreshold: 0.2, // Refresh when 20% of time remains
+            refreshThreshold: 0.25, // Refresh when 25% of time remains (30 min before expiry for 2 hour token)
+            checkInterval: 5 * 60 * 1000, // Check every 5 minutes
+        },
+
+        /**
+         * State
+         */
+        state: {
+            isRedirecting: false,
+            isRefreshing: false,
+            lastCheck: 0,
         },
 
         /**
@@ -27,7 +37,7 @@
         init() {
             this.setupAjaxHeaders();
             this.setupTokenRefresh();
-            this.setupAutoLogout();
+            this.setupActivityMonitor();
         },
 
         /**
@@ -50,7 +60,10 @@
                 return originalFetch(url, options).then(response => {
                     // Handle 401 Unauthorized
                     if (response.status === 401) {
-                        this.handleUnauthorized();
+                        // Only handle if not already redirecting
+                        if (!this.state.isRedirecting) {
+                            this.handleUnauthorized();
+                        }
                     }
                     return response;
                 });
@@ -58,16 +71,11 @@
 
             // For XMLHttpRequest
             const originalOpen = XMLHttpRequest.prototype.open;
-            const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
             
             XMLHttpRequest.prototype.open = function(method, url, ...rest) {
                 this._url = url;
                 this._method = method;
                 return originalOpen.call(this, method, url, ...rest);
-            };
-
-            XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
-                return originalSetRequestHeader.call(this, header, value);
             };
 
             // Add CSRF token to XMLHttpRequest
@@ -79,7 +87,7 @@
                 
                 // Add load listener for 401 handling
                 this.addEventListener('load', function() {
-                    if (this.status === 401) {
+                    if (this.status === 401 && !JWTAuth.state.isRedirecting) {
                         JWTAuth.handleUnauthorized();
                     }
                 });
@@ -104,81 +112,123 @@
          * Setup automatic token refresh
          */
         setupTokenRefresh() {
-            // Refresh token periodically (every 5 minutes)
+            // Check token status periodically
             setInterval(() => {
-                this.refreshTokenIfNeeded();
-            }, 5 * 60 * 1000);
+                this.checkAndRefreshToken();
+            }, this.config.checkInterval);
 
-            // Also check before important actions
-            document.addEventListener('click', (e) => {
-                const target = e.target.closest('a, button, form');
-                if (target && this.isProtectedAction(target)) {
-                    this.refreshTokenIfNeeded();
+            // Also check before page unload to prevent data loss
+            window.addEventListener('beforeunload', (e) => {
+                if (this.state.isRefreshing) {
+                    e.preventDefault();
+                    e.returnValue = 'Token refresh in progress...';
                 }
-            }, true);
+            });
         },
 
         /**
-         * Check if element is a protected action
+         * Setup activity monitor to refresh token on user activity
          */
-        isProtectedAction(element) {
-            // Check if it's a form submission, link to admin, or important button
-            const href = element.getAttribute('href');
-            const action = element.getAttribute('action');
-            
-            if (href && href.includes('/admin/')) return true;
-            if (action && action.includes('/admin/')) return true;
-            if (element.type === 'submit') return true;
-            
-            return false;
+        setupActivityMonitor() {
+            let activityTimeout;
+            const resetTimer = () => {
+                clearTimeout(activityTimeout);
+                // If user is active, ensure token is fresh
+                activityTimeout = setTimeout(() => {
+                    this.checkAndRefreshToken();
+                }, 60000); // Check 1 minute after last activity
+            };
+
+            // Monitor user activity
+            ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+                document.addEventListener(event, resetTimer, { passive: true });
+            });
         },
 
         /**
-         * Refresh token if needed
+         * Check token and refresh if needed
          */
-        async refreshTokenIfNeeded() {
+        async checkAndRefreshToken() {
+            // Prevent concurrent checks
+            if (this.state.isRefreshing || this.state.isRedirecting) {
+                return;
+            }
+
+            // Rate limit checks
+            const now = Date.now();
+            if (now - this.state.lastCheck < 30000) { // Min 30 seconds between checks
+                return;
+            }
+            this.state.lastCheck = now;
+
             try {
                 const response = await fetch('/api/v1/auth/check', {
                     method: 'GET',
                     credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-TOKEN': this.config.csrfToken,
+                    },
                 });
 
-                if (!response.ok && response.status === 401) {
-                    // Token is invalid or expired
-                    this.handleUnauthorized();
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Token expired - try to refresh
+                        await this.refreshToken();
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                
+                if (!data.data?.authenticated) {
+                    // Not authenticated, try to refresh
+                    await this.refreshToken();
                 }
             } catch (error) {
+                // Silent fail - network errors shouldn't trigger redirect immediately
                 console.warn('Token check failed:', error);
             }
         },
 
         /**
-         * Setup auto logout on token expiry
+         * Refresh the token
          */
-        setupAutoLogout() {
-            // Check authentication status every minute
-            setInterval(() => {
-                this.checkAuthStatus();
-            }, 60 * 1000);
-        },
+        async refreshToken() {
+            if (this.state.isRefreshing || this.state.isRedirecting) {
+                return false;
+            }
 
-        /**
-         * Check authentication status
-         */
-        async checkAuthStatus() {
+            this.state.isRefreshing = true;
+
             try {
-                const response = await fetch('/api/v1/auth/check', {
-                    method: 'GET',
+                // For web interface, use the admin refresh endpoint
+                const response = await fetch('/admin/refresh', {
+                    method: 'POST',
                     credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-TOKEN': this.config.csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
                 });
 
-                const data = await response.json();
-
-                if (!data.data?.authenticated) {
-                    this.handleUnauthorized();
+                if (response.ok) {
+                    console.log('Token refreshed successfully');
+                    return true;
                 }
+
+                // If refresh fails with 401, token is truly expired
+                if (response.status === 401) {
+                    this.handleUnauthorized();
+                    return false;
+                }
+
+                return false;
             } catch (error) {
-                // Silent fail - will be caught on next request
+                console.error('Token refresh failed:', error);
+                return false;
+            } finally {
+                this.state.isRefreshing = false;
             }
         },
 
@@ -187,19 +237,25 @@
          */
         handleUnauthorized() {
             // Prevent multiple redirects
+            if (this.state.isRedirecting) {
+                return;
+            }
+
             if (window.location.pathname === '/admin/login') {
                 return;
             }
 
+            this.state.isRedirecting = true;
+
             // Show notification if available
             if (typeof Toast !== 'undefined') {
-                Toast.show('Session expired. Redirecting to login...', 'warning');
+                Toast.show('Session expired. Redirecting to login...', 'warning', 3000);
             }
 
             // Redirect to login after short delay
             setTimeout(() => {
                 window.location.href = '/admin/login?expired=1';
-            }, 1500);
+            }, 2000);
         },
 
         /**
@@ -249,9 +305,15 @@
 
             const response = await fetch(url, mergedOptions);
 
-            if (response.status === 401) {
-                this.handleUnauthorized();
-                throw new Error('Unauthorized');
+            if (response.status === 401 && !this.state.isRedirecting) {
+                // Try to refresh token first
+                const refreshed = await this.refreshToken();
+                if (!refreshed) {
+                    this.handleUnauthorized();
+                    throw new Error('Unauthorized');
+                }
+                // Retry the request with new token
+                return this.api(url, options);
             }
 
             return response;

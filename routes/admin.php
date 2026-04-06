@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SizeChartController;
 use App\Http\Controllers\Admin\PredefinedDescriptionController;
 use App\Http\Controllers\Admin\BulkOperationsController;
+use App\Http\Controllers\Admin\SliderController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +40,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web'])->group(function () {
     Route::get('/login', [JWTAuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [JWTAuthController::class, 'login'])->name('admin.login.post');
+    Route::post('/refresh', [JWTAuthController::class, 'refresh'])->name('admin.refresh');
 });
 
 // Protected routes (JWT auth required)
@@ -193,4 +195,9 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('/reports/products', [ReportController::class, 'products'])->name('admin.reports.products');
     Route::get('/reports/customers', [ReportController::class, 'customers'])->name('admin.reports.customers');
     Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('admin.reports.inventory');
+
+    // Sliders / Banners
+    Route::resource('sliders', SliderController::class)->names('admin.sliders');
+    Route::post('sliders/{slider}/toggle-status', [SliderController::class, 'toggleStatus'])->name('admin.sliders.toggle-status');
+    Route::post('sliders/reorder', [SliderController::class, 'reorder'])->name('admin.sliders.reorder');
 });
