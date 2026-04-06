@@ -93,9 +93,9 @@
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                     <div class="text-2xl font-bold text-purple-600">
                         @if($priceRange['has_range'])
-                            ${{ number_format($priceRange['min'], 2) }} - ${{ number_format($priceRange['max'], 2) }}
+                            ৳{{ number_format($priceRange['min'], 2) }} - ৳{{ number_format($priceRange['max'], 2) }}
                         @else
-                            ${{ number_format($priceRange['min'], 2) }}
+                            ৳{{ number_format($priceRange['min'], 2) }}
                         @endif
                     </div>
                     <div class="text-sm text-gray-500">Price Range</div>
@@ -160,7 +160,7 @@
                                         <div class="inline-edit" contenteditable="true" 
                                             onblur="updateVariantField({{ $variant->id }}, 'price', this)"
                                             data-original="{{ $variant->price }}">
-                                            ${{ number_format($variant->price ?: $product->base_price, 2) }}
+                                            ৳{{ number_format($variant->price ?: $product->base_price, 2) }}
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
@@ -304,6 +304,19 @@
                         </div>
                     </div>
 
+                    <!-- Auto-generation Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <div class="text-sm text-blue-700">
+                                <p class="font-medium mb-1">SKU & Barcode Auto-Generation</p>
+                                <p class="mb-1">• SKU Format: <code>{{ $product->sku_prefix ?: 'PREFIX' }}-XXXX-XXX-ATTR</code></p>
+                                <p class="mb-1">• Barcode Format: <code>200{{ str_pad($product->id, 7, '0', STR_PAD_LEFT) }}XX</code> (EAN-13)</p>
+                                <p class="text-xs text-blue-600 mt-2">All variants of this product will have related barcodes for easy identification.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Default Settings -->
                     <div class="bg-gray-50 rounded-lg p-4 mb-6">
                         <h4 class="font-medium text-gray-900 mb-3">Default Settings</h4>
@@ -372,25 +385,60 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
                             <input type="text" name="sku" id="edit_sku" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <p class="text-xs text-gray-500 mt-1">Auto-generated, can be edited</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
                             <input type="text" name="barcode" id="edit_barcode" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <p class="text-xs text-gray-500 mt-1">EAN-13, related to product (200XXXXXXX)</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4">
+                    <!-- Cost, Regular Price Row -->
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cost Price (৳)</label>
+                            <input type="number" name="cost_price" id="edit_cost_price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Regular Price (৳)</label>
                             <input type="number" name="price" id="edit_price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Compare Price</label>
-                            <input type="number" name="compare_price" id="edit_compare_price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
-                            <input type="number" name="cost_price" id="edit_cost_price" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <!-- Discount Section -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Discount</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Discount Type -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Discount Type</label>
+                                <select name="discount_type" id="edit_discount_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                    <option value="">No Discount</option>
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="flat">Flat (৳)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Discount Value -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Discount Value</label>
+                                <input type="number" name="discount_value" id="edit_discount_value" step="0.01" min="0" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                    placeholder="0">
+                            </div>
+                            
+                            <!-- Sale Price (Auto-calculated) -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Sale Price <span class="text-gray-400">(Auto)</span></label>
+                                <div class="relative">
+                                    <input type="number" name="sale_price" id="edit_sale_price" step="0.01" min="0" 
+                                        class="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-lg text-gray-600"
+                                        placeholder="0.00" readonly>
+                                    <span id="variantDiscountBadge" class="absolute right-3 top-2 text-xs font-medium hidden"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1" id="variantSavingsText">No discount</p>
+                            </div>
                         </div>
                     </div>
 
@@ -531,6 +579,14 @@
                 document.getElementById('edit_stock_status').value = data.variant.stock_status;
                 document.getElementById('edit_manage_stock').checked = data.variant.manage_stock;
                 document.getElementById('edit_is_active').checked = data.variant.is_active;
+                
+                // Discount fields
+                document.getElementById('edit_discount_type').value = data.variant.discount_type || '';
+                document.getElementById('edit_discount_value').value = data.variant.discount_value || '';
+                document.getElementById('edit_sale_price').value = data.variant.sale_price || data.variant.price || '';
+                
+                // Calculate and display savings
+                calculateVariantSalePrice();
 
                 document.getElementById('variantAttributes').textContent = data.attributes.map(a => a.attribute_name + ': ' + a.value).join(', ');
                 document.getElementById('variantSku').textContent = data.variant.sku;
@@ -538,10 +594,68 @@
                 openEditModal();
             });
     }
+    
+    // Calculate variant sale price
+    function calculateVariantSalePrice() {
+        const basePrice = parseFloat(document.getElementById('edit_price')?.value) || 0;
+        const discountType = document.getElementById('edit_discount_type')?.value;
+        const discountValue = parseFloat(document.getElementById('edit_discount_value')?.value) || 0;
+        const salePriceInput = document.getElementById('edit_sale_price');
+        const discountBadge = document.getElementById('variantDiscountBadge');
+        const savingsText = document.getElementById('variantSavingsText');
+        
+        // Calculate sale price
+        let salePrice = basePrice;
+        let savings = 0;
+        
+        if (discountValue > 0 && discountType) {
+            if (discountType === 'percentage') {
+                const percentage = Math.min(99, Math.max(1, discountValue));
+                savings = basePrice * (percentage / 100);
+                salePrice = basePrice - savings;
+            } else if (discountType === 'flat') {
+                savings = Math.min(discountValue, basePrice - 0.01);
+                salePrice = basePrice - savings;
+            }
+        }
+        
+        salePrice = Math.max(0, salePrice);
+        
+        // Update sale price
+        salePriceInput.value = salePrice.toFixed(2);
+        
+        // Update badge and savings text
+        if (discountValue > 0 && discountType && basePrice > 0) {
+            discountBadge.classList.remove('hidden');
+            if (discountType === 'percentage') {
+                discountBadge.innerHTML = `<span class="text-green-600">-${discountValue}%</span>`;
+            } else {
+                discountBadge.innerHTML = `<span class="text-green-600">-৳${discountValue.toFixed(2)}</span>`;
+            }
+            savingsText.innerHTML = `<span class="text-green-600 font-medium">Save ৳${savings.toFixed(2)}</span>`;
+        } else {
+            discountBadge.classList.add('hidden');
+            savingsText.textContent = 'No discount applied';
+        }
+    }
+    
+    // Add event listeners for variant discount calculation
+    document.getElementById('edit_price')?.addEventListener('input', calculateVariantSalePrice);
+    document.getElementById('edit_discount_value')?.addEventListener('input', calculateVariantSalePrice);
+    document.getElementById('edit_discount_type')?.addEventListener('change', function() {
+        const discountValueInput = document.getElementById('edit_discount_value');
+        if (this.value === '') {
+            discountValueInput.value = '';
+            discountValueInput.disabled = true;
+        } else {
+            discountValueInput.disabled = false;
+        }
+        calculateVariantSalePrice();
+    });
 
     // Update variant field inline
     function updateVariantField(variantId, field, element) {
-        const value = element.textContent.replace('$', '').trim();
+        const value = element.textContent.replace('৳', '').trim();
         const original = element.dataset.original;
         
         if (value === original) return;

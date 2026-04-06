@@ -116,9 +116,9 @@ class PricingService
     }
 
     /**
-     * Format price with currency
+     * Format price with currency (BDT)
      */
-    public function formatPrice(float $price, string $currency = '$'): string
+    public function formatPrice(float $price, string $currency = '৳'): string
     {
         return $currency . number_format($price, 2);
     }
@@ -176,5 +176,128 @@ class PricingService
         }
 
         return $updated;
+    }
+
+    /**
+     * Calculate sale price based on discount
+     * 
+     * @param float $basePrice
+     * @param string|null $discountType 'percentage' or 'flat'
+     * @param float|null $discountValue
+     * @return float
+     */
+    public function calculateSalePrice(float $basePrice, ?string $discountType, ?float $discountValue): float
+    {
+        if (!$discountValue || $discountValue <= 0) {
+            return $basePrice;
+        }
+
+        $salePrice = $basePrice;
+
+        if ($discountType === 'percentage') {
+            // Limit percentage to 1-99%
+            $percentage = max(1, min(99, $discountValue));
+            $salePrice = $basePrice - ($basePrice * $percentage / 100);
+        } elseif ($discountType === 'flat') {
+            // Ensure flat discount is less than base price
+            $flatDiscount = min($discountValue, $basePrice - 0.01);
+            $salePrice = $basePrice - $flatDiscount;
+        }
+
+        // Ensure sale price is not negative and less than base price
+        return max(0, min($salePrice, $basePrice));
+    }
+
+    /**
+     * Calculate discount amount
+     * 
+     * @param float $basePrice
+     * @param string|null $discountType
+     * @param float|null $discountValue
+     * @return float
+     */
+    public function calculateDiscountAmount(float $basePrice, ?string $discountType, ?float $discountValue): float
+    {
+        if (!$discountValue || $discountValue <= 0 || $basePrice <= 0) {
+            return 0;
+        }
+
+        if ($discountType === 'percentage') {
+            return $basePrice * ($discountValue / 100);
+        } elseif ($discountType === 'flat') {
+            return min($discountValue, $basePrice);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Validate discount
+     * 
+     * @param string $type
+     * @param float $value
+     * @param float $basePrice
+     * @return array ['valid' => bool, 'message' => string]
+     */
+    public function validateDiscount(string $type, float $value, float $basePrice): array
+    {
+        if ($value <= 0) {
+            return ['valid' => false, 'message' => 'Discount value must be greater than 0'];
+        }
+
+        if ($type === 'percentage') {
+            if ($value > 99) {
+                return ['valid' => false, 'message' => 'Percentage discount cannot exceed 99%'];
+            }
+            if ($value < 1) {
+                return ['valid' => false, 'message' => 'Percentage discount must be at least 1%'];
+            }
+        } elseif ($type === 'flat') {
+            if ($value >= $basePrice) {
+                return ['valid' => false, 'message' => 'Flat discount must be less than regular price'];
+            }
+        } else {
+            return ['valid' => false, 'message' => 'Invalid discount type'];
+        }
+
+        return ['valid' => true, 'message' => ''];
+    }
+
+    /**
+     * Get discount display text
+     * 
+     * @param string|null $discountType
+     * @param float|null $discountValue
+     * @return string
+     */
+    public function getDiscountDisplay(?string $discountType, ?float $discountValue): string
+    {
+        if (!$discountValue || $discountValue <= 0) {
+            return '';
+        }
+
+        if ($discountType === 'percentage') {
+            return '-' . number_format($discountValue, 0) . '%';
+        } elseif ($discountType === 'flat') {
+            return '-$' . number_format($discountValue, 2);
+        }
+
+        return '';
+    }
+
+    /**
+     * Get savings display text
+     * 
+     * @param float $basePrice
+     * @param float $salePrice
+     * @return string
+     */
+    public function getSavingsDisplay(float $basePrice, float $salePrice): string
+    {
+        $savings = $basePrice - $salePrice;
+        if ($savings <= 0) {
+            return '';
+        }
+        return 'Save $' . number_format($savings, 2);
     }
 }

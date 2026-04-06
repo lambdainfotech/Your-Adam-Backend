@@ -377,57 +377,112 @@
                                     <i class="fas fa-tag"></i>
                                     <span>Pricing</span>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                
+                                <!-- Cost, Regular Price Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Regular Price ($) <span class="text-red-500">*</span></label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Item (৳)</label>
+                                        <input type="number" name="cost_price" id="costPrice" step="0.01" min="0"
+                                            value="{{ old('cost_price', $product->cost_price ?? '') }}"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            placeholder="0.00">
+                                        <p class="text-xs text-gray-500 mt-1">Your cost for profit calculations</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Regular Price (৳) <span class="text-red-500">*</span></label>
                                         <input type="number" name="base_price" id="basePrice" step="0.01" min="0"
                                             value="{{ old('base_price', $product->base_price ?? '') }}"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                             placeholder="0.00" required>
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Compare at Price ($)</label>
-                                        <input type="number" name="compare_price" step="0.01" min="0"
-                                            value="{{ old('compare_price', $product->compare_price ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0.00">
-                                        <p class="text-xs text-gray-500 mt-1">Original price for showing discount</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Item ($)</label>
-                                        <input type="number" name="cost_price" step="0.01" min="0"
-                                            value="{{ old('cost_price', $product->cost_price ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0.00">
-                                        <p class="text-xs text-gray-500 mt-1">For profit calculations</p>
+                                </div>
+
+                                <!-- Discount Section -->
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Discount</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Discount Type -->
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Discount Type</label>
+                                            <div class="flex gap-4">
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="discount_type" value="percentage" 
+                                                        {{ old('discount_type', $product->discount_type ?? '') == 'percentage' ? 'checked' : '' }}
+                                                        class="discount-type-radio text-blue-600">
+                                                    <span class="ml-2 text-sm">Percentage (%)</span>
+                                                </label>
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="discount_type" value="flat"
+                                                        {{ old('discount_type', $product->discount_type ?? '') == 'flat' ? 'checked' : '' }}
+                                                        class="discount-type-radio text-blue-600">
+                                                    <span class="ml-2 text-sm">Flat (৳)</span>
+                                                </label>
+                                                <label class="inline-flex items-center">
+                                                    <input type="radio" name="discount_type" value=""
+                                                        {{ old('discount_type', $product->discount_type ?? '') == '' ? 'checked' : 'checked' }}
+                                                        class="discount-type-radio text-blue-600">
+                                                    <span class="ml-2 text-sm">No Discount</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Discount Value -->
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Discount Value</label>
+                                            <input type="number" name="discount_value" id="discountValue" step="0.01" min="0"
+                                                value="{{ old('discount_value', $product->discount_value ?? '') }}"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                placeholder="0">
+                                            <p class="text-xs text-gray-500 mt-1" id="discountHint">Enter percentage (1-99) or flat amount</p>
+                                        </div>
+                                        
+                                        <!-- Sale Price (Auto-calculated, Read-only) -->
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Sale Price <span class="text-gray-400">(Auto-calculated)</span></label>
+                                            <div class="relative">
+                                                <input type="number" name="sale_price" id="salePrice" step="0.01" min="0"
+                                                    value="{{ old('sale_price', $product->sale_price ?? '') }}"
+                                                    class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
+                                                    placeholder="0.00" readonly>
+                                                <span id="discountBadge" class="absolute right-3 top-2 text-xs font-medium {{ ($product->discount_value ?? 0) > 0 ? '' : 'hidden' }}">
+                                                    @if(($product->discount_type ?? '') == 'percentage')
+                                                        <span class="text-green-600">-{{ $product->discount_value }}%</span>
+                                                    @elseif(($product->discount_type ?? '') == 'flat')
+                                                        <span class="text-green-600">-৳{{ number_format($product->discount_value, 2) }}</span>
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1" id="savingsText">
+                                                @if(($product->discount_value ?? 0) > 0 && ($product->base_price ?? 0) > 0)
+                                                    Save ৳{{ number_format($product->discount_amount, 2) }}
+                                                @else
+                                                    No discount applied
+                                                @endif
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 
+                                <!-- Sale Schedule -->
                                 <div class="mt-4 pt-4 border-t border-gray-200">
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="text-sm font-medium text-gray-700">Sale Price</label>
+                                        <label class="text-sm font-medium text-gray-700">Sale Schedule <span class="text-gray-400 font-normal">(Optional)</span></label>
                                         <button type="button" id="toggleSaleSchedule" class="text-sm text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-calendar-alt mr-1"></i>Schedule
+                                            <i class="fas fa-calendar-alt mr-1"></i>Toggle Schedule
                                         </button>
                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="sale-schedule hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <input type="number" name="sale_price" step="0.01" min="0"
-                                                value="{{ old('sale_price', $product->sale_price ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="Sale price">
-                                        </div>
-                                        <div class="sale-schedule hidden">
                                             <input type="datetime-local" name="sale_start_date"
                                                 value="{{ old('sale_start_date', isset($product) && $product->sale_start_date ? $product->sale_start_date->format('Y-m-d\TH:i') : '') }}"
                                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <p class="text-xs text-gray-500 mt-1">Start Date</p>
+                                            <p class="text-xs text-gray-500 mt-1">Sale Start Date</p>
                                         </div>
-                                        <div class="sale-schedule hidden">
+                                        <div>
                                             <input type="datetime-local" name="sale_end_date"
                                                 value="{{ old('sale_end_date', isset($product) && $product->sale_end_date ? $product->sale_end_date->format('Y-m-d\TH:i') : '') }}"
                                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <p class="text-xs text-gray-500 mt-1">End Date</p>
+                                            <p class="text-xs text-gray-500 mt-1">Sale End Date</p>
                                         </div>
                                     </div>
                                 </div>
@@ -456,32 +511,53 @@
                                 </div>
                                 
                                 <div id="simpleSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : 'simple') === 'simple' ? '' : 'hidden' }}">
+                                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                            <div class="text-sm text-blue-700">
+                                                <p class="font-medium mb-1">Auto-Generation Enabled</p>
+                                                <p class="mb-1">• SKU Format: <code>CATEGORY-YYYYMMDD-XXXX</code></p>
+                                                <p>• Barcode Format: <code>200XXXXXXXXXC</code> (EAN-13)</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
                                             <input type="text" name="sku" 
                                                 value="{{ old('sku', $product->sku ?? '') }}"
                                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="e.g., SHIRT-001">
+                                                placeholder="Leave empty for auto-generation">
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Barcode (ISBN, UPC, etc.)</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Barcode <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
                                             <input type="text" name="barcode" 
                                                 value="{{ old('barcode', $product->barcode ?? '') }}"
                                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="e.g., 123456789">
+                                                placeholder="Leave empty for auto-generation">
                                         </div>
                                     </div>
                                 </div>
 
                                 <div id="variableSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
+                                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                            <div class="text-sm text-blue-700">
+                                                <p class="font-medium mb-1">Auto-Generation for Variants</p>
+                                                <p class="mb-1">• SKU Prefix: Auto-generated from category if empty</p>
+                                                <p class="mb-1">• Variant SKU: <code>PREFIX-XXXX-XXX-ATTR</code></p>
+                                                <p>• Variant Barcode: <code>200{PRODUCT_ID}{SEQ}C</code> (Related to product)</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">SKU Prefix</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">SKU Prefix <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
                                         <input type="text" name="sku_prefix" id="skuPrefix"
                                             value="{{ old('sku_prefix', $product->sku_prefix ?? '') }}"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="e.g., SHIRT (variants will be SHIRT-RED-SM, etc.)">
-                                        <p class="text-xs text-gray-500 mt-1">Prefix for auto-generated variant SKUs</p>
+                                            placeholder="Leave empty for auto-generation (e.g., SHIRT)">
+                                        <p class="text-xs text-gray-500 mt-1">Each variant SKU will be: PREFIX-PROD_ID-VARIANT_SEQ-ATTR</p>
                                     </div>
                                 </div>
                             </div>
@@ -616,7 +692,7 @@
                                     
                                     <div class="mb-4 p-3 bg-gray-50 rounded-lg">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-sm text-gray-600">Base Price: $<span id="displayBasePrice">0.00</span></span>
+                                            <span class="text-sm text-gray-600">Base Price: ৳<span id="displayBasePrice">0.00</span></span>
                                             <button type="button" onclick="applyBasePriceToAll()" class="text-sm text-blue-600 hover:text-blue-800">
                                                 Apply to all variants
                                             </button>
@@ -629,7 +705,7 @@
                                                 <tr>
                                                     <th>Variant</th>
                                                     <th>SKU</th>
-                                                    <th>Price ($)</th>
+                                                    <th>Price (৳)</th>
                                                     <th>Stock Qty</th>
                                                     <th>Status</th>
                                                 </tr>
@@ -1042,6 +1118,98 @@
         } else {
             stockFields.classList.add('opacity-50');
             inputs.forEach(input => input.disabled = true);
+        }
+    });
+
+    // ========== DISCOUNT CALCULATION ==========
+    function calculateSalePrice() {
+        const basePrice = parseFloat(document.getElementById('basePrice')?.value) || 0;
+        const discountType = document.querySelector('input[name="discount_type"]:checked')?.value;
+        const discountValue = parseFloat(document.getElementById('discountValue')?.value) || 0;
+        const salePriceInput = document.getElementById('salePrice');
+        const discountBadge = document.getElementById('discountBadge');
+        const savingsText = document.getElementById('savingsText');
+        const discountHint = document.getElementById('discountHint');
+        
+        // Update hint based on discount type
+        if (discountType === 'percentage') {
+            discountHint.textContent = 'Enter percentage (1-99%)';
+        } else if (discountType === 'flat') {
+            discountHint.textContent = 'Enter flat amount in dollars';
+        } else {
+            discountHint.textContent = 'Select a discount type first';
+        }
+        
+        // Calculate sale price
+        let salePrice = basePrice;
+        let savings = 0;
+        
+        if (discountValue > 0 && discountType) {
+            if (discountType === 'percentage') {
+                // Limit to 1-99%
+                const percentage = Math.min(99, Math.max(1, discountValue));
+                savings = basePrice * (percentage / 100);
+                salePrice = basePrice - savings;
+            } else if (discountType === 'flat') {
+                // Ensure flat discount is less than base price
+                savings = Math.min(discountValue, basePrice - 0.01);
+                salePrice = basePrice - savings;
+            }
+        }
+        
+        // Ensure non-negative
+        salePrice = Math.max(0, salePrice);
+        
+        // Update sale price input
+        salePriceInput.value = salePrice.toFixed(2);
+        
+        // Update discount badge
+        if (discountValue > 0 && discountType && basePrice > 0) {
+            discountBadge.classList.remove('hidden');
+            if (discountType === 'percentage') {
+                discountBadge.innerHTML = `<span class="text-green-600">-${discountValue}%</span>`;
+            } else {
+                discountBadge.innerHTML = `<span class="text-green-600">-৳{discountValue.toFixed(2)}</span>`;
+            }
+        } else {
+            discountBadge.classList.add('hidden');
+        }
+        
+        // Update savings text
+        if (savings > 0) {
+            savingsText.innerHTML = `<span class="text-green-600 font-medium">Save ৳{savings.toFixed(2)}</span>`;
+        } else {
+            savingsText.textContent = 'No discount applied';
+        }
+    }
+    
+    // Add event listeners for discount calculation
+    document.getElementById('basePrice')?.addEventListener('input', calculateSalePrice);
+    document.getElementById('discountValue')?.addEventListener('input', calculateSalePrice);
+    
+    // Radio button change listeners
+    document.querySelectorAll('input[name="discount_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const discountValueInput = document.getElementById('discountValue');
+            if (this.value === '') {
+                discountValueInput.value = '';
+                discountValueInput.disabled = true;
+            } else {
+                discountValueInput.disabled = false;
+            }
+            calculateSalePrice();
+        });
+    });
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateSalePrice();
+        
+        // Disable discount value if no discount type selected
+        const selectedType = document.querySelector('input[name="discount_type"]:checked')?.value;
+        const discountValueInput = document.getElementById('discountValue');
+        if (selectedType === '' || !selectedType) {
+            discountValueInput.disabled = true;
         }
     });
 </script>

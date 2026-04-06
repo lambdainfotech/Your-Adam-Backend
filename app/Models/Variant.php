@@ -20,6 +20,9 @@ class Variant extends Model
         'barcode',
         'price',
         'compare_price',
+        'discount_type',
+        'discount_value',
+        'sale_price',
         'cost_price',
         'stock_quantity',
         'stock_status',
@@ -33,6 +36,8 @@ class Variant extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'compare_price' => 'decimal:2',
+        'discount_value' => 'decimal:2',
+        'sale_price' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'stock_quantity' => 'integer',
         'low_stock_threshold' => 'integer',
@@ -114,12 +119,107 @@ class Variant extends Model
     // Attribute Accessors
     public function getFinalPriceAttribute(): float
     {
+        // Check if variant has sale price with discount
+        if ($this->hasDiscount()) {
+            return $this->calculateSalePrice();
+        }
+
         // If variant has its own price, use it
         if ($this->price !== null && $this->price > 0) {
             return (float) $this->price;
         }
+
         // Otherwise fall back to product price
         return $this->product->final_price;
+    }
+
+    public function hasDiscount(): bool
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public function calculateSalePrice(): float
+    {
+        $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return $basePrice;
+        }
+
+        $salePrice = $basePrice;
+
+        if ($this->discount_type === 'percentage') {
+            $salePrice = $basePrice - ($basePrice * $this->discount_value / 100);
+        } elseif ($this->discount_type === 'flat') {
+            $salePrice = $basePrice - $this->discount_value;
+        }
+
+        // Ensure sale price is not negative and less than base price
+        return max(0, min($salePrice, $basePrice));
+    }
+
+    public function getDiscountAmountAttribute(): float
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return 0;
+        }
+
+        $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+
+        if ($this->discount_type === 'percentage') {
+            return $basePrice * ($this->discount_value / 100);
+        } elseif ($this->discount_type === 'flat') {
+            return min($this->discount_value, $basePrice);
+        }
+
+        return 0;
+    }
+
+    public function getDiscountPercentageAttribute(): float
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return 0;
+        }
+
+        $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+        if ($basePrice <= 0) {
+            return 0;
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return $this->discount_value;
+        } elseif ($this->discount_type === 'flat') {
+            return round(($this->discount_value / $basePrice) * 100, 1);
+        }
+
+        return 0;
+    }
+
+    public function getDiscountDisplayAttribute(): string
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return '';
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return '-' . number_format($this->discount_value, 0) . '%';
+        } elseif ($this->discount_type === 'flat') {
+            return '-$' . number_format($this->discount_value, 2);
+        }
+
+        return '';
+    }
+
+    public function getSavingsDisplayAttribute(): string
+    {
+        $savings = $this->discount_amount;
+        if ($savings <= 0) {
+            return '';
+        }
+        return 'Save $' . number_format($savings, 2);
     }
 
     public function getAttributeTextAttribute(): string

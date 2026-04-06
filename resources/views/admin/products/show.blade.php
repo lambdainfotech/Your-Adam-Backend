@@ -54,7 +54,7 @@
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-500">Base Price</p>
-                    <p class="font-medium text-gray-800">${{ number_format($product->base_price, 2) }}</p>
+                    <p class="font-medium text-gray-800">৳{{ number_format($product->base_price, 2) }}</p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-500">Created</p>
@@ -158,7 +158,7 @@
                     @forelse($product->variants as $variant)
                         <tr>
                             <td class="px-6 py-4 font-medium">{{ $variant->sku }}</td>
-                            <td class="px-6 py-4">${{ number_format($variant->price, 2) }}</td>
+                            <td class="px-6 py-4">৳{{ number_format($variant->price, 2) }}</td>
                             <td class="px-6 py-4 {{ $variant->stock_quantity <= 10 ? 'text-red-600 font-medium' : '' }}">{{ $variant->stock_quantity }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 text-xs rounded-full {{ $variant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">

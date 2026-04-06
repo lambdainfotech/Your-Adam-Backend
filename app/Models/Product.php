@@ -21,9 +21,13 @@ class Product extends Model
         'slug',
         'description',
         'short_description',
+        'predefined_description_id',
+        'predefined_short_description_id',
         'product_type',
         'base_price',
         'compare_price',
+        'discount_type',
+        'discount_value',
         'sale_price',
         'sale_start_date',
         'sale_end_date',
@@ -47,6 +51,7 @@ class Product extends Model
     protected $casts = [
         'base_price' => 'decimal:2',
         'compare_price' => 'decimal:2',
+        'discount_value' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'sale_start_date' => 'datetime',
@@ -138,6 +143,16 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function predefinedDescription(): BelongsTo
+    {
+        return $this->belongsTo(PredefinedDescription::class, 'predefined_description_id');
+    }
+
+    public function predefinedShortDescription(): BelongsTo
+    {
+        return $this->belongsTo(PredefinedDescription::class, 'predefined_short_description_id');
     }
 
     public function categories(): BelongsToMany
@@ -249,6 +264,92 @@ class Product extends Model
         return (float) ($this->base_price ?? 0);
     }
 
+    public function getCalculatedSalePriceAttribute(): float
+    {
+        return $this->calculateSalePrice();
+    }
+
+    public function getDiscountAmountAttribute(): float
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return 0;
+        }
+
+        $basePrice = (float) ($this->base_price ?? 0);
+
+        if ($this->discount_type === 'percentage') {
+            return $basePrice * ($this->discount_value / 100);
+        } elseif ($this->discount_type === 'flat') {
+            return min($this->discount_value, $basePrice);
+        }
+
+        return 0;
+    }
+
+    public function getDiscountPercentageAttribute(): float
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return 0;
+        }
+
+        $basePrice = (float) ($this->base_price ?? 0);
+        if ($basePrice <= 0) {
+            return 0;
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return $this->discount_value;
+        } elseif ($this->discount_type === 'flat') {
+            return round(($this->discount_value / $basePrice) * 100, 1);
+        }
+
+        return 0;
+    }
+
+    public function calculateSalePrice(): float
+    {
+        $basePrice = (float) ($this->base_price ?? 0);
+
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return $basePrice;
+        }
+
+        $salePrice = $basePrice;
+
+        if ($this->discount_type === 'percentage') {
+            $salePrice = $basePrice - ($basePrice * $this->discount_value / 100);
+        } elseif ($this->discount_type === 'flat') {
+            $salePrice = $basePrice - $this->discount_value;
+        }
+
+        // Ensure sale price is not negative and less than base price
+        return max(0, min($salePrice, $basePrice));
+    }
+
+    public function getDiscountDisplayAttribute(): string
+    {
+        if (!$this->discount_value || $this->discount_value <= 0) {
+            return '';
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return '-' . number_format($this->discount_value, 0) . '%';
+        } elseif ($this->discount_type === 'flat') {
+            return '-$' . number_format($this->discount_value, 2);
+        }
+
+        return '';
+    }
+
+    public function getSavingsDisplayAttribute(): string
+    {
+        $savings = $this->discount_amount;
+        if ($savings <= 0) {
+            return '';
+        }
+        return 'Save $' . number_format($savings, 2);
+    }
+
     public function getDisplayPriceAttribute(): string
     {
         if ($this->is_on_sale && $this->compare_price) {
@@ -270,7 +371,7 @@ class Product extends Model
     // Helper Methods
     public function formatPrice($price): string
     {
-        return '$' . number_format($price, 2);
+        return '৳' . number_format($price, 2);
     }
 
     public function updateStockStatus(): void

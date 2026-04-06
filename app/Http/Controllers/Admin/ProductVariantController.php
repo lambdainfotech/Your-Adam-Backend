@@ -156,7 +156,9 @@ class ProductVariantController extends Controller
                 'sku' => $variant->sku,
                 'barcode' => $variant->barcode,
                 'price' => $variant->price,
-                'compare_price' => $variant->compare_price,
+                'discount_type' => $variant->discount_type,
+                'discount_value' => $variant->discount_value,
+                'sale_price' => $variant->sale_price,
                 'cost_price' => $variant->cost_price,
                 'stock_quantity' => $variant->stock_quantity,
                 'stock_status' => $variant->stock_status,
@@ -185,7 +187,8 @@ class ProductVariantController extends Controller
             'sku' => 'required|string|max:50|unique:variants,sku,' . $variantId,
             'barcode' => 'nullable|string|max:50',
             'price' => 'nullable|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percentage,flat',
+            'discount_value' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'stock_quantity' => 'required|integer|min:0',
             'stock_status' => 'required|in:in_stock,out_of_stock,on_backorder',
@@ -200,6 +203,14 @@ class ProductVariantController extends Controller
 
         $validated['manage_stock'] = $request->boolean('manage_stock', true);
         $validated['is_active'] = $request->boolean('is_active', true);
+
+        // Calculate sale price based on discount
+        $basePrice = (float) ($validated['price'] ?? $variant->product->base_price ?? 0);
+        $validated['sale_price'] = $this->pricingService->calculateSalePrice(
+            $basePrice,
+            $validated['discount_type'] ?? null,
+            isset($validated['discount_value']) ? (float) $validated['discount_value'] : null
+        );
 
         // Auto-update stock status if manage_stock is enabled
         if ($validated['manage_stock'] && $newStock !== $oldStock) {
@@ -381,7 +392,7 @@ class ProductVariantController extends Controller
     public function addVariant(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'sku' => 'required|string|max:50|unique:variants',
+            'sku' => 'nullable|string|max:50|unique:variants',
             'attribute_values' => 'required|array|min:1',
             'attribute_values.*' => 'exists:attribute_values,id',
             'price' => 'nullable|numeric|min:0',
@@ -402,9 +413,38 @@ class ProductVariantController extends Controller
             ], 422);
         }
 
+        // Get attribute values for SKU generation
+        $attributeValues = \App\Models\AttributeValue::whereIn('id', $validated['attribute_values'])
+            ->get()
+            ->pluck('value')
+            ->toArray();
+
+        // Auto-generate SKU if not provided
+        if (empty($validated['sku'])) {
+            // Ensure SKU prefix exists
+            if (empty($product->sku_prefix)) {
+                $category = \App\Models\Category::find($product->category_id);
+                $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : 'VAR';
+                $product->update(['sku_prefix' => $categoryCode]);
+                $product->refresh();
+            }
+            
+            $codeGenerator = app(\App\Services\CodeGeneratorService::class);
+            $validated['sku'] = $codeGenerator->generateVariantSku(
+                $product,
+                $attributeValues,
+                $product->variants()->count()
+            );
+        }
+
+        // Auto-generate related barcode for variant
+        $codeGenerator = app(\App\Services\CodeGeneratorService::class);
+        $barcode = $codeGenerator->generateVariantBarcode($product, $product->variants()->count());
+
         $variant = Variant::create([
             'product_id' => $product->id,
             'sku' => $validated['sku'],
+            'barcode' => $barcode,
             'price' => $validated['price'] ?? $product->base_price,
             'stock_quantity' => $validated['stock_quantity'] ?? 0,
             'stock_status' => ($validated['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',

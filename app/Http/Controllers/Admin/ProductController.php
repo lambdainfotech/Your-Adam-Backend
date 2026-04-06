@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\CodeGeneratorService;
 use App\Services\ImageUploadService;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
@@ -14,11 +15,16 @@ class ProductController extends Controller
 {
     protected ImageUploadService $imageService;
     protected PricingService $pricingService;
+    protected CodeGeneratorService $codeGenerator;
 
-    public function __construct(ImageUploadService $imageService, PricingService $pricingService)
-    {
+    public function __construct(
+        ImageUploadService $imageService, 
+        PricingService $pricingService,
+        CodeGeneratorService $codeGenerator
+    ) {
         $this->imageService = $imageService;
         $this->pricingService = $pricingService;
+        $this->codeGenerator = $codeGenerator;
     }
 
     public function index(Request $request)
@@ -112,10 +118,11 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric|min:0',
             'compare_price' => 'nullable|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percentage,flat',
+            'discount_value' => 'nullable|numeric|min:0',
             'sale_start_date' => 'nullable|date',
             'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
-            'cost_price' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
@@ -139,6 +146,13 @@ class ProductController extends Controller
         $validated['is_featured'] = $request->boolean('is_featured', false);
         $validated['manage_stock'] = $request->boolean('manage_stock', true);
         
+        // Calculate sale price based on discount
+        $validated['sale_price'] = $this->pricingService->calculateSalePrice(
+            (float) ($validated['base_price'] ?? 0),
+            $validated['discount_type'] ?? null,
+            isset($validated['discount_value']) ? (float) $validated['discount_value'] : null
+        );
+        
         // Set default stock status based on quantity
         if ($validated['product_type'] === 'simple') {
             $validated['stock_quantity'] = $validated['stock_quantity'] ?? 0;
@@ -147,6 +161,28 @@ class ProductController extends Controller
         
         // Create product
         $product = Product::create($validated);
+        
+        // Auto-generate SKU and Barcode for simple products if not provided
+        if ($product->product_type === 'simple') {
+            $updateData = [];
+            
+            // Generate SKU if not provided
+            if (empty($product->sku)) {
+                $category = Category::find($product->category_id);
+                $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : null;
+                $updateData['sku'] = $this->codeGenerator->generateProductSku($categoryCode . '-PRD');
+            }
+            
+            // Generate Barcode if not provided
+            if (empty($product->barcode)) {
+                $updateData['barcode'] = $this->codeGenerator->generateBarcode();
+            }
+            
+            // Update product with generated codes
+            if (!empty($updateData)) {
+                $product->update($updateData);
+            }
+        }
         
         // Save product attributes
         if ($request->has('attributes')) {
@@ -215,10 +251,11 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric|min:0',
             'compare_price' => 'nullable|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'discount_type' => 'nullable|in:percentage,flat',
+            'discount_value' => 'nullable|numeric|min:0',
             'sale_start_date' => 'nullable|date',
             'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
-            'cost_price' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
@@ -239,6 +276,13 @@ class ProductController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_featured'] = $request->boolean('is_featured', false);
         
+        // Calculate sale price based on discount
+        $validated['sale_price'] = $this->pricingService->calculateSalePrice(
+            (float) ($validated['base_price'] ?? 0),
+            $validated['discount_type'] ?? null,
+            isset($validated['discount_value']) ? (float) $validated['discount_value'] : null
+        );
+        
         if ($product->product_type === 'simple') {
             $validated['manage_stock'] = $request->boolean('manage_stock', true);
             
@@ -249,6 +293,28 @@ class ProductController extends Controller
         }
         
         $product->update($validated);
+        
+        // Auto-generate SKU and Barcode for simple products if not provided
+        if ($product->product_type === 'simple') {
+            $updateData = [];
+            
+            // Generate SKU if not provided
+            if (empty($product->sku)) {
+                $category = Category::find($product->category_id);
+                $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : null;
+                $updateData['sku'] = $this->codeGenerator->generateProductSku($categoryCode . '-PRD');
+            }
+            
+            // Generate Barcode if not provided
+            if (empty($product->barcode)) {
+                $updateData['barcode'] = $this->codeGenerator->generateBarcode();
+            }
+            
+            // Update product with generated codes
+            if (!empty($updateData)) {
+                $product->update($updateData);
+            }
+        }
         
         // Update product attributes
         if ($request->has('attributes')) {
@@ -272,10 +338,43 @@ class ProductController extends Controller
     {
         $position = 0;
         
+        // Ensure SKU prefix exists
+        if (empty($product->sku_prefix)) {
+            $category = Category::find($product->category_id);
+            $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : 'VAR';
+            $product->update(['sku_prefix' => $categoryCode]);
+            $product->refresh();
+        }
+        
         foreach ($variantsData as $variantData) {
+            // Get attribute values for SKU generation
+            $attributeValues = [];
+            if (!empty($variantData['attribute_values'])) {
+                $valueIds = explode(',', $variantData['attribute_values']);
+                $values = \App\Models\AttributeValue::whereIn('id', $valueIds)->get();
+                $attributeValues = $values->pluck('value')->toArray();
+            }
+            
+            // Generate SKU if not provided
+            $sku = $variantData['sku'] ?? null;
+            if (empty($sku)) {
+                $sku = $this->codeGenerator->generateVariantSku(
+                    $product, 
+                    $attributeValues, 
+                    $position
+                );
+            }
+            
+            // Generate Barcode if not provided (using related barcode strategy)
+            $barcode = $variantData['barcode'] ?? null;
+            if (empty($barcode)) {
+                $barcode = $this->codeGenerator->generateVariantBarcode($product, $position);
+            }
+            
             // Create the variant
             $variant = $product->variants()->create([
-                'sku' => $variantData['sku'] ?? $product->sku_prefix . '-' . ($position + 1),
+                'sku' => $sku,
+                'barcode' => $barcode,
                 'price' => $variantData['price'] ?? $product->base_price,
                 'stock_quantity' => $variantData['stock_quantity'] ?? 0,
                 'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',

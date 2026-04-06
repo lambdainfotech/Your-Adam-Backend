@@ -83,7 +83,7 @@
                             <td class="px-6 py-4">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $product->category->name ?? 'N/A' }}</span>
                             </td>
-                            <td class="px-6 py-4 font-medium">${{ number_format($product->base_price, 2) }}</td>
+                            <td class="px-6 py-4 font-medium">৳{{ number_format($product->base_price, 2) }}</td>
                             <td class="px-6 py-4">
                                 @php
                                     $totalStock = $product->variants->sum('stock_quantity');

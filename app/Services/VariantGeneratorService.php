@@ -10,6 +10,13 @@ use Illuminate\Support\Str;
 
 class VariantGeneratorService
 {
+    protected CodeGeneratorService $codeGenerator;
+    
+    public function __construct(CodeGeneratorService $codeGenerator)
+    {
+        $this->codeGenerator = $codeGenerator;
+    }
+    
     /**
      * Generate all possible variant combinations from selected attributes
      */
@@ -58,8 +65,32 @@ class VariantGeneratorService
                     }
                 }
 
-                // Generate SKU
-                $sku = $this->generateSku($product, $attributeCodes, $options['default_sku_pattern'], $index);
+                // Get attribute values for SKU generation
+                $attributeValues = [];
+                foreach ($combination as $attributeId => $valueId) {
+                    $value = AttributeValue::find($valueId);
+                    if ($value) {
+                        $attributeValues[] = $value->value;
+                    }
+                }
+                
+                // Ensure SKU prefix exists
+                if (empty($product->sku_prefix)) {
+                    $category = \App\Models\Category::find($product->category_id);
+                    $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : 'VAR';
+                    $product->update(['sku_prefix' => $categoryCode]);
+                    $product->refresh();
+                }
+                
+                // Generate SKU using CodeGeneratorService
+                $sku = $this->codeGenerator->generateVariantSku(
+                    $product,
+                    $attributeValues,
+                    $index
+                );
+                
+                // Generate related barcode for variant
+                $barcode = $this->codeGenerator->generateVariantBarcode($product, $index);
 
                 // Check if variant already exists with these exact attributes
                 $existingVariant = $this->findExistingVariant($product->id, $attributeValueIds);
@@ -79,6 +110,7 @@ class VariantGeneratorService
                 $variant = Variant::create([
                     'product_id' => $product->id,
                     'sku' => $sku,
+                    'barcode' => $barcode,
                     'price' => $variantPrice > 0 ? $variantPrice : $options['base_price'],
                     'stock_quantity' => $options['default_stock'],
                     'stock_status' => $options['default_stock'] > 0 ? 'in_stock' : 'out_of_stock',
@@ -155,33 +187,7 @@ class VariantGeneratorService
         return $result;
     }
 
-    /**
-     * Generate SKU for variant
-     */
-    private function generateSku(Product $product, array $attributeCodes, string $pattern, int $index): string
-    {
-        $prefix = $product->sku_prefix ?: Str::upper(Str::slug(substr($product->name, 0, 3)));
-        
-        $replacements = [
-            '{prefix}' => $prefix,
-            '{attributes}' => implode('-', $attributeCodes),
-            '{index}' => $index + 1,
-            '{random}' => Str::random(4),
-        ];
 
-        $sku = str_replace(array_keys($replacements), array_values($replacements), $pattern);
-        
-        // Make unique
-        $originalSku = $sku;
-        $counter = 1;
-        
-        while (Variant::where('sku', $sku)->exists()) {
-            $sku = $originalSku . '-' . $counter;
-            $counter++;
-        }
-
-        return $sku;
-    }
 
     /**
      * Find existing variant with exact same attribute values
