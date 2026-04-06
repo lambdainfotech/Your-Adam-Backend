@@ -104,7 +104,9 @@ class ProductController extends Controller
     {
         $categories = Category::where('is_active', true)->get();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
-        return view('admin.products.create', compact('categories', 'attributes'));
+        $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
+        $predefinedShortDescriptions = \App\Models\PredefinedDescription::shortDescriptions()->active()->orderBy('sort_order')->get();
+        return view('admin.products.create', compact('categories', 'attributes', 'predefinedDescriptions', 'predefinedShortDescriptions'));
     }
 
     public function store(Request $request)
@@ -114,10 +116,11 @@ class ProductController extends Controller
             'slug' => 'nullable|string|max:255|unique:products',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
+            'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
+            'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
             'product_type' => 'required|in:simple,variable',
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percentage,flat',
             'discount_value' => 'nullable|numeric|min:0',
@@ -145,6 +148,17 @@ class ProductController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_featured'] = $request->boolean('is_featured', false);
         $validated['manage_stock'] = $request->boolean('manage_stock', true);
+        
+        // Handle predefined descriptions
+        if ($request->filled('predefined_description_id')) {
+            $predefinedDesc = \App\Models\PredefinedDescription::find($request->predefined_description_id);
+            $validated['description'] = $predefinedDesc->content;
+        }
+        
+        if ($request->filled('predefined_short_description_id')) {
+            $predefinedShortDesc = \App\Models\PredefinedDescription::find($request->predefined_short_description_id);
+            $validated['short_description'] = $predefinedShortDesc->content;
+        }
         
         // Calculate sale price based on discount
         $validated['sale_price'] = $this->pricingService->calculateSalePrice(
@@ -237,8 +251,10 @@ class ProductController extends Controller
         $categories = Category::where('is_active', true)->get();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $selectedAttributeIds = $product->variationAttributes->pluck('id')->toArray();
+        $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
+        $predefinedShortDescriptions = \App\Models\PredefinedDescription::shortDescriptions()->active()->orderBy('sort_order')->get();
         
-        return view('admin.products.edit', compact('product', 'categories', 'attributes', 'selectedAttributeIds'));
+        return view('admin.products.edit', compact('product', 'categories', 'attributes', 'selectedAttributeIds', 'predefinedDescriptions', 'predefinedShortDescriptions'));
     }
 
     public function update(Request $request, Product $product)
@@ -248,9 +264,10 @@ class ProductController extends Controller
             'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
+            'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
+            'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric|min:0',
-            'compare_price' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percentage,flat',
             'discount_value' => 'nullable|numeric|min:0',
@@ -275,6 +292,17 @@ class ProductController extends Controller
         
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_featured'] = $request->boolean('is_featured', false);
+        
+        // Handle predefined descriptions
+        if ($request->filled('predefined_description_id')) {
+            $predefinedDesc = \App\Models\PredefinedDescription::find($request->predefined_description_id);
+            $validated['description'] = $predefinedDesc->content;
+        }
+        
+        if ($request->filled('predefined_short_description_id')) {
+            $predefinedShortDesc = \App\Models\PredefinedDescription::find($request->predefined_short_description_id);
+            $validated['short_description'] = $predefinedShortDesc->content;
+        }
         
         // Calculate sale price based on discount
         $validated['sale_price'] = $this->pricingService->calculateSalePrice(

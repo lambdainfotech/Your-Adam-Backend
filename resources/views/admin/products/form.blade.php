@@ -194,6 +194,14 @@
         ring-color: #bfdbfe;
     }
     
+    /* CKEditor Height */
+    .ck-editor__editable {
+        min-height: 250px !important;
+    }
+    .ck.ck-editor__main > .ck-editor__editable {
+        min-height: 250px;
+    }
+    
     /* Responsive Tabs */
     @media (max-width: 768px) {
         .product-tabs-nav {
@@ -358,16 +366,84 @@
                                 @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                             </div>
 
+                            <!-- Description Section -->
                             <div class="form-card">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea name="description" rows="4" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">Description</label>
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="radio" name="desc_source" value="predefined" 
+                                                {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
+                                                class="desc-source-radio text-blue-600">
+                                            <span class="ml-1">Predefined</span>
+                                        </label>
+                                        <label class="inline-flex items-center cursor-pointer ml-3">
+                                            <input type="radio" name="desc_source" value="custom" 
+                                                {{ old('desc_source', ($product->predefined_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
+                                                class="desc-source-radio text-blue-600">
+                                            <span class="ml-1">Custom</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Predefined Description Dropdown -->
+                                <div id="predefinedDescSection" class="mb-3 {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
+                                    <select name="predefined_description_id" id="predefinedDescriptionId" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Select a predefined description...</option>
+                                        @foreach($predefinedDescriptions as $desc)
+                                            <option value="{{ $desc->id }}" 
+                                                data-content="{{ e($desc->content) }}"
+                                                {{ old('predefined_description_id', $product->predefined_description_id ?? '') == $desc->id ? 'selected' : '' }}>
+                                                {{ $desc->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <!-- Custom Description Editor -->
+                                <textarea name="description" id="descriptionField" rows="4" 
+                                    class="tinymce-editor w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Enter product description">{{ old('description', $product->description ?? '') }}</textarea>
                             </div>
 
+                            <!-- Short Description Section -->
                             <div class="form-card">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
-                                <textarea name="short_description" rows="2" 
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="text-sm font-medium text-gray-700">Short Description</label>
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="radio" name="short_desc_source" value="predefined" 
+                                                {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
+                                                class="short-desc-source-radio text-blue-600">
+                                            <span class="ml-1">Predefined</span>
+                                        </label>
+                                        <label class="inline-flex items-center cursor-pointer ml-3">
+                                            <input type="radio" name="short_desc_source" value="custom" 
+                                                {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
+                                                class="short-desc-source-radio text-blue-600">
+                                            <span class="ml-1">Custom</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Predefined Short Description Dropdown -->
+                                <div id="predefinedShortDescSection" class="mb-3 {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
+                                    <select name="predefined_short_description_id" id="predefinedShortDescriptionId" 
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Select a predefined short description...</option>
+                                        @foreach($predefinedShortDescriptions as $desc)
+                                            <option value="{{ $desc->id }}" 
+                                                data-content="{{ e($desc->content) }}"
+                                                {{ old('predefined_short_description_id', $product->predefined_short_description_id ?? '') == $desc->id ? 'selected' : '' }}>
+                                                {{ $desc->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <!-- Custom Short Description Textarea -->
+                                <textarea name="short_description" id="shortDescriptionField" rows="2" 
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Brief product summary">{{ old('short_description', $product->short_description ?? '') }}</textarea>
                             </div>
@@ -878,6 +954,7 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 <script>
     // Store attributes data for JavaScript
     const attributesData = @json($attributes->keyBy('id'));
@@ -1210,6 +1287,135 @@
         const discountValueInput = document.getElementById('discountValue');
         if (selectedType === '' || !selectedType) {
             discountValueInput.disabled = true;
+        }
+    });
+
+    // ========== PREDEFINED DESCRIPTIONS ==========
+    
+    // Description source toggle
+    document.querySelectorAll('input[name="desc_source"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const predefinedSection = document.getElementById('predefinedDescSection');
+            const predefinedSelect = document.getElementById('predefinedDescriptionId');
+            
+            if (this.value === 'predefined') {
+                predefinedSection.classList.remove('hidden');
+                // Set CKEditor to readonly mode
+                if (descriptionEditor) {
+                    descriptionEditor.enableReadOnlyMode('predefined');
+                    // Auto-populate if a value is already selected
+                    if (predefinedSelect.value) {
+                        const selectedOption = predefinedSelect.options[predefinedSelect.selectedIndex];
+                        descriptionEditor.setData(selectedOption.dataset.content || '');
+                    }
+                }
+            } else {
+                predefinedSection.classList.add('hidden');
+                // Set CKEditor to editable mode
+                if (descriptionEditor) {
+                    descriptionEditor.disableReadOnlyMode('predefined');
+                }
+                predefinedSelect.value = '';
+            }
+        });
+    });
+    
+    // Predefined description selection
+    document.getElementById('predefinedDescriptionId')?.addEventListener('change', function() {
+        if (descriptionEditor) {
+            const selectedOption = this.options[this.selectedIndex];
+            descriptionEditor.setData(selectedOption.dataset.content || '');
+        }
+    });
+    
+    // Short description source toggle
+    document.querySelectorAll('input[name="short_desc_source"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const predefinedSection = document.getElementById('predefinedShortDescSection');
+            const shortDescField = document.getElementById('shortDescriptionField');
+            const predefinedSelect = document.getElementById('predefinedShortDescriptionId');
+            
+            if (this.value === 'predefined') {
+                predefinedSection.classList.remove('hidden');
+                shortDescField.readOnly = true;
+                shortDescField.classList.add('bg-gray-100');
+                // Auto-populate if a value is already selected
+                if (predefinedSelect.value) {
+                    const selectedOption = predefinedSelect.options[predefinedSelect.selectedIndex];
+                    shortDescField.value = selectedOption.dataset.content || '';
+                }
+            } else {
+                predefinedSection.classList.add('hidden');
+                shortDescField.readOnly = false;
+                shortDescField.classList.remove('bg-gray-100');
+                predefinedSelect.value = '';
+            }
+        });
+    });
+    
+    // Predefined short description selection
+    document.getElementById('predefinedShortDescriptionId')?.addEventListener('change', function() {
+        const shortDescField = document.getElementById('shortDescriptionField');
+        const selectedOption = this.options[this.selectedIndex];
+        shortDescField.value = selectedOption.dataset.content || '';
+    });
+    
+    // Initialize description states on page load
+    function initializeDescriptionStates() {
+        const descSource = document.querySelector('input[name="desc_source"]:checked')?.value;
+        const shortDescSource = document.querySelector('input[name="short_desc_source"]:checked')?.value;
+        const shortDescField = document.getElementById('shortDescriptionField');
+        
+        if (descSource === 'predefined') {
+            document.getElementById('predefinedDescSection').classList.remove('hidden');
+        }
+        
+        if (shortDescSource === 'predefined') {
+            document.getElementById('predefinedShortDescSection').classList.remove('hidden');
+            shortDescField.readOnly = true;
+            shortDescField.classList.add('bg-gray-100');
+        }
+    }
+    
+    // Call after CKEditor is initialized
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for CKEditor to initialize
+        setTimeout(initializeDescriptionStates, 500);
+    });
+
+    // Initialize CKEditor
+    let descriptionEditor;
+    
+    ClassicEditor
+        .create(document.querySelector('#descriptionField'), {
+            toolbar: ['heading', '|', 'bold', 'italic', 'underline', 'link', '|', 'bulletedList', 'numberedList', '|', 'undo', 'redo']
+        })
+        .then(editor => {
+            descriptionEditor = editor;
+            
+            // Check initial state
+            const descSource = document.querySelector('input[name="desc_source"]:checked')?.value;
+            if (descSource === 'predefined') {
+                editor.enableReadOnlyMode('predefined');
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    
+    // Sync CKEditor content before form submission
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        if (descriptionEditor) {
+            document.querySelector('#descriptionField').value = descriptionEditor.getData();
+        }
+    });
+    
+    // Update description editor when predefined is selected
+    document.getElementById('predefinedDescriptionId')?.addEventListener('change', function() {
+        if (descriptionEditor) {
+            const selectedOption = this.options[this.selectedIndex];
+            const content = selectedOption.dataset.content || '';
+            descriptionEditor.setContent(content);
         }
     });
 </script>

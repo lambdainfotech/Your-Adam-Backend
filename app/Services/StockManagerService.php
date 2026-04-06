@@ -255,15 +255,15 @@ class StockManagerService
                     'type' => 'variant',
                     'id' => $variant->id,
                     'product_id' => $variant->product_id,
-                    'name' => $variant->product->name . ' - ' . $variant->attribute_text_short,
+                    'name' => ($variant->product?->name ?? 'Unknown Product') . ' - ' . $variant->attribute_text_short,
                     'sku' => $variant->sku,
                     'stock' => $variant->stock_quantity,
                     'threshold' => $variant->low_stock_threshold,
-                    'category' => $variant->product->category?->name,
+                    'category' => $variant->product?->category?->name,
                 ];
             });
 
-        return $simpleProducts->merge($variants)
+        return collect($simpleProducts)->merge(collect($variants))
             ->sortBy('stock')
             ->values()
             ->toArray();

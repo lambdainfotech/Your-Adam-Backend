@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SizeChartController;
+use App\Http\Controllers\Admin\PredefinedDescriptionController;
 use App\Http\Controllers\Admin\BulkOperationsController;
 use Illuminate\Support\Facades\Route;
 
@@ -93,6 +94,11 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     // Size Charts
     Route::resource('size-charts', SizeChartController::class)->names('admin.size-charts');
     Route::post('size-charts/{size_chart}/toggle-status', [SizeChartController::class, 'toggleStatus'])->name('admin.size-charts.toggle-status');
+
+    // Predefined Descriptions
+    Route::resource('predefined-descriptions', PredefinedDescriptionController::class)->names('admin.predefined-descriptions');
+    Route::post('predefined-descriptions/reorder', [PredefinedDescriptionController::class, 'reorder'])->name('admin.predefined-descriptions.reorder');
+    Route::get('predefined-descriptions/by-type', [PredefinedDescriptionController::class, 'getByType'])->name('admin.predefined-descriptions.by-type');
 
     // Orders
     Route::resource('orders', OrderController::class)->names('admin.orders');
