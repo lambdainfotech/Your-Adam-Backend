@@ -1,16 +1,16 @@
 <?php
 
+use App\Http\Controllers\Auth\JWTAuthController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes - Unified JWT Authentication
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| All protected routes use JWT authentication via 'jwt.auth' middleware.
+| API uses Authorization header for token transmission.
 |
 */
 
@@ -50,21 +50,24 @@ Route::group(['prefix' => 'v1'], function () {
     // Tracking (Public)
     Route::get('/tracking', [\App\Modules\Courier\src\Http\Controllers\TrackingController::class, 'track']);
 
-    // Auth Routes
+    // Auth Routes (Unified JWT)
     Route::group(['prefix' => 'auth'], function () {
+        // Public auth routes
         Route::post('/mobile/send-otp', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'sendOTP']);
         Route::post('/mobile/verify', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'verifyOTP']);
-        Route::post('/login', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'login']);
-        Route::post('/refresh', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'refresh']);
+        Route::post('/login', [JWTAuthController::class, 'login']);
+        Route::post('/refresh', [JWTAuthController::class, 'refresh']);
 
-        Route::middleware('auth:api')->group(function () {
-            Route::post('/logout', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'logout']);
-            Route::get('/me', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'me']);
+        // Protected auth routes
+        Route::middleware('jwt.auth')->group(function () {
+            Route::post('/logout', [JWTAuthController::class, 'logout']);
+            Route::get('/me', [JWTAuthController::class, 'me']);
+            Route::get('/check', [JWTAuthController::class, 'check']);
         });
     });
 
-    // Protected Routes
-    Route::middleware('auth:api')->group(function () {
+    // Protected Routes (JWT required)
+    Route::middleware('jwt.auth')->group(function () {
 
         // User Profile
         Route::get('/users/profile', [\App\Modules\User\src\Http\Controllers\ProfileController::class, 'show']);

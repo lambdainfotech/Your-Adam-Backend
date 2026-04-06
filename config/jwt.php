@@ -273,7 +273,35 @@ return [
     |
     */
 
-    'cookie_key_name' => 'token',
+    'cookie_key_name' => env('JWT_COOKIE_NAME', 'jwt_token'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cookie Secure Flag
+    |--------------------------------------------------------------------------
+    |
+    | Set this to true if you want the cookie to be sent only over HTTPS.
+    | This is recommended for production environments.
+    |
+    */
+
+    'cookie_secure' => env('JWT_COOKIE_SECURE', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cookie SameSite Attribute
+    |--------------------------------------------------------------------------
+    |
+    | This attribute controls when cookies are sent in cross-site requests.
+    | Options: lax, strict, none
+    |
+    | - 'lax': Cookies are sent on same-site requests and cross-site top-level navigations
+    | - 'strict': Cookies are only sent on same-site requests
+    | - 'none': Cookies are sent on all requests (requires secure=true)
+    |
+    */
+
+    'cookie_same_site' => env('JWT_COOKIE_SAME_SITE', 'lax'),
 
     /*
     |--------------------------------------------------------------------------

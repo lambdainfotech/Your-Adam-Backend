@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Auth\JWTAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -26,19 +26,23 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes
+| Admin Routes - Unified JWT Authentication
 |--------------------------------------------------------------------------
+|
+| All routes use JWT authentication via 'jwt.auth' middleware.
+| Web interface uses HTTP-Only cookies for token storage.
+|
 */
 
 // Guest routes (no auth required)
 Route::middleware(['web'])->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/login', [AuthController::class, 'login'])->name('admin.login.post');
+    Route::get('/login', [JWTAuthController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/login', [JWTAuthController::class, 'login'])->name('admin.login.post');
 });
 
-// Protected routes (auth required)
-Route::middleware(['web', 'auth'])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('admin.logout');
+// Protected routes (JWT auth required)
+Route::middleware(['web', 'jwt.auth'])->group(function () {
+    Route::post('/logout', [JWTAuthController::class, 'logout'])->name('admin.logout');
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');

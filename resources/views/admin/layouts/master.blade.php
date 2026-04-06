@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="auth-check-url" content="{{ route('admin.login') }}">
     <title>@yield('title', 'Admin Panel') - E-Commerce Admin</title>
     
     <!-- Tailwind CSS -->
@@ -25,11 +26,46 @@
         .submenu { display: none; }
         .submenu.show { display: block; }
         .has-submenu.active .submenu { display: block; }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.warning { background-color: #f59e0b; }
+        .toast.info { background-color: #3b82f6; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .toast.hiding {
+            animation: slideOut 0.3s ease forwards;
+        }
     </style>
     
     @stack('styles')
 </head>
 <body class="bg-gray-100">
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
         <aside id="sidebar" class="sidebar sidebar-expanded bg-gray-900 text-white flex-shrink-0 overflow-y-auto">
@@ -180,8 +216,8 @@
                         </button>
                         
                         <!-- User Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button onclick="document.getElementById('userDropdown').classList.toggle('hidden')" class="flex items-center space-x-3 focus:outline-none">
+                        <div class="relative">
+                            <button id="userMenuButton" class="flex items-center space-x-3 focus:outline-none">
                                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                                     {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                                 </div>
@@ -189,14 +225,17 @@
                                 <i class="fas fa-chevron-down text-gray-400"></i>
                             </button>
                             
-                            <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                                <a href="{{ route('admin.settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                            <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i> Profile
+                                </a>
+                                <a href="{{ route('admin.settings.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i> Settings
+                                </a>
                                 <hr class="my-1">
-                                <form method="POST" action="{{ route('admin.logout') }}">
-                                    @csrf
-                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
-                                </form>
+                                <button onclick="JWTAuth.logout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -240,14 +279,66 @@
             }
         });
         
+        // User Dropdown Toggle
+        document.getElementById('userMenuButton').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('userDropdown').classList.toggle('hidden');
+        });
+        
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('userDropdown');
-            if (!e.target.closest('.relative')) {
+            const button = document.getElementById('userMenuButton');
+            if (!button.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.classList.add('hidden');
             }
         });
+
+        // Toast Notification System
+        const Toast = {
+            container: document.getElementById('toastContainer'),
+            
+            show(message, type = 'info', duration = 3000) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                // Add icon based on type
+                const icons = {
+                    success: 'check-circle',
+                    error: 'exclamation-circle',
+                    warning: 'exclamation-triangle',
+                    info: 'info-circle'
+                };
+                
+                toast.innerHTML = `
+                    <i class="fas fa-${icons[type]} mr-2"></i>
+                    ${message}
+                `;
+                
+                this.container.appendChild(toast);
+                
+                // Auto remove
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        };
+        
+        // Expose Toast globally
+        window.Toast = Toast;
+        
+        // Check for session expired parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('expired') === '1') {
+            Toast.show('Your session has expired. Please login again.', 'warning', 5000);
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     </script>
+    
+    <!-- JWT Authentication Helper -->
+    <script src="{{ asset('js/jwt-auth.js') }}"></script>
     
     @stack('scripts')
 </body>
