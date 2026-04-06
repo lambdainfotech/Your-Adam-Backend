@@ -31,7 +31,7 @@
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Discount</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Period</th>
-                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Products</th>
+                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Apply To</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
                     <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -49,7 +49,15 @@
                     <td class="px-6 py-4 text-sm">
                         {{ $campaign->starts_at?->format('M d') }} - {{ $campaign->ends_at?->format('M d, Y') }}
                     </td>
-                    <td class="px-6 py-4">{{ $campaign->products_count }}</td>
+                    <td class="px-6 py-4">
+                        @if($campaign->apply_type === 'all')
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">All Products</span>
+                        @elseif($campaign->apply_type === 'products')
+                            <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">{{ $campaign->products_count }} Products</span>
+                        @else
+                            <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">{{ $campaign->categories_count }} Categories</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">
                         @if($campaign->is_running)
                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Running</span>

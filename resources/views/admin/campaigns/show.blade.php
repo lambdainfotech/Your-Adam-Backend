@@ -21,7 +21,7 @@
 
             @if($campaign->banner_image)
             <div class="mb-6">
-                <img src="{{ $campaign->banner_image }}" alt="{{ $campaign->name }}" class="w-full h-48 object-cover rounded-lg">
+                <img src="{{ $campaign->banner_image_url }}" alt="{{ $campaign->name }}" class="w-full h-48 object-cover rounded-lg">
             </div>
             @endif
 
@@ -41,8 +41,16 @@
                     </span>
                 </div>
                 <div class="bg-gray-50 p-4 rounded-lg">
-                    <p class="text-sm text-gray-500">Apply to All</p>
-                    <p class="font-medium">{{ $campaign->apply_to_all ? 'Yes' : 'No' }}</p>
+                    <p class="text-sm text-gray-500">Apply To</p>
+                    <p class="font-medium">
+                        @if($campaign->apply_type === 'all')
+                            All Products
+                        @elseif($campaign->apply_type === 'products')
+                            {{ $campaign->products->count() }} Products
+                        @else
+                            {{ $campaign->categories->count() }} Categories
+                        @endif
+                    </p>
                 </div>
             </div>
 
@@ -54,8 +62,8 @@
             @endif
         </div>
 
-        @if(!$campaign->apply_to_all && $campaign->products->count() > 0)
-        <div class="bg-white rounded-lg shadow">
+        @if($campaign->apply_type === 'products' && $campaign->products->count() > 0)
+        <div class="bg-white rounded-lg shadow mb-6">
             <div class="p-6 border-b border-gray-200">
                 <h3 class="font-semibold">Campaign Products ({{ $campaign->products->count() }})</h3>
             </div>
@@ -84,6 +92,21 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+        </div>
+        @endif
+
+        @if($campaign->apply_type === 'categories' && $campaign->categories->count() > 0)
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="font-semibold">Campaign Categories ({{ $campaign->categories->count() }})</h3>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-wrap gap-2">
+                    @foreach($campaign->categories as $category)
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">{{ $category->name }}</span>
+                    @endforeach
+                </div>
             </div>
         </div>
         @endif

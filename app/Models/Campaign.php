@@ -25,6 +25,7 @@ class Campaign extends Model
         'ends_at',
         'is_active',
         'apply_to_all',
+        'apply_type',
         'created_by',
     ];
 
@@ -38,6 +39,8 @@ class Campaign extends Model
         'ends_at' => 'datetime',
     ];
 
+    protected $appends = ['banner_image_url'];
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -48,6 +51,20 @@ class Campaign extends Model
         return $this->belongsToMany(Product::class, 'campaign_products')
             ->withPivot('special_price')
             ->withTimestamps();
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'campaign_categories')
+            ->withTimestamps();
+    }
+
+    public function getBannerImageUrlAttribute(): ?string
+    {
+        if (!$this->banner_image) {
+            return null;
+        }
+        return asset('storage/' . $this->banner_image);
     }
 
     public function scopeActive(Builder $query): Builder
