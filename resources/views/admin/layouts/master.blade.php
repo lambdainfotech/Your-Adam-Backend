@@ -13,6 +13,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -128,6 +131,11 @@
                 <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
                     <i class="fas fa-bullhorn w-6 text-center"></i>
                     <span class="ml-3 sidebar-text">Campaigns</span>
+                </a>
+                
+                <a href="{{ route('admin.pos.index') }}" class="nav-item {{ request()->routeIs('admin.pos.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-cash-register w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">POS</span>
                 </a>
                 
                 <a href="{{ route('admin.sliders.index') }}" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">

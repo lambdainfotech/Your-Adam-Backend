@@ -34,9 +34,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Order #</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Source</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Customer</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Total</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Payment</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Delivery</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
                     </tr>
@@ -45,38 +47,84 @@
                     @forelse($orders as $order)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 font-medium">
-                                <a href="{{ route('admin.orders.show', $order) }}" class="text-blue-600 hover:underline">#{{ $order->order_number }}</a>
+                                @if($order['type'] === 'pos')
+                                    <span class="text-purple-600">#{{ $order['order_number'] }}</span>
+                                @else
+                                    <a href="{{ route('admin.orders.show', $order['id']) }}" class="text-blue-600 hover:underline">#{{ $order['order_number'] }}</a>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-gray-800">{{ $order->user->name ?? 'Guest' }}</div>
-                                <div class="text-sm text-gray-500">{{ $order->user->email ?? 'N/A' }}</div>
+                                @if($order['type'] === 'pos')
+                                    <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                                        <i class="fas fa-cash-register mr-1"></i>POS
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        <i class="fas fa-globe mr-1"></i>Website
+                                    </span>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 font-medium">${{ number_format($order->total_amount, 2) }}</td>
+                            <td class="px-6 py-4">
+                                <div class="text-gray-800">{{ $order['customer_name'] }}</div>
+                            </td>
+                            <td class="px-6 py-4 font-medium">৳{{ number_format($order['total'], 2) }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 text-xs rounded-full
-                                    {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                    {{ $order->status === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
-                                    {{ $order->status === 'shipped' ? 'bg-purple-100 text-purple-800' : '' }}
-                                    {{ $order->status === 'delivered' ? 'bg-teal-100 text-teal-800' : '' }}
-                                    {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
-                                ">{{ ucfirst($order->status) }}</span>
+                                    {{ $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $order['status'] === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $order['status'] === 'shipped' ? 'bg-purple-100 text-purple-800' : '' }}
+                                    {{ $order['status'] === 'delivered' ? 'bg-teal-100 text-teal-800' : '' }}
+                                    {{ $order['status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
+                                ">{{ ucfirst($order['status']) }}</span>
                             </td>
-                            <td class="px-6 py-4 text-gray-600">{{ $order->created_at->format('M d, Y') }}</td>
+                            <td class="px-6 py-4">
+                                @if($order['type'] === 'pos')
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        {{ $order['delivery_status'] === 'delivered' ? 'bg-green-100 text-green-800' : '' }}
+                                        {{ $order['delivery_status'] === 'shipped' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                        {{ $order['delivery_status'] === 'ready' ? 'bg-purple-100 text-purple-800' : '' }}
+                                        {{ $order['delivery_status'] === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
+                                        {{ $order['delivery_status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                        {{ $order['delivery_status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
+                                    ">{{ ucfirst($order['delivery_status'] ?? 'Pending') }}</span>
+                                    @if($order['tracking_number'])
+                                        <div class="text-xs text-gray-500 mt-1">#{{ $order['tracking_number'] }}</div>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-gray-600">{{ $order['created_at']->format('M d, Y H:i') }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.orders.show', $order) }}" class="text-blue-600 hover:text-blue-800" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('admin.orders.invoice', $order) }}" class="text-green-600 hover:text-green-800" title="Invoice" target="_blank">
-                                        <i class="fas fa-file-invoice"></i>
-                                    </a>
+                                    @if($order['type'] === 'pos')
+                                        <a href="{{ route('admin.pos.order.show', $order['id']) }}" class="text-blue-600 hover:text-blue-800" title="View Order">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.pos.order.receipt', $order['id']) }}" target="_blank" class="text-purple-600 hover:text-purple-800" title="Receipt">
+                                            <i class="fas fa-receipt"></i>
+                                        </a>
+                                        <a href="{{ route('admin.pos.order.print', $order['id']) }}" target="_blank" class="text-green-600 hover:text-green-800" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.orders.show', $order['id']) }}" class="text-blue-600 hover:text-blue-800" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.orders.invoice', $order['id']) }}" class="text-green-600 hover:text-green-800" title="Invoice" target="_blank">
+                                            <i class="fas fa-file-invoice"></i>
+                                        </a>
+                                        <a href="{{ route('admin.orders.print', $order['id']) }}" class="text-purple-600 hover:text-purple-800" title="Print Receipt" target="_blank">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-6 py-12 text-center">
                                 <div class="text-gray-400">
                                     <i class="fas fa-shopping-cart text-4xl mb-3"></i>
                                     <p>No orders found</p>

@@ -13,6 +13,9 @@
             </a>
         </div>
         <div class="flex items-center space-x-3">
+            <a href="{{ route('admin.orders.print', $order) }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" target="_blank">
+                <i class="fas fa-print mr-2"></i>Print Receipt
+            </a>
             <a href="{{ route('admin.orders.invoice', $order) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" target="_blank">
                 <i class="fas fa-file-invoice mr-2"></i>Invoice
             </a>

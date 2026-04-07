@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\SizeChartController;
 use App\Http\Controllers\Admin\PredefinedDescriptionController;
 use App\Http\Controllers\Admin\BulkOperationsController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\PosController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,6 +106,7 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     // Orders
     Route::resource('orders', OrderController::class)->names('admin.orders');
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('admin.orders.invoice');
+    Route::get('orders/{order}/print', [OrderController::class, 'print'])->name('admin.orders.print');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
     
     // Order Fulfillment
@@ -200,4 +202,35 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::resource('sliders', SliderController::class)->names('admin.sliders');
     Route::post('sliders/{slider}/toggle-status', [SliderController::class, 'toggleStatus'])->name('admin.sliders.toggle-status');
     Route::post('sliders/reorder', [SliderController::class, 'reorder'])->name('admin.sliders.reorder');
+
+    // POS System
+    Route::prefix('pos')->group(function () {
+        Route::get('/', [PosController::class, 'index'])->name('admin.pos.index');
+        
+        // Session Management
+        Route::get('/session/open', [PosController::class, 'createSession'])->name('admin.pos.session.create');
+        Route::post('/session/open', [PosController::class, 'openSession'])->name('admin.pos.session.store');
+        Route::post('/session/close', [PosController::class, 'closeSession'])->name('admin.pos.session.close');
+        
+        // Product Search
+        Route::get('/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
+        Route::get('/products/barcode/{barcode}', [PosController::class, 'findByBarcode'])->name('admin.pos.products.barcode');
+        
+        // Cart Operations
+        Route::post('/cart/hold', [PosController::class, 'holdCart'])->name('admin.pos.cart.hold');
+        Route::get('/cart/held', [PosController::class, 'getHeldCarts'])->name('admin.pos.cart.held');
+        Route::post('/cart/retrieve/{id}', [PosController::class, 'retrieveCart'])->name('admin.pos.cart.retrieve');
+        Route::delete('/cart/held/{id}', [PosController::class, 'deleteHeldCart'])->name('admin.pos.cart.delete');
+        
+        // Order Processing
+        Route::post('/order', [PosController::class, 'createOrder'])->name('admin.pos.order.store');
+        Route::get('/order/{id}', [PosController::class, 'showOrder'])->name('admin.pos.order.show');
+        Route::get('/order/{id}/receipt', [PosController::class, 'getReceipt'])->name('admin.pos.order.receipt');
+        Route::get('/order/{id}/print', [PosController::class, 'printReceipt'])->name('admin.pos.order.print');
+        Route::post('/order/{id}/delivery-status', [PosController::class, 'updateDeliveryStatus'])->name('admin.pos.order.delivery-status');
+        Route::get('/order/{id}/tracking', [PosController::class, 'getTrackingTimeline'])->name('admin.pos.order.tracking');
+        
+        // Reports
+        Route::get('/reports/daily', [PosController::class, 'dailyReport'])->name('admin.pos.reports.daily');
+    });
 });

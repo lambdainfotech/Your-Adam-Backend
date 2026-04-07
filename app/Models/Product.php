@@ -368,6 +368,29 @@ class Product extends Model
         return $this->variants->contains(fn($v) => $v->is_low_stock);
     }
 
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        // Try to get main image thumbnail first
+        if ($this->relationLoaded('mainImage') && $this->mainImage) {
+            return $this->mainImage->full_thumbnail_url;
+        }
+        
+        // If mainImage not loaded, try to get from images relationship
+        if ($this->relationLoaded('images')) {
+            $mainImage = $this->images->firstWhere('is_main', true);
+            if ($mainImage) {
+                return $mainImage->full_thumbnail_url;
+            }
+            // Fallback to first image
+            $firstImage = $this->images->first();
+            if ($firstImage) {
+                return $firstImage->full_thumbnail_url;
+            }
+        }
+        
+        return null;
+    }
+
     // Helper Methods
     public function formatPrice($price): string
     {
