@@ -19,7 +19,7 @@ class StockInController extends Controller
                 $query->select('id', 'product_id', 'sku', 'stock_quantity');
             }])
             ->orderBy('name')
-            ->get(['id', 'name', 'sku_prefix']);
+            ->get(['id', 'name', 'sku_prefix', 'has_variants', 'stock_quantity']);
         
         return view('admin.stock-in.bulk', compact('products'));
     }
@@ -35,7 +35,8 @@ class StockInController extends Controller
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.variant_id' => 'required|exists:variants,id',
+            'items.*.variant_id' => 'nullable|exists:variants,id',
+            'items.*.has_variants' => 'required|in:0,1',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_cost' => 'nullable|numeric|min:0',
         ]);
@@ -44,15 +45,35 @@ class StockInController extends Controller
         $errorMessages = [];
 
         foreach ($validated['items'] as $item) {
-            $variant = Variant::find($item['variant_id']);
+            $product = Product::find($item['product_id']);
             
-            if ($variant) {
-                $oldStock = $variant->stock_quantity;
-                $variant->stock_quantity += $item['quantity'];
-                $variant->save();
-                $successCount++;
+            if (!$product) {
+                $errorMessages[] = "Product not found.";
+                continue;
+            }
+
+            // If product has variants, update variant stock
+            if ($item['has_variants'] == '1') {
+                if (empty($item['variant_id'])) {
+                    $errorMessages[] = "Variant required for product: {$product->name}";
+                    continue;
+                }
+
+                $variant = Variant::find($item['variant_id']);
+                
+                if ($variant) {
+                    $oldStock = $variant->stock_quantity;
+                    $variant->stock_quantity += $item['quantity'];
+                    $variant->save();
+                    $successCount++;
+                } else {
+                    $errorMessages[] = "Variant not found for: {$product->name}";
+                }
             } else {
-                $errorMessages[] = "Variant not found for item.";
+                // Simple product - update product stock directly
+                $product->stock_quantity += $item['quantity'];
+                $product->save();
+                $successCount++;
             }
         }
 
@@ -82,7 +103,9 @@ class StockInController extends Controller
         
         return response()->json([
             'success' => true,
-            'variants' => $variants
+            'variants' => $variants,
+            'has_variants' => $product->has_variants,
+            'product_stock' => $product->stock_quantity,
         ]);
     }
 }

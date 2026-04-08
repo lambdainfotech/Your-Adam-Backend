@@ -5,6 +5,14 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-gray-800">Customers</h2>
+        <a href="{{ route('admin.users.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-user-plus mr-2"></i>Add Customer
+        </a>
+    </div>
+
     <!-- Filters -->
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-col md:flex-row gap-4">
@@ -72,6 +80,9 @@
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('admin.users.show', $user) }}" class="text-blue-600 hover:text-blue-800" title="View">
                                         <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="text-green-600 hover:text-green-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
                                     </a>
                                     <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" class="inline">
                                         @csrf

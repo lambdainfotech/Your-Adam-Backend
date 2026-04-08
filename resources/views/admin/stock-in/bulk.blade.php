@@ -144,12 +144,13 @@
                 </select>
             </td>
             <td class="px-4 py-3">
-                <select name="items[${itemCount}][variant_id]" required
+                <select name="items[${itemCount}][variant_id]"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg variant-select"
                     id="variant_${itemCount}"
                     onchange="updateCurrentStock(${itemCount})">
                     <option value="">Select Variant</option>
                 </select>
+                <input type="hidden" name="items[${itemCount}][has_variants]" id="hasVariants_${itemCount}" value="0">
             </td>
             <td class="px-4 py-3">
                 <span class="text-sm text-gray-600 current-stock" id="currentStock_${itemCount}">-</span>
@@ -180,21 +181,34 @@
         const productId = productSelect.value;
         const variantSelect = document.getElementById(`variant_${itemId}`);
         const currentStock = document.getElementById(`currentStock_${itemId}`);
+        const hasVariantsInput = document.getElementById(`hasVariants_${itemId}`);
         
         variantSelect.innerHTML = '<option value="">Select Variant</option>';
         currentStock.textContent = '-';
+        variantSelect.required = false;
         
         if (!productId) return;
         
         const product = productsData.find(p => p.id == productId);
-        if (product && product.variants && product.variants.length > 0) {
-            product.variants.forEach(variant => {
-                const option = document.createElement('option');
-                option.value = variant.id;
-                option.textContent = variant.sku;
-                option.setAttribute('data-stock', variant.stock_quantity);
-                variantSelect.appendChild(option);
-            });
+        if (product) {
+            if (product.has_variants && product.variants && product.variants.length > 0) {
+                // Product has variants - populate dropdown and make required
+                hasVariantsInput.value = '1';
+                variantSelect.required = true;
+                product.variants.forEach(variant => {
+                    const option = document.createElement('option');
+                    option.value = variant.id;
+                    option.textContent = variant.sku;
+                    option.setAttribute('data-stock', variant.stock_quantity);
+                    variantSelect.appendChild(option);
+                });
+            } else {
+                // Product has no variants - use product stock directly
+                hasVariantsInput.value = '0';
+                variantSelect.innerHTML = '<option value="">No Variants (Simple Product)</option>';
+                variantSelect.disabled = true;
+                currentStock.textContent = product.stock_quantity || 0;
+            }
         }
     }
 
