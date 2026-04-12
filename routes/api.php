@@ -27,6 +27,7 @@ Route::get('/health', function (): JsonResponse {
 
 // Public Site Info (no authentication required)
 Route::get('/site/info', [SiteInfoController::class, 'index']);
+Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 
 // API Version Prefix
 Route::group(['prefix' => 'v1'], function () {

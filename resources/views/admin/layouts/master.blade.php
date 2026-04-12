@@ -140,7 +140,17 @@
                 
                 <a href="{{ route('admin.sliders.index') }}" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
                     <i class="fas fa-images w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Sliders</span>
+                    <span class="ml-3 sidebar-text">Hero Sliders</span>
+                </a>
+                
+                <a href="{{ route('admin.testimonials.index') }}" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-comments w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Testimonials</span>
+                </a>
+                
+                <a href="{{ route('admin.brand-values.index') }}" class="nav-item {{ request()->routeIs('admin.brand-values.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-gem w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Brand Values</span>
                 </a>
                 
                 <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Inventory</div>

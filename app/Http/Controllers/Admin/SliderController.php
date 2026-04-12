@@ -25,13 +25,19 @@ class SliderController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:1000',
             'title_color' => 'required|string|max:7',
             'subtitle_color' => 'required|string|max:7',
             'banner_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'mobile_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'button_text' => 'nullable|string|max:50',
             'button_url' => 'nullable|string|max:500',
             'button_text_color' => 'required|string|max:7',
             'button_bg_color' => 'required|string|max:7',
+            'secondary_button_text' => 'nullable|string|max:50',
+            'secondary_button_url' => 'nullable|string|max:500',
+            'secondary_button_text_color' => 'nullable|string|max:7',
+            'secondary_button_bg_color' => 'nullable|string|max:7',
             'is_active' => 'boolean',
         ]);
 
@@ -39,6 +45,12 @@ class SliderController extends Controller
         if ($request->hasFile('banner_image')) {
             $path = $request->file('banner_image')->store('sliders', 'public');
             $validated['banner_image'] = $path;
+        }
+
+        // Handle mobile image upload
+        if ($request->hasFile('mobile_image')) {
+            $path = $request->file('mobile_image')->store('sliders', 'public');
+            $validated['mobile_image'] = $path;
         }
 
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -60,13 +72,19 @@ class SliderController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
+            'description' => 'nullable|string|max:1000',
             'title_color' => 'required|string|max:7',
             'subtitle_color' => 'required|string|max:7',
             'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'mobile_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'button_text' => 'nullable|string|max:50',
             'button_url' => 'nullable|string|max:500',
             'button_text_color' => 'required|string|max:7',
             'button_bg_color' => 'required|string|max:7',
+            'secondary_button_text' => 'nullable|string|max:50',
+            'secondary_button_url' => 'nullable|string|max:500',
+            'secondary_button_text_color' => 'nullable|string|max:7',
+            'secondary_button_bg_color' => 'nullable|string|max:7',
             'is_active' => 'boolean',
         ]);
 
@@ -78,6 +96,16 @@ class SliderController extends Controller
             }
             $path = $request->file('banner_image')->store('sliders', 'public');
             $validated['banner_image'] = $path;
+        }
+
+        // Handle mobile image upload
+        if ($request->hasFile('mobile_image')) {
+            // Delete old image
+            if ($slider->mobile_image) {
+                Storage::disk('public')->delete($slider->mobile_image);
+            }
+            $path = $request->file('mobile_image')->store('sliders', 'public');
+            $validated['mobile_image'] = $path;
         }
 
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -93,6 +121,11 @@ class SliderController extends Controller
         // Delete banner image
         if ($slider->banner_image) {
             Storage::disk('public')->delete($slider->banner_image);
+        }
+
+        // Delete mobile image
+        if ($slider->mobile_image) {
+            Storage::disk('public')->delete($slider->mobile_image);
         }
 
         $slider->delete();

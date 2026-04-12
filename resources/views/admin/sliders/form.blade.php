@@ -13,21 +13,40 @@
             @method('PUT')
         @endif
         
-        <!-- Banner Image -->
+        <!-- Banner Images -->
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Banner Image *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Desktop Banner Image *</label>
             <input type="file" name="banner_image" accept="image/*"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('banner_image') border-red-500 @enderror"
                 {{ !isset($slider) ? 'required' : '' }}>
-            <p class="text-xs text-gray-500 mt-1">Recommended size: 1920x600px. Max size: 2MB (JPEG, PNG, JPG, WebP)</p>
+            <p class="text-xs text-gray-500 mt-1">Recommended size: 1600x700px. Max size: 2MB (JPEG, PNG, JPG, WebP)</p>
             @error('banner_image')
                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
             @enderror
             
             @if(isset($slider) && $slider->banner_image_url)
                 <div class="mt-4">
-                    <p class="text-sm text-gray-600 mb-2">Current Image:</p>
+                    <p class="text-sm text-gray-600 mb-2">Current Desktop Image:</p>
                     <img src="{{ $slider->banner_image_url }}" alt="{{ $slider->title }}" 
+                        class="h-32 object-cover rounded-lg">
+                </div>
+            @endif
+        </div>
+
+        <!-- Mobile Banner Image -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Banner Image</label>
+            <input type="file" name="mobile_image" accept="image/*"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('mobile_image') border-red-500 @enderror">
+            <p class="text-xs text-gray-500 mt-1">Recommended size: 800x800px. Max size: 2MB (JPEG, PNG, JPG, WebP)</p>
+            @error('mobile_image')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+            
+            @if(isset($slider) && $slider->mobile_image)
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600 mb-2">Current Mobile Image:</p>
+                    <img src="{{ asset('storage/' . $slider->mobile_image) }}" alt="{{ $slider->title }}" 
                         class="h-32 object-cover rounded-lg">
                 </div>
             @endif
@@ -55,6 +74,17 @@
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea name="description" rows="3"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror"
+                placeholder="e.g., Discover premium quality apparel crafted for comfort and style...">{{ old('description', $slider->description ?? '') }}</textarea>
+            @error('description')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Title & Subtitle Colors -->

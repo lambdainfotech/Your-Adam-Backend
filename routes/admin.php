@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\SizeChartController;
 use App\Http\Controllers\Admin\PredefinedDescriptionController;
 use App\Http\Controllers\Admin\BulkOperationsController;
 use App\Http\Controllers\Admin\SliderController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\BrandValueController;
 use App\Http\Controllers\Admin\PosController;
 use Illuminate\Support\Facades\Route;
 
@@ -204,6 +206,13 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::resource('sliders', SliderController::class)->names('admin.sliders');
     Route::post('sliders/{slider}/toggle-status', [SliderController::class, 'toggleStatus'])->name('admin.sliders.toggle-status');
     Route::post('sliders/reorder', [SliderController::class, 'reorder'])->name('admin.sliders.reorder');
+
+    // Homepage Management
+    Route::resource('testimonials', TestimonialController::class)->names('admin.testimonials');
+    Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('admin.testimonials.toggle-status');
+    
+    Route::resource('brand-values', BrandValueController::class)->names('admin.brand-values');
+    Route::post('brand-values/{brand_value}/toggle-status', [BrandValueController::class, 'toggleStatus'])->name('admin.brand-values.toggle-status');
 
     // POS System
     Route::prefix('pos')->group(function () {
