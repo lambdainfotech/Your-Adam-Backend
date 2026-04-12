@@ -49,10 +49,11 @@
                                 <select name="parent_id" id="parent_id"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('parent_id') border-red-500 @enderror">
                                     <option value="">None (Root Category)</option>
-                                    @foreach($parentCategories as $parent)
-                                        <option value="{{ $parent->id }}" {{ old('parent_id', $category->parent_id) == $parent->id ? 'selected' : '' }}>{{ $parent->name }}</option>
+                                    @foreach($parentCategories as $cat)
+                                        <option value="{{ $cat->id }}" {{ old('parent_id', $category->parent_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                     @endforeach
                                 </select>
+                                <p class="mt-1 text-xs text-gray-500">Change to move this category under a different parent</p>
                                 @error('parent_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -166,9 +167,25 @@
                         <h3 class="font-semibold text-gray-800 mb-3">Category Info</h3>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
+                                <span class="text-gray-500">Type</span>
+                                <span class="font-medium">{{ $category->parent_id ? 'Subcategory' : 'Parent Category' }}</span>
+                            </div>
+                            @if($category->parent)
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Parent</span>
+                                <a href="{{ route('admin.categories.edit', $category->parent) }}" class="font-medium text-blue-600 hover:underline">{{ $category->parent->name }}</a>
+                            </div>
+                            @endif
+                            <div class="flex justify-between">
                                 <span class="text-gray-500">Products</span>
                                 <span class="font-medium">{{ $category->products->count() }}</span>
                             </div>
+                            @if($category->children->count() > 0)
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Subcategories</span>
+                                <span class="font-medium">{{ $category->children->count() }}</span>
+                            </div>
+                            @endif
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Created</span>
                                 <span class="font-medium">{{ $category->created_at->format('M d, Y') }}</span>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\JWTAuthController;
+use App\Http\Controllers\Frontend\SiteInfoController;
 use App\Http\Controllers\Frontend\SliderController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,9 @@ Route::get('/health', function (): JsonResponse {
         'version' => '1.0.0',
     ]);
 });
+
+// Public Site Info (no authentication required)
+Route::get('/site/info', [SiteInfoController::class, 'index']);
 
 // API Version Prefix
 Route::group(['prefix' => 'v1'], function () {

@@ -28,6 +28,12 @@
                 <a href="{{ route('admin.settings.seo') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-search w-6"></i> SEO Settings
                 </a>
+                <a href="{{ route('admin.settings.social') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-share-alt w-6"></i> Social Media
+                </a>
+                <a href="{{ route('admin.settings.footer') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-shoe-prints w-6"></i> Footer Settings
+                </a>
             </nav>
             <div class="p-4 border-t border-gray-200">
                 <form action="{{ route('admin.settings.clear-cache') }}" method="POST">

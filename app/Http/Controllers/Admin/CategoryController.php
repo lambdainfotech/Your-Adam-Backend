@@ -21,6 +21,9 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::withCount('products')
+            ->with(['parent', 'children'])
+            ->orderByRaw('COALESCE(parent_id, id)')
+            ->orderBy('parent_id')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -28,10 +31,11 @@ class CategoryController extends Controller
         return view('admin.categories.index', compact('categories'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $parentCategories = Category::where('is_active', true)->whereNull('parent_id')->get();
-        return view('admin.categories.create', compact('parentCategories'));
+        $parentCategories = $this->getHierarchicalCategories();
+        $preselectedParent = $request->get('parent_id');
+        return view('admin.categories.create', compact('parentCategories', 'preselectedParent'));
     }
 
     public function store(Request $request)
@@ -66,10 +70,11 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        $parentCategories = Category::where('is_active', true)
-            ->whereNull('parent_id')
-            ->where('id', '!=', $category->id)
-            ->get();
+        // Get all categories except the current one and its descendants (to prevent circular reference)
+        $excludeIds = $this->getDescendantIds($category);
+        $excludeIds[] = $category->id;
+        
+        $parentCategories = $this->getHierarchicalCategories($excludeIds);
         return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
@@ -154,5 +159,66 @@ class CategoryController extends Controller
         if (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
+    }
+
+    /**
+     * Get hierarchical categories for dropdown
+     */
+    protected function getHierarchicalCategories(array $excludeIds = []): array
+    {
+        $query = Category::where('is_active', true)
+            ->whereNull('parent_id');
+            
+        if (!empty($excludeIds)) {
+            $query->whereNotIn('id', $excludeIds);
+        }
+        
+        $rootCategories = $query->orderBy('name')->get();
+        $result = [];
+        
+        foreach ($rootCategories as $root) {
+            $result[] = $root;
+            $this->addChildrenRecursively($root, $result, 1, $excludeIds);
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Recursively add children to hierarchical list
+     */
+    protected function addChildrenRecursively(Category $category, array &$result, int $level, array $excludeIds = []): void
+    {
+        $children = Category::where('parent_id', $category->id)
+            ->where('is_active', true);
+            
+        if (!empty($excludeIds)) {
+            $children->whereNotIn('id', $excludeIds);
+        }
+        
+        $children = $children->orderBy('name')->get();
+        
+        foreach ($children as $child) {
+            $child->name = str_repeat('— ', $level) . $child->name;
+            $child->hierarchical_level = $level;
+            $result[] = $child;
+            $this->addChildrenRecursively($child, $result, $level + 1, $excludeIds);
+        }
+    }
+
+    /**
+     * Get all descendant IDs of a category
+     */
+    protected function getDescendantIds(Category $category): array
+    {
+        $ids = [];
+        $children = Category::where('parent_id', $category->id)->get();
+        
+        foreach ($children as $child) {
+            $ids[] = $child->id;
+            $ids = array_merge($ids, $this->getDescendantIds($child));
+        }
+        
+        return $ids;
     }
 }

@@ -188,6 +188,8 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('settings/payment', [SettingController::class, 'payment'])->name('admin.settings.payment');
     Route::get('settings/shipping', [SettingController::class, 'shipping'])->name('admin.settings.shipping');
     Route::get('settings/seo', [SettingController::class, 'seo'])->name('admin.settings.seo');
+    Route::get('settings/social', [SettingController::class, 'social'])->name('admin.settings.social');
+    Route::get('settings/footer', [SettingController::class, 'footer'])->name('admin.settings.footer');
     Route::post('settings/logo', [SettingController::class, 'uploadLogo'])->name('admin.settings.logo');
     Route::post('settings/favicon', [SettingController::class, 'uploadFavicon'])->name('admin.settings.favicon');
     Route::post('settings/clear-cache', [SettingController::class, 'clearCache'])->name('admin.settings.clear-cache');

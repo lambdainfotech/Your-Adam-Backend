@@ -37,6 +37,10 @@ class SettingController extends Controller
         ]);
         
         foreach ($validated['settings'] as $key => $value) {
+            // Handle array values (like payment methods)
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
             Setting::set($key, $value);
         }
         
@@ -80,6 +84,41 @@ class SettingController extends Controller
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.seo', compact('settings'));
+    }
+
+    public function social()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        // Get all social links from settings
+        $socialLinks = [];
+        foreach ($settings as $key => $value) {
+            if (str_starts_with($key, 'social_') && !empty($value)) {
+                $platform = substr($key, 7);
+                $socialLinks[$platform] = $value;
+            }
+        }
+        
+        return view('admin.settings.social', compact('settings', 'socialLinks'));
+    }
+
+    public function footer()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        // Parse footer links from settings (stored as JSON)
+        $footerSupportLinks = json_decode($settings['footer_support_links'] ?? '[]', true);
+        $footerCompanyLinks = json_decode($settings['footer_company_links'] ?? '[]', true);
+        $footerTrustBadges = json_decode($settings['footer_trust_badges'] ?? '[]', true);
+        $footerPaymentMethods = json_decode($settings['footer_payment_methods'] ?? '["Visa","Mastercard","bKash","Nagad"]', true);
+        
+        return view('admin.settings.footer', compact(
+            'settings', 
+            'footerSupportLinks', 
+            'footerCompanyLinks',
+            'footerTrustBadges',
+            'footerPaymentMethods'
+        ));
     }
 
     public function uploadLogo(Request $request)

@@ -48,10 +48,11 @@
                                 <select name="parent_id" id="parent_id"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('parent_id') border-red-500 @enderror">
                                     <option value="">None (Root Category)</option>
-                                    @foreach($parentCategories as $parent)
-                                        <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>{{ $parent->name }}</option>
+                                    @foreach($parentCategories as $cat)
+                                        <option value="{{ $cat->id }}" {{ old('parent_id', $preselectedParent) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                     @endforeach
                                 </select>
+                                <p class="mt-1 text-xs text-gray-500">Select a parent to create a subcategory, or leave as "Root Category"</p>
                                 @error('parent_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
