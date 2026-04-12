@@ -48,10 +48,14 @@ class CategoryController extends Controller
             'sort_order' => 'integer|min:0',
             'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'image.image' => 'The file must be an image.',
             'image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
             'image.max' => 'Maximum file size is 2MB.',
+            'hero_image.image' => 'The file must be an image.',
+            'hero_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
+            'hero_image.max' => 'Maximum file size is 2MB.',
         ]);
         
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
@@ -60,6 +64,11 @@ class CategoryController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             $validated['image'] = $this->uploadCategoryImage($request->file('image'));
+        }
+        
+        // Handle hero image upload
+        if ($request->hasFile('hero_image')) {
+            $validated['hero_image'] = $this->uploadCategoryImage($request->file('hero_image'));
         }
         
         Category::create($validated);
@@ -88,10 +97,14 @@ class CategoryController extends Controller
             'sort_order' => 'integer|min:0',
             'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'image.image' => 'The file must be an image.',
             'image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
             'image.max' => 'Maximum file size is 2MB.',
+            'hero_image.image' => 'The file must be an image.',
+            'hero_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
+            'hero_image.max' => 'Maximum file size is 2MB.',
         ]);
         
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -103,6 +116,15 @@ class CategoryController extends Controller
                 $this->deleteCategoryImage($category->image);
             }
             $validated['image'] = $this->uploadCategoryImage($request->file('image'));
+        }
+        
+        // Handle hero image upload
+        if ($request->hasFile('hero_image')) {
+            // Delete old hero image if exists
+            if ($category->hero_image) {
+                $this->deleteCategoryImage($category->hero_image);
+            }
+            $validated['hero_image'] = $this->uploadCategoryImage($request->file('hero_image'));
         }
         
         $category->update($validated);
@@ -121,6 +143,11 @@ class CategoryController extends Controller
         // Delete image if exists
         if ($category->image) {
             $this->deleteCategoryImage($category->image);
+        }
+        
+        // Delete hero image if exists
+        if ($category->hero_image) {
+            $this->deleteCategoryImage($category->hero_image);
         }
         
         $category->delete();

@@ -131,6 +131,67 @@
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <!-- Hero Image -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-image text-indigo-600"></i>
+                            </span>
+                            Hero Image
+                        </h3>
+                        
+                        <!-- Current Hero Image -->
+                        @if($category->hero_image)
+                            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-2">Current Hero Image:</p>
+                                <div class="relative inline-block">
+                                    <img src="{{ $category->hero_image }}" alt="{{ $category->name }}" class="h-32 rounded-lg shadow-md">
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Upload Hero Image -->
+                        <div id="heroDropZone" class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer relative">
+                            <input type="file" name="hero_image" id="heroImageInput" accept="image/jpeg,image/png,image/jpg,image/webp" class="hidden">
+                            
+                            <!-- Default State -->
+                            <div id="heroDropZoneDefault">
+                                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-images text-indigo-600 text-2xl"></i>
+                                </div>
+                                <p class="text-gray-600 text-sm mb-2">{{ $category->hero_image ? 'Change Hero Image' : 'Upload Hero Banner Image' }}</p>
+                                <p class="text-gray-400 text-xs mb-3">For category page header. Drag and drop or click to browse</p>
+                                <button type="button" id="heroBrowseButton" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm">
+                                    <i class="fas fa-folder-open mr-2"></i>{{ $category->hero_image ? 'Select New Image' : 'Select Image' }}
+                                </button>
+                                <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP | Max 2MB | Recommended: 1600x600px</p>
+                            </div>
+
+                            <!-- Preview State -->
+                            <div id="heroDropZonePreview" class="hidden">
+                                <div class="relative inline-block">
+                                    <img id="heroImagePreview" src="" alt="Preview" class="max-h-48 rounded-lg shadow-md">
+                                    <button type="button" id="heroRemoveImage" class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-lg">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2" id="heroImageName"></p>
+                            </div>
+
+                            <!-- Drag Overlay -->
+                            <div id="heroDragOverlay" class="absolute inset-0 bg-indigo-600 bg-opacity-90 rounded-xl flex items-center justify-center hidden">
+                                <div class="text-white text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl mb-2"></i>
+                                    <p class="font-medium">Drop image here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        @error('hero_image')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Right Column -->
@@ -186,6 +247,12 @@
                                 <span class="font-medium">{{ $category->children->count() }}</span>
                             </div>
                             @endif
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Hero Image</span>
+                                <span class="font-medium {{ $category->hero_image ? 'text-green-600' : 'text-gray-400' }}">
+                                    {{ $category->hero_image ? '✓ Set' : 'Not set' }}
+                                </span>
+                            </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Created</span>
                                 <span class="font-medium">{{ $category->created_at->format('M d, Y') }}</span>
@@ -315,6 +382,91 @@
         imagePreview.src = '';
         dropZonePreview.classList.add('hidden');
         dropZoneDefault.classList.remove('hidden');
+    });
+
+    // Hero Image Drop Zone
+    const heroDropZone = document.getElementById('heroDropZone');
+    const heroImageInput = document.getElementById('heroImageInput');
+    const heroDropZoneDefault = document.getElementById('heroDropZoneDefault');
+    const heroDropZonePreview = document.getElementById('heroDropZonePreview');
+    const heroImagePreview = document.getElementById('heroImagePreview');
+    const heroImageName = document.getElementById('heroImageName');
+    const heroDragOverlay = document.getElementById('heroDragOverlay');
+
+    heroDropZone.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        heroImageInput.click();
+    });
+
+    document.getElementById('heroBrowseButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        heroImageInput.click();
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        heroDropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        heroDropZone.addEventListener(eventName, () => {
+            heroDragOverlay.classList.remove('hidden');
+            heroDropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        heroDropZone.addEventListener(eventName, (e) => {
+            if (e.target === heroDropZone || !heroDropZone.contains(e.relatedTarget)) {
+                heroDragOverlay.classList.add('hidden');
+                heroDropZone.classList.remove('dragover');
+            }
+        }, false);
+    });
+
+    heroDropZone.addEventListener('drop', (e) => {
+        heroDragOverlay.classList.add('hidden');
+        heroDropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleHeroFile(files[0]);
+        }
+    }, false);
+
+    heroImageInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleHeroFile(e.target.files[0]);
+        }
+    });
+
+    function handleHeroFile(file) {
+        if (file.size > maxSize) {
+            alert('Image is too large. Maximum size is 2MB.');
+            heroImageInput.value = '';
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file.');
+            heroImageInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            heroImagePreview.src = e.target.result;
+            heroImageName.textContent = file.name;
+            heroDropZoneDefault.classList.add('hidden');
+            heroDropZonePreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById('heroRemoveImage').addEventListener('click', (e) => {
+        e.stopPropagation();
+        heroImageInput.value = '';
+        heroImagePreview.src = '';
+        heroDropZonePreview.classList.add('hidden');
+        heroDropZoneDefault.classList.remove('hidden');
     });
 </script>
 @endpush

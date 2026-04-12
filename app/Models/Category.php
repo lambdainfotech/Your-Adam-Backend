@@ -17,8 +17,12 @@ class Category extends Model
         'slug',
         'description',
         'image',
+        'hero_image',
+        'banner',
         'sort_order',
         'is_active',
+        'meta_title',
+        'meta_description',
     ];
 
     protected $casts = [
