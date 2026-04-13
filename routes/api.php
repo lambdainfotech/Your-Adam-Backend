@@ -35,6 +35,26 @@ Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryControl
 // Product Search
 Route::get('/products/search', [\App\Http\Controllers\Frontend\ProductSearchController::class, 'search']);
 
+// Product Reviews (Public - View)
+Route::get('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'index']);
+Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\ReviewController::class, 'helpful']);
+
+// Related Products
+Route::get('/products/{productId}/related', [\App\Http\Controllers\Frontend\RelatedProductController::class, 'index']);
+Route::get('/products/{productId}/frequently-bought', [\App\Http\Controllers\Frontend\RelatedProductController::class, 'frequentlyBoughtTogether']);
+
+// Shipping Calculator (Public)
+Route::post('/shipping/calculate', [\App\Http\Controllers\Frontend\ShippingController::class, 'calculate']);
+Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingController::class, 'methods']);
+
+// Coupon Validation (Public)
+Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponController::class, 'validate']);
+
+// Payment Callbacks (Public - Webhook endpoints)
+Route::post('/payment/aamarpay/success', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPaySuccess'])->name('api.payment.aamarpay.success');
+Route::post('/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail');
+Route::post('/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayCancel'])->name('api.payment.aamarpay.cancel');
+
 // API Version Prefix
 Route::group(['prefix' => 'v1'], function () {
 
@@ -119,6 +139,16 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/notifications', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'index']);
         Route::patch('/notifications/{id}/read', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'markAsRead']);
         Route::get('/notifications/unread-count', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'unreadCount']);
+
+        // Product Reviews (Write - Auth Required)
+        Route::post('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'store']);
+
+        // Available Coupons (Auth Required for user-specific)
+        Route::get('/coupons/available', [\App\Http\Controllers\Frontend\CouponController::class, 'available']);
+
+        // Payment (Auth Required)
+        Route::post('/orders/{orderId}/payment/initiate', [\App\Http\Controllers\Frontend\PaymentController::class, 'initiate']);
+        Route::get('/orders/{orderId}/payment/status', [\App\Http\Controllers\Frontend\PaymentController::class, 'status']);
 
         // Admin Routes
         Route::group(['prefix' => 'admin', 'middleware' => 'role:admin'], function () {
