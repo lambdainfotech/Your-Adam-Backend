@@ -128,6 +128,12 @@
             <span>{{ $order->customer_name }}</span>
         </div>
         @endif
+        @if($order->is_wholesale)
+        <div class="flex justify-between">
+            <span>Type:</span>
+            <span class="bold">WHOLESALE</span>
+        </div>
+        @endif
     </div>
 
     <!-- Items -->

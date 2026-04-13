@@ -127,6 +127,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variant</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WS %</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -162,6 +163,18 @@
                                             data-original="{{ $variant->price }}">
                                             ৳{{ number_format($variant->price ?: $product->base_price, 2) }}
                                         </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="inline-edit w-16 text-center" contenteditable="true" 
+                                            onblur="updateVariantField({{ $variant->id }}, 'wholesale_percentage', this)"
+                                            data-original="{{ $variant->wholesale_percentage }}">
+                                            {{ $variant->wholesale_percentage ? $variant->wholesale_percentage . '%' : ($product->wholesale_percentage ? $product->wholesale_percentage . '%' : '-') }}
+                                        </div>
+                                        @if($variant->effective_wholesale_price)
+                                            <div class="text-xs text-green-600 mt-1">
+                                                ৳{{ number_format($variant->effective_wholesale_price, 2) }}
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-2">
@@ -442,6 +455,32 @@
                         </div>
                     </div>
 
+                    <!-- Wholesale Percentage Section -->
+                    <div class="bg-blue-50 rounded-lg p-4 mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Wholesale Pricing</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Wholesale Percentage -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Wholesale Discount %</label>
+                                <input type="number" name="wholesale_percentage" id="edit_wholesale_percentage" step="0.01" min="0" max="99.99"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                    placeholder="0">
+                                <p class="text-xs text-gray-500 mt-1">% off regular price. Leave empty to use product's wholesale %.</p>
+                            </div>
+                            
+                            <!-- Calculated Wholesale Price -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Calculated Wholesale Price <span class="text-gray-400">(Auto)</span></label>
+                                <div class="relative">
+                                    <input type="text" id="edit_calculated_wholesale_price"
+                                        class="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-lg text-gray-600"
+                                        placeholder="0.00" readonly>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1" id="wholesaleCalcText">Based on regular price minus wholesale %</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
@@ -573,6 +612,7 @@
                 document.getElementById('edit_sku').value = data.variant.sku;
                 document.getElementById('edit_barcode').value = data.variant.barcode || '';
                 document.getElementById('edit_price').value = data.variant.price || '';
+                document.getElementById('edit_wholesale_price').value = data.variant.wholesale_price || '';
                 document.getElementById('edit_compare_price').value = data.variant.compare_price || '';
                 document.getElementById('edit_cost_price').value = data.variant.cost_price || '';
                 document.getElementById('edit_stock_quantity').value = data.variant.stock_quantity;
@@ -585,8 +625,12 @@
                 document.getElementById('edit_discount_value').value = data.variant.discount_value || '';
                 document.getElementById('edit_sale_price').value = data.variant.sale_price || data.variant.price || '';
                 
+                // Wholesale percentage field
+                document.getElementById('edit_wholesale_percentage').value = data.variant.wholesale_percentage || '';
+                
                 // Calculate and display savings
                 calculateVariantSalePrice();
+                calculateVariantWholesalePrice();
 
                 document.getElementById('variantAttributes').textContent = data.attributes.map(a => a.attribute_name + ': ' + a.value).join(', ');
                 document.getElementById('variantSku').textContent = data.variant.sku;
@@ -652,10 +696,30 @@
         }
         calculateVariantSalePrice();
     });
+    
+    // Calculate variant wholesale price from percentage
+    function calculateVariantWholesalePrice() {
+        const basePrice = parseFloat(document.getElementById('edit_price')?.value) || 0;
+        const percentage = parseFloat(document.getElementById('edit_wholesale_percentage')?.value) || 0;
+        const calculatedInput = document.getElementById('edit_calculated_wholesale_price');
+        const calcText = document.getElementById('wholesaleCalcText');
+        
+        if (basePrice > 0 && percentage > 0) {
+            const wholesalePrice = basePrice * (1 - percentage / 100);
+            calculatedInput.value = '৳' + wholesalePrice.toFixed(2) + ' (' + percentage + '% off ৳' + basePrice.toFixed(2) + ')';
+            calcText.innerHTML = `<span class="text-green-600 font-medium">Save ৳${(basePrice - wholesalePrice).toFixed(2)}</span>`;
+        } else {
+            calculatedInput.value = '';
+            calcText.textContent = percentage > 0 ? 'Enter a regular price first' : 'No wholesale pricing set';
+        }
+    }
+    
+    document.getElementById('edit_price')?.addEventListener('input', calculateVariantWholesalePrice);
+    document.getElementById('edit_wholesale_percentage')?.addEventListener('input', calculateVariantWholesalePrice);
 
     // Update variant field inline
     function updateVariantField(variantId, field, element) {
-        const value = element.textContent.replace('৳', '').trim();
+        const value = element.textContent.replace('৳', '').replace('%', '').trim();
         const original = element.dataset.original;
         
         if (value === original) return;

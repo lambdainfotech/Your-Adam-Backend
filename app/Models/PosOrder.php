@@ -25,6 +25,7 @@ class PosOrder extends Model
         'tax_amount',
         'total_amount',
         'status',
+        'is_wholesale',
         'delivery_status',
         'tracking_number',
         'delivery_address',
@@ -36,6 +37,7 @@ class PosOrder extends Model
     ];
 
     protected $casts = [
+        'is_wholesale' => 'boolean',
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',

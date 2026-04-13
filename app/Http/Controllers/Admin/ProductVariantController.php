@@ -156,6 +156,8 @@ class ProductVariantController extends Controller
                 'sku' => $variant->sku,
                 'barcode' => $variant->barcode,
                 'price' => $variant->price,
+                'wholesale_percentage' => $variant->wholesale_percentage,
+                'effective_wholesale_price' => $variant->effective_wholesale_price,
                 'discount_type' => $variant->discount_type,
                 'discount_value' => $variant->discount_value,
                 'sale_price' => $variant->sale_price,
@@ -187,6 +189,7 @@ class ProductVariantController extends Controller
             'sku' => 'required|string|max:50|unique:variants,sku,' . $variantId,
             'barcode' => 'nullable|string|max:50',
             'price' => 'nullable|numeric|min:0',
+            'wholesale_percentage' => 'nullable|numeric|min:0|max:99.99',
             'discount_type' => 'nullable|in:percentage,flat',
             'discount_value' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
@@ -253,7 +256,7 @@ class ProductVariantController extends Controller
         $variant = Variant::findOrFail($variantId);
 
         $validated = $request->validate([
-            'field' => 'required|in:price,stock_quantity,is_active',
+            'field' => 'required|in:price,wholesale_percentage,stock_quantity,is_active',
             'value' => 'required',
         ]);
 
@@ -263,6 +266,9 @@ class ProductVariantController extends Controller
         switch ($field) {
             case 'price':
                 $variant->price = (float) $value;
+                break;
+            case 'wholesale_percentage':
+                $variant->wholesale_percentage = (float) $value;
                 break;
             case 'stock_quantity':
                 $oldStock = $variant->stock_quantity;
@@ -297,6 +303,8 @@ class ProductVariantController extends Controller
             'variant' => [
                 'id' => $variant->id,
                 'price' => $variant->price,
+                'wholesale_percentage' => $variant->wholesale_percentage,
+                'effective_wholesale_price' => $variant->effective_wholesale_price,
                 'stock_quantity' => $variant->stock_quantity,
                 'stock_status' => $variant->stock_status,
                 'is_active' => $variant->is_active,

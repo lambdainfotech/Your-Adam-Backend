@@ -23,6 +23,8 @@ class Variant extends Model
         'discount_type',
         'discount_value',
         'sale_price',
+        'wholesale_price',
+        'wholesale_percentage',
         'cost_price',
         'stock_quantity',
         'stock_status',
@@ -38,6 +40,8 @@ class Variant extends Model
         'compare_price' => 'decimal:2',
         'discount_value' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'wholesale_price' => 'decimal:2',
+        'wholesale_percentage' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'stock_quantity' => 'integer',
         'low_stock_threshold' => 'integer',
@@ -159,6 +163,33 @@ class Variant extends Model
 
         // Ensure sale price is not negative and less than base price
         return max(0, min($salePrice, $basePrice));
+    }
+
+    public function getEffectiveWholesalePriceAttribute(): ?float
+    {
+        return $this->calculateWholesalePrice();
+    }
+
+    public function calculateWholesalePrice(): ?float
+    {
+        $percentage = (float) ($this->wholesale_percentage ?? 0);
+        if ($percentage <= 0) {
+            // Fall back to product's wholesale percentage if variant has none
+            if ($this->product && $this->product->wholesale_percentage > 0) {
+                $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+                if ($basePrice > 0) {
+                    return max(0, $basePrice * (1 - $this->product->wholesale_percentage / 100));
+                }
+            }
+            return $this->wholesale_price > 0 ? (float) $this->wholesale_price : null;
+        }
+
+        $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+        if ($basePrice <= 0) {
+            return null;
+        }
+
+        return max(0, $basePrice * (1 - $percentage / 100));
     }
 
     public function getDiscountAmountAttribute(): float

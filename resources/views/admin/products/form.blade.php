@@ -454,8 +454,8 @@
                                     <span>Pricing</span>
                                 </div>
                                 
-                                <!-- Cost, Regular Price Row -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <!-- Cost, Regular Price, Wholesale Row -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Item (৳)</label>
                                         <input type="number" name="cost_price" id="costPrice" step="0.01" min="0"
@@ -470,6 +470,30 @@
                                             value="{{ old('base_price', $product->base_price ?? '') }}"
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                             placeholder="0.00" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Wholesale Discount %</label>
+                                        <input type="number" name="wholesale_percentage" id="wholesalePercentage" step="0.01" min="0" max="99.99"
+                                            value="{{ old('wholesale_percentage', $product->wholesale_percentage ?? '') }}"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            placeholder="0">
+                                        <p class="text-xs text-gray-500 mt-1">% off retail price for wholesale</p>
+                                    </div>
+                                </div>
+
+                                <!-- Calculated Wholesale Price -->
+                                <div class="mt-4 pt-4 border-t border-gray-200">
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Calculated Wholesale Price</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Auto-calculated Wholesale Price</label>
+                                            <div class="relative">
+                                                <input type="text" id="calculatedWholesalePrice"
+                                                    class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
+                                                    placeholder="0.00" readonly>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Based on regular price minus wholesale %</p>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1265,9 +1289,27 @@
         });
     });
     
+    // ========== WHOLESALE PERCENTAGE CALCULATION ==========
+    function calculateWholesalePriceFromPercentage() {
+        const basePrice = parseFloat(document.getElementById('basePrice')?.value) || 0;
+        const percentage = parseFloat(document.getElementById('wholesalePercentage')?.value) || 0;
+        const calculatedInput = document.getElementById('calculatedWholesalePrice');
+        
+        if (basePrice > 0 && percentage > 0) {
+            const wholesalePrice = basePrice * (1 - percentage / 100);
+            calculatedInput.value = '৳' + wholesalePrice.toFixed(2) + ' (' + percentage + '% off ৳' + basePrice.toFixed(2) + ')';
+        } else {
+            calculatedInput.value = percentage > 0 ? 'Enter a regular price first' : '';
+        }
+    }
+    
+    document.getElementById('basePrice')?.addEventListener('input', calculateWholesalePriceFromPercentage);
+    document.getElementById('wholesalePercentage')?.addEventListener('input', calculateWholesalePriceFromPercentage);
+    
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         calculateSalePrice();
+        calculateWholesalePriceFromPercentage();
         
         // Disable discount value if no discount type selected
         const selectedType = document.querySelector('input[name="discount_type"]:checked')?.value;

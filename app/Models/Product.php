@@ -29,6 +29,8 @@ class Product extends Model
         'discount_type',
         'discount_value',
         'sale_price',
+        'wholesale_price',
+        'wholesale_percentage',
         'sale_start_date',
         'sale_end_date',
         'cost_price',
@@ -53,6 +55,8 @@ class Product extends Model
         'compare_price' => 'decimal:2',
         'discount_value' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'wholesale_price' => 'decimal:2',
+        'wholesale_percentage' => 'decimal:2',
         'cost_price' => 'decimal:2',
         'sale_start_date' => 'datetime',
         'sale_end_date' => 'datetime',
@@ -324,6 +328,26 @@ class Product extends Model
 
         // Ensure sale price is not negative and less than base price
         return max(0, min($salePrice, $basePrice));
+    }
+
+    public function getEffectiveWholesalePriceAttribute(): ?float
+    {
+        return $this->calculateWholesalePrice();
+    }
+
+    public function calculateWholesalePrice(): ?float
+    {
+        $percentage = (float) ($this->wholesale_percentage ?? 0);
+        if ($percentage <= 0) {
+            return $this->wholesale_price > 0 ? (float) $this->wholesale_price : null;
+        }
+
+        $basePrice = (float) ($this->base_price ?? 0);
+        if ($basePrice <= 0) {
+            return null;
+        }
+
+        return max(0, $basePrice * (1 - $percentage / 100));
     }
 
     public function getDiscountDisplayAttribute(): string

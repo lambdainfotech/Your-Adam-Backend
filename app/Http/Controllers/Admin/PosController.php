@@ -137,6 +137,7 @@ class PosController extends Controller
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'price' => $product->sale_price ?? $product->base_price,
+                'wholesale_price' => $product->effective_wholesale_price ?? $product->wholesale_price,
                 'stock' => $product->stock_quantity,
                 'image' => $product->thumbnail_url,
                 'has_variants' => $product->has_variants,
@@ -146,6 +147,7 @@ class PosController extends Controller
                         'name' => $variant->variant_name,
                         'sku' => $variant->sku,
                         'price' => $variant->price,
+                        'wholesale_price' => $variant->effective_wholesale_price ?? $variant->wholesale_price,
                         'stock' => $variant->stock_quantity,
                     ];
                 }),
@@ -174,6 +176,7 @@ class PosController extends Controller
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'price' => $product->sale_price ?? $product->base_price,
+                    'wholesale_price' => $product->effective_wholesale_price ?? $product->wholesale_price,
                     'stock' => $product->stock_quantity,
                     'has_variants' => $product->has_variants,
                     'type' => 'product',
@@ -199,6 +202,7 @@ class PosController extends Controller
                     'variant_name' => $variant->variant_name,
                     'sku' => $variant->sku,
                     'price' => $variant->price,
+                    'wholesale_price' => $variant->effective_wholesale_price ?? $variant->wholesale_price,
                     'stock' => $variant->stock_quantity,
                     'has_variants' => false,
                     'type' => 'variant',
@@ -307,6 +311,7 @@ class PosController extends Controller
             'discount_amount' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
+            'is_wholesale' => 'nullable|boolean',
             'payments' => 'required|array|min:1',
             'payments.*.method' => 'required|in:cash,card,bkash,nagad,other',
             'payments.*.amount' => 'required|numeric|min:0',
@@ -337,6 +342,7 @@ class PosController extends Controller
                 'total_amount' => $validated['total_amount'],
                 'note' => $validated['note'] ?? null,
                 'status' => 'completed',
+                'is_wholesale' => $request->boolean('is_wholesale', false),
             ]);
 
             // Create order items and deduct stock

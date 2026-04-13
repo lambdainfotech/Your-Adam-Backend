@@ -323,6 +323,12 @@
                     <span class="info-label">Status</span>
                     <span class="badge badge-success">{{ ucfirst($order->status) }}</span>
                 </div>
+                @if($order->is_wholesale)
+                <div class="info-row">
+                    <span class="info-label">Type</span>
+                    <span class="badge" style="background: #dbeafe; color: #1e40af;">WHOLESALE</span>
+                </div>
+                @endif
             </div>
 
             <!-- Items -->

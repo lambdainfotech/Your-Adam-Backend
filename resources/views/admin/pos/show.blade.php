@@ -47,6 +47,14 @@
                         {{ ucfirst($order->status) }}
                     </span>
                 </div>
+                @if($order->is_wholesale)
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Type</span>
+                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        Wholesale
+                    </span>
+                </div>
+                @endif
                 <div class="flex justify-between">
                     <span class="text-gray-500">Session ID</span>
                     <span class="font-semibold text-gray-800">#{{ $order->pos_session_id }}</span>

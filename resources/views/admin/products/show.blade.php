@@ -57,6 +57,13 @@
                     <p class="font-medium text-gray-800">৳{{ number_format($product->base_price, 2) }}</p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Wholesale Discount</p>
+                    <p class="font-medium text-gray-800">{{ $product->wholesale_percentage ? $product->wholesale_percentage . '% off' : 'N/A' }}</p>
+                    @if($product->effective_wholesale_price)
+                        <p class="text-xs text-green-600 mt-1">৳{{ number_format($product->effective_wholesale_price, 2) }}</p>
+                    @endif
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-500">Created</p>
                     <p class="font-medium text-gray-800">{{ $product->created_at->format('M d, Y') }}</p>
                 </div>

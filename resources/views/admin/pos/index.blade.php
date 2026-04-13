@@ -15,6 +15,12 @@
             <span class="text-sm text-gray-300" x-text="currentTime"></span>
         </div>
         <div class="flex items-center gap-3">
+            <button @click="isWholesale = !isWholesale" 
+                class="px-3 py-1 rounded text-sm font-medium transition-colors"
+                :class="isWholesale ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'">
+                <i class="fas fa-warehouse mr-1"></i>
+                <span x-text="isWholesale ? 'Wholesale' : 'Retail'"></span>
+            </button>
             <button @click="showHeldCartsModal = true" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">
                 <i class="fas fa-pause mr-1"></i>Hold (<span x-text="heldCartsCount"></span>)
             </button>
@@ -73,7 +79,10 @@
                             <div class="p-2">
                                 <h3 class="font-medium text-sm truncate" x-text="product.name"></h3>
                                 <div class="flex justify-between items-center mt-1">
-                                    <span class="text-blue-600 font-bold">৳<span x-text="formatPrice(product.price)"></span></span>
+                                    <div>
+                                        <span class="text-blue-600 font-bold">৳<span x-text="formatPrice(product.wholesale_price && isWholesale ? product.wholesale_price : product.price)"></span></span>
+                                        <span x-show="product.wholesale_price && isWholesale" class="text-xs text-green-600 ml-1 font-medium">WS</span>
+                                    </div>
                                     <span class="text-xs text-gray-500" x-text="product.stock + ' in stock'"></span>
                                 </div>
                             </div>
@@ -320,6 +329,7 @@ function posSystem() {
         // Data
         products: [],
         cart: [],
+        isWholesale: false,
         customer: { name: '', phone: '', id: null },
         customerSearch: '',
         customers: [],
@@ -469,7 +479,7 @@ function posSystem() {
                     variant_id: variant.id,
                     name: product.name,
                     variant_name: variant.name,
-                    price: variant.price,
+                    price: (this.isWholesale && variant.wholesale_price) ? variant.wholesale_price : variant.price,
                     stock: variant.stock
                 });
             } else {
@@ -478,7 +488,7 @@ function posSystem() {
                     variant_id: null,
                     name: product.name,
                     variant_name: null,
-                    price: product.price,
+                    price: (this.isWholesale && product.wholesale_price) ? product.wholesale_price : product.price,
                     stock: product.stock
                 });
             }
@@ -570,6 +580,7 @@ function posSystem() {
                     discount_amount: this.discount,
                     tax_amount: this.tax,
                     total_amount: this.total,
+                    is_wholesale: this.isWholesale,
                     payments: payments,
                     customer_id: this.customer.id,
                     customer_name: this.customer.name,
@@ -621,7 +632,8 @@ function posSystem() {
                             items: this.cart,
                             total: this.total,
                             item_count: this.cart.reduce((sum, item) => sum + item.quantity, 0),
-                            customer: this.customer
+                            customer: this.customer,
+                            is_wholesale: this.isWholesale
                         },
                         customer_name: this.customer.name,
                         customer_phone: this.customer.phone,
@@ -665,6 +677,7 @@ function posSystem() {
                 if (data.success) {
                     this.cart = data.data.items || [];
                     this.customer = data.data.customer || { name: '', phone: '', id: null };
+                    this.isWholesale = data.data.is_wholesale || false;
                     this.showHeldCartsModal = false;
                     this.heldCartsCount--;
                 }
