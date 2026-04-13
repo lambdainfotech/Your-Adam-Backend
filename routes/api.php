@@ -30,6 +30,7 @@ Route::get('/site/info', [SiteInfoController::class, 'index']);
 Route::get('/site/navigation', [\App\Http\Controllers\Frontend\NavigationController::class, 'index']);
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
+Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);
 
 // API Version Prefix
 Route::group(['prefix' => 'v1'], function () {
