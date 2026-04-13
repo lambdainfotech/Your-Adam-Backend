@@ -32,6 +32,9 @@ Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::clas
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);
 
+// Product Search
+Route::get('/products/search', [\App\Http\Controllers\Frontend\ProductSearchController::class, 'search']);
+
 // API Version Prefix
 Route::group(['prefix' => 'v1'], function () {
 
