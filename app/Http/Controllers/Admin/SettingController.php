@@ -47,7 +47,8 @@ class SettingController extends Controller
         // Clear settings cache
         Cache::forget('app_settings');
         
-        return redirect()->back()->with('success', 'Settings updated successfully.');
+        $redirect = $request->input('redirect', url()->previous());
+        return redirect($redirect)->with('success', 'Settings updated successfully.');
     }
 
     public function general()
@@ -66,6 +67,12 @@ class SettingController extends Controller
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.email', compact('settings'));
+    }
+
+    public function sms()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        return view('admin.settings.sms', compact('settings'));
     }
 
     public function payment()
@@ -119,6 +126,33 @@ class SettingController extends Controller
             'footerTrustBadges',
             'footerPaymentMethods'
         ));
+    }
+
+    /**
+     * Send test SMS from admin panel
+     */
+    public function testSms(Request $request)
+    {
+        $validated = $request->validate([
+            'mobile' => 'required|string|min:10|max:15',
+            'message' => 'required|string|max:255',
+        ]);
+
+        $smsService = app(\App\Services\MuthobartaSMSService::class);
+        $result = $smsService->sendSMS($validated['mobile'], $validated['message']);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => 'SMS queued successfully',
+                'data' => $result['data'] ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message'] ?? 'Failed to send SMS',
+        ], 500);
     }
 
     public function uploadLogo(Request $request)

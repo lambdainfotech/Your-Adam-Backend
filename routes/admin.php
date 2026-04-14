@@ -187,6 +187,8 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('settings/general', [SettingController::class, 'general'])->name('admin.settings.general');
     Route::get('settings/store', [SettingController::class, 'store'])->name('admin.settings.store');
     Route::get('settings/email', [SettingController::class, 'email'])->name('admin.settings.email');
+    Route::get('settings/sms', [SettingController::class, 'sms'])->name('admin.settings.sms');
+    Route::post('settings/sms/test', [SettingController::class, 'testSms'])->name('admin.settings.sms.test');
     Route::get('settings/payment', [SettingController::class, 'payment'])->name('admin.settings.payment');
     Route::get('settings/shipping', [SettingController::class, 'shipping'])->name('admin.settings.shipping');
     Route::get('settings/seo', [SettingController::class, 'seo'])->name('admin.settings.seo');

@@ -1,990 +1,2633 @@
 {
-  "info": {
-    "_postman_id": "ecommerce-api-v1",
-    "name": "E-Commerce API",
-    "description": "E-Commerce API Documentation\n\nBase URL: http://localhost:8000/api\n\nAuthentication: Bearer Token (JWT)\n\nLast Updated: 2026-03-01",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "Health Check",
-      "item": [
-        {
-          "name": "Health Check",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/health",
-              "host": ["{{base_url}}"],
-              "path": ["api", "health"]
-            },
-            "description": "Check API health status"
-          },
-          "response": []
-        }
-      ]
+    "info": {
+        "_postman_id": "ecommerce-api-v1",
+        "name": "E-Commerce API",
+        "description": "E-Commerce API Documentation\n\nBase URL: http://localhost:8000/api\n\nAuthentication: Bearer Token (JWT)\n\nLast Updated: 2026-03-01",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
-    {
-      "name": "Authentication",
-      "item": [
+    "item": [
         {
-          "name": "Send OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"mobile\": \"01711111111\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/mobile/send-otp",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "mobile", "send-otp"]
-            },
-            "description": "Send OTP to mobile number"
-          },
-          "response": []
-        },
-        {
-          "name": "Verify OTP",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"mobile\": \"01711111111\",\n  \"otp\": \"123456\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/mobile/verify",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "mobile", "verify"]
-            },
-            "description": "Verify OTP and login/register"
-          },
-          "response": []
-        },
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"admin123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "login"]
-            },
-            "description": "Login with email and password"
-          },
-          "response": []
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{refresh_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/refresh",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "refresh"]
-            },
-            "description": "Refresh access token"
-          },
-          "response": []
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/logout",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "logout"]
-            },
-            "description": "Logout user (requires authentication)"
-          },
-          "response": []
-        },
-        {
-          "name": "Get Current User",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/me",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "auth", "me"]
-            },
-            "description": "Get current authenticated user"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Categories (Public)",
-      "item": [
-        {
-          "name": "List Categories",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/categories",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "categories"]
-            },
-            "description": "Get all categories"
-          },
-          "response": []
-        },
-        {
-          "name": "Get Category",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/categories/electronics",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "categories", "electronics"]
-            },
-            "description": "Get category by slug"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Products (Public)",
-      "item": [
-        {
-          "name": "List Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/products?page=1&per_page=20",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "products"],
-              "query": [
+            "name": "Health Check",
+            "item": [
                 {
-                  "key": "page",
-                  "value": "1"
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/health",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "health"
+                            ]
+                        },
+                        "description": "Check API health status"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Site Info (Public)",
+            "item": [
+                {
+                    "name": "Site Info",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/site/info",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "site",
+                                "info"
+                            ]
+                        },
+                        "description": "Get site configuration and info"
+                    },
+                    "response": []
                 },
                 {
-                  "key": "per_page",
-                  "value": "20"
-                }
-              ]
-            },
-            "description": "Get all products with pagination"
-          },
-          "response": []
-        },
-        {
-          "name": "Search Products",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/products/search?q=laptop&category_id=1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "products", "search"],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "laptop"
+                    "name": "Navigation",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/site/navigation",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "site",
+                                "navigation"
+                            ]
+                        },
+                        "description": "Get navigation menus"
+                    },
+                    "response": []
                 },
                 {
-                  "key": "category_id",
-                  "value": "1"
+                    "name": "Homepage",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/homepage",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "homepage"
+                            ]
+                        },
+                        "description": "Get homepage data (sliders, featured, etc.)"
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "description": "Search products by keyword"
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Get Product",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/products/laptop-dell-xps-15",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "products", "laptop-dell-xps-15"]
-            },
-            "description": "Get product by slug"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "User Profile",
-      "item": [
-        {
-          "name": "Get Profile",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/profile",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "profile"]
-            },
-            "description": "Get user profile (requires authentication)"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Profile",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"01711111111\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/profile",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "profile"]
-            },
-            "description": "Update user profile (requires authentication)"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Addresses",
-      "item": [
-        {
-          "name": "List Addresses",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/addresses",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "addresses"]
-            },
-            "description": "Get all user addresses"
-          },
-          "response": []
-        },
-        {
-          "name": "Create Address",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"address_line_1\": \"123 Main Street\",\n  \"address_line_2\": \"Apt 4B\",\n  \"city\": \"Dhaka\",\n  \"state\": \"Dhaka\",\n  \"postal_code\": \"1200\",\n  \"country\": \"Bangladesh\",\n  \"is_default\": true\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/addresses",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "addresses"]
-            },
-            "description": "Create new address"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Address",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"address_line_1\": \"456 New Street\",\n  \"city\": \"Chittagong\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/addresses/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "addresses", "1"]
-            },
-            "description": "Update address by ID"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Address",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/addresses/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "addresses", "1"]
-            },
-            "description": "Delete address by ID"
-          },
-          "response": []
-        },
-        {
-          "name": "Set Default Address",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/users/addresses/1/default",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "users", "addresses", "1", "default"]
-            },
-            "description": "Set address as default"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Cart",
-      "item": [
-        {
-          "name": "Get Cart",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart"]
-            },
-            "description": "Get user cart"
-          },
-          "response": []
-        },
-        {
-          "name": "Add to Cart",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"variant_id\": 1,\n  \"quantity\": 2\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart/items",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart", "items"]
-            },
-            "description": "Add item to cart"
-          },
-          "response": []
-        },
-        {
-          "name": "Update Cart Item",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 3\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart/items/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart", "items", "1"]
-            },
-            "description": "Update cart item quantity"
-          },
-          "response": []
-        },
-        {
-          "name": "Remove from Cart",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart/items/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart", "items", "1"]
-            },
-            "description": "Remove item from cart"
-          },
-          "response": []
-        },
-        {
-          "name": "Apply Coupon",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"code\": \"SUMMER2024\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart/apply-coupon",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart", "apply-coupon"]
-            },
-            "description": "Apply coupon to cart"
-          },
-          "response": []
-        },
-        {
-          "name": "Remove Coupon",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/cart/coupon",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "cart", "coupon"]
-            },
-            "description": "Remove coupon from cart"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Orders",
-      "item": [
-        {
-          "name": "List Orders",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/orders",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "orders"]
-            },
-            "description": "Get user orders"
-          },
-          "response": []
-        },
-        {
-          "name": "Create Order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"address_id\": 1,\n  \"payment_method\": \"cod\",\n  \"notes\": \"Please deliver after 5 PM\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/orders",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "orders"]
-            },
-            "description": "Create new order from cart"
-          },
-          "response": []
-        },
-        {
-          "name": "Get Order",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/orders/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "orders", "1"]
-            },
-            "description": "Get order details by ID"
-          },
-          "response": []
-        },
-        {
-          "name": "Track Order",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/orders/1/track",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "orders", "1", "track"]
-            },
-            "description": "Track order status"
-          },
-          "response": []
-        },
-        {
-          "name": "Cancel Order",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/orders/1/cancel",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "orders", "1", "cancel"]
-            },
-            "description": "Cancel order"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Wishlist",
-      "item": [
-        {
-          "name": "Get Wishlist",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/wishlist",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "wishlist"]
-            },
-            "description": "Get user wishlist"
-          },
-          "response": []
-        },
-        {
-          "name": "Add to Wishlist",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product_id\": 1\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/wishlist",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "wishlist"]
-            },
-            "description": "Add product to wishlist"
-          },
-          "response": []
-        },
-        {
-          "name": "Remove from Wishlist",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/wishlist/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "wishlist", "1"]
-            },
-            "description": "Remove product from wishlist"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Notifications",
-      "item": [
-        {
-          "name": "List Notifications",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/notifications",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "notifications"]
-            },
-            "description": "Get user notifications"
-          },
-          "response": []
-        },
-        {
-          "name": "Mark as Read",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/notifications/1/read",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "notifications", "1", "read"]
-            },
-            "description": "Mark notification as read"
-          },
-          "response": []
-        },
-        {
-          "name": "Unread Count",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/notifications/unread-count",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "notifications", "unread-count"]
-            },
-            "description": "Get unread notifications count"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Tracking (Public)",
-      "item": [
-        {
-          "name": "Track Order",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/v1/tracking?order_number=ORD-123456",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "tracking"],
-              "query": [
+            "name": "Sliders (Public)",
+            "item": [
                 {
-                  "key": "order_number",
-                  "value": "ORD-123456"
+                    "name": "List Sliders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/sliders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "sliders"
+                            ]
+                        },
+                        "description": "Get active sliders / banners"
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "description": "Track order by order number"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Admin",
-      "item": [
-        {
-          "name": "Dashboard",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/dashboard",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "dashboard"]
-            },
-            "description": "Admin dashboard stats (Admin only)"
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Sales Report",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reports/sales?from=2024-01-01&to=2024-12-31",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reports", "sales"],
-              "query": [
+            "name": "Authentication",
+            "item": [
                 {
-                  "key": "from",
-                  "value": "2024-01-01"
+                    "name": "Send OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"mobile\": \"01730586226\",\n  \"purpose\": \"registration\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/mobile/send-otp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "mobile",
+                                "send-otp"
+                            ]
+                        },
+                        "description": "Send OTP to mobile via Muthobarta SMS gateway"
+                    },
+                    "response": []
                 },
                 {
-                  "key": "to",
-                  "value": "2024-12-31"
+                    "name": "Verify OTP (Register)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"mobile\": \"01730586226\",\n  \"otp\": \"123456\",\n  \"reference\": \"abc123xyz789\",\n  \"is_registration\": true,\n  \"password\": \"secret123\",\n  \"password_confirmation\": \"secret123\",\n  \"full_name\": \"John Doe\",\n  \"email\": \"john@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "mobile",
+                                "verify"
+                            ]
+                        },
+                        "description": "Verify OTP and register new user"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify OTP (Login)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"mobile\": \"01730586226\",\n  \"otp\": \"123456\",\n  \"reference\": \"abc123xyz789\",\n  \"is_registration\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "mobile",
+                                "verify"
+                            ]
+                        },
+                        "description": "Verify OTP and login existing user"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify OTP",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"mobile\": \"01711111111\",\n  \"otp\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "mobile",
+                                "verify"
+                            ]
+                        },
+                        "description": "Verify OTP and login/register"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login with email and password"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{refresh_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/refresh",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "refresh"
+                            ]
+                        },
+                        "description": "Refresh access token"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Logout user (requires authentication)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Get current authenticated user"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Check Token",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/check",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "auth",
+                                "check"
+                            ]
+                        },
+                        "description": "Check if current JWT token is valid"
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "description": "Sales report (Admin only)"
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Inventory Report",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reports/inventory",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reports", "inventory"]
-            },
-            "description": "Inventory report (Admin only)"
-          },
-          "response": []
+            "name": "Categories (Public)",
+            "item": [
+                {
+                    "name": "List Categories",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/categories",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "categories"
+                            ]
+                        },
+                        "description": "Get all categories"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/categories/electronics",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "categories",
+                                "electronics"
+                            ]
+                        },
+                        "description": "Get category by slug"
+                    },
+                    "response": []
+                }
+            ]
         },
         {
-          "name": "Customers Report",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reports/customers",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reports", "customers"]
-            },
-            "description": "Customers report (Admin only)"
-          },
-          "response": []
+            "name": "Inventory (Public)",
+            "item": [
+                {
+                    "name": "Inventory Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/inventory/summary",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "inventory",
+                                "summary"
+                            ]
+                        },
+                        "description": "Inventory summary"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Low Stock",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/inventory/low-stock",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "inventory",
+                                "low-stock"
+                            ]
+                        },
+                        "description": "Low stock alerts"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Out of Stock",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/inventory/out-of-stock",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "inventory",
+                                "out-of-stock"
+                            ]
+                        },
+                        "description": "Out of stock products"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Stock Movements",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/inventory/movements",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "inventory",
+                                "movements"
+                            ]
+                        },
+                        "description": "Stock movements log"
+                    },
+                    "response": []
+                }
+            ]
         },
         {
-          "name": "Coupons Report",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reports/coupons",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reports", "coupons"]
-            },
-            "description": "Coupons report (Admin only)"
-          },
-          "response": []
+            "name": "Shipping (Public)",
+            "item": [
+                {
+                    "name": "Calculate Shipping",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/shipping/calculate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "shipping",
+                                "calculate"
+                            ]
+                        },
+                        "description": "Calculate shipping cost",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"address_id\": 1,\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 2 }\n  ]\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Shipping Methods",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/shipping/methods",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "shipping",
+                                "methods"
+                            ]
+                        },
+                        "description": "List available shipping methods"
+                    },
+                    "response": []
+                }
+            ]
         },
         {
-          "name": "Export Report",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"type\": \"sales\",\n  \"format\": \"csv\",\n  \"from\": \"2024-01-01\",\n  \"to\": \"2024-12-31\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/admin/reports/export",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "admin", "reports", "export"]
-            },
-            "description": "Export report (Admin only)"
-          },
-          "response": []
+            "name": "Coupons",
+            "item": [
+                {
+                    "name": "Validate Coupon",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/coupons/validate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "coupons",
+                                "validate"
+                            ]
+                        },
+                        "description": "Validate a coupon code (public)",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"SUMMER20\",\n  \"cart_total\": 5000\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Available Coupons",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/coupons/available",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "coupons",
+                                "available"
+                            ]
+                        },
+                        "description": "List user-specific available coupons"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Payment Callbacks (Public)",
+            "item": [
+                {
+                    "name": "aamarPay Success",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/payment/aamarpay/success",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payment",
+                                "aamarpay",
+                                "success"
+                            ]
+                        },
+                        "description": "Payment success webhook"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "aamarPay Fail",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/payment/aamarpay/fail",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payment",
+                                "aamarpay",
+                                "fail"
+                            ]
+                        },
+                        "description": "Payment fail webhook"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "aamarPay Cancel",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/payment/aamarpay/cancel",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payment",
+                                "aamarpay",
+                                "cancel"
+                            ]
+                        },
+                        "description": "Payment cancel webhook"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Products (Public)",
+            "item": [
+                {
+                    "name": "List Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products?page=1&per_page=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20"
+                                }
+                            ]
+                        },
+                        "description": "Get all products with pagination"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Search Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/search?q=laptop&category_id=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "laptop"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Search products by keyword"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Product",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/laptop-dell-xps-15",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "laptop-dell-xps-15"
+                            ]
+                        },
+                        "description": "Get product by slug"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Product by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "1"
+                            ]
+                        },
+                        "description": "Get product by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Check Availability",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/check-availability",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "check-availability"
+                            ]
+                        },
+                        "description": "Check stock availability for a product/variant",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1,\n  \"variant_id\": 2,\n  \"quantity\": 5\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Product Price",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/1/price",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "1",
+                                "price"
+                            ]
+                        },
+                        "description": "Get current price for a product"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Find Variant",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/1/find-variant",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "1",
+                                "find-variant"
+                            ]
+                        },
+                        "description": "Find variant by attribute combination",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"attributes\": {\n    \"color\": \"Red\",\n    \"size\": \"L\"\n  }\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Reviews",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products/1/reviews",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products",
+                                "1",
+                                "reviews"
+                            ]
+                        },
+                        "description": "Get public reviews for a product"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark Review Helpful",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/reviews/1/helpful",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reviews",
+                                "1",
+                                "helpful"
+                            ]
+                        },
+                        "description": "Mark a review as helpful"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Related Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products/1/related",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products",
+                                "1",
+                                "related"
+                            ]
+                        },
+                        "description": "Get related products"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Frequently Bought Together",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/products/1/frequently-bought",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "products",
+                                "1",
+                                "frequently-bought"
+                            ]
+                        },
+                        "description": "Get frequently bought together products"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "User Profile",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "profile"
+                            ]
+                        },
+                        "description": "Get user profile (requires authentication)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"01711111111\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/profile",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "profile"
+                            ]
+                        },
+                        "description": "Update user profile (requires authentication)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Addresses",
+            "item": [
+                {
+                    "name": "List Addresses",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/addresses",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "addresses"
+                            ]
+                        },
+                        "description": "Get all user addresses"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Address",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"address_line_1\": \"123 Main Street\",\n  \"address_line_2\": \"Apt 4B\",\n  \"city\": \"Dhaka\",\n  \"state\": \"Dhaka\",\n  \"postal_code\": \"1200\",\n  \"country\": \"Bangladesh\",\n  \"is_default\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/addresses",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "addresses"
+                            ]
+                        },
+                        "description": "Create new address"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Address",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"address_line_1\": \"456 New Street\",\n  \"city\": \"Chittagong\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/addresses/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "addresses",
+                                "1"
+                            ]
+                        },
+                        "description": "Update address by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Address",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/addresses/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "addresses",
+                                "1"
+                            ]
+                        },
+                        "description": "Delete address by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Set Default Address",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/users/addresses/1/default",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "users",
+                                "addresses",
+                                "1",
+                                "default"
+                            ]
+                        },
+                        "description": "Set address as default"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Cart",
+            "item": [
+                {
+                    "name": "Get Cart",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart"
+                            ]
+                        },
+                        "description": "Get user cart"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add to Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"variant_id\": 1,\n  \"quantity\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/items",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                "items"
+                            ]
+                        },
+                        "description": "Add item to cart"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Cart Item",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"quantity\": 3\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/items/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                "items",
+                                "1"
+                            ]
+                        },
+                        "description": "Update cart item quantity"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Remove from Cart",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/items/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                "items",
+                                "1"
+                            ]
+                        },
+                        "description": "Remove item from cart"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Apply Coupon",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"SUMMER2024\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/apply-coupon",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                "apply-coupon"
+                            ]
+                        },
+                        "description": "Apply coupon to cart"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Remove Coupon",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/cart/coupon",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "cart",
+                                "coupon"
+                            ]
+                        },
+                        "description": "Remove coupon from cart"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "List Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders"
+                            ]
+                        },
+                        "description": "Get user orders"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"address_id\": 1,\n  \"payment_method\": \"cod\",\n  \"notes\": \"Please deliver after 5 PM\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders"
+                            ]
+                        },
+                        "description": "Create new order from cart"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders",
+                                "1"
+                            ]
+                        },
+                        "description": "Get order details by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Track Order",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders/1/track",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders",
+                                "1",
+                                "track"
+                            ]
+                        },
+                        "description": "Track order status"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Cancel Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders/1/cancel",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders",
+                                "1",
+                                "cancel"
+                            ]
+                        },
+                        "description": "Cancel order"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Initiate Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders/1/payment/initiate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders",
+                                "1",
+                                "payment",
+                                "initiate"
+                            ]
+                        },
+                        "description": "Initiate payment for an order",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"payment_method\": \"aamarpay\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Payment Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/orders/1/payment/status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "orders",
+                                "1",
+                                "payment",
+                                "status"
+                            ]
+                        },
+                        "description": "Check payment status"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Wishlist",
+            "item": [
+                {
+                    "name": "Get Wishlist",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/wishlist",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "wishlist"
+                            ]
+                        },
+                        "description": "Get user wishlist"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add to Wishlist",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"product_id\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/wishlist",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "wishlist"
+                            ]
+                        },
+                        "description": "Add product to wishlist"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Remove from Wishlist",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/wishlist/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "wishlist",
+                                "1"
+                            ]
+                        },
+                        "description": "Remove product from wishlist"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "item": [
+                {
+                    "name": "List Notifications",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/notifications",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "notifications"
+                            ]
+                        },
+                        "description": "Get user notifications"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/notifications/1/read",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "notifications",
+                                "1",
+                                "read"
+                            ]
+                        },
+                        "description": "Mark notification as read"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Unread Count",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/notifications/unread-count",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "notifications",
+                                "unread-count"
+                            ]
+                        },
+                        "description": "Get unread notifications count"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Reviews",
+            "item": [
+                {
+                    "name": "Write Review",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/products/1/reviews",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "products",
+                                "1",
+                                "reviews"
+                            ]
+                        },
+                        "description": "Submit a product review (auth required)",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"rating\": 5,\n  \"title\": \"Great product!\",\n  \"comment\": \"Really loved the quality.\"\n}"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Tracking (Public)",
+            "item": [
+                {
+                    "name": "Track Order",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/tracking?order_number=ORD-123456",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "tracking"
+                            ],
+                            "query": [
+                                {
+                                    "key": "order_number",
+                                    "value": "ORD-123456"
+                                }
+                            ]
+                        },
+                        "description": "Track order by order number"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Dashboard",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/dashboard",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "dashboard"
+                            ]
+                        },
+                        "description": "Admin dashboard stats (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Sales Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/reports/sales?from=2024-01-01&to=2024-12-31",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "reports",
+                                "sales"
+                            ],
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "2024-01-01"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2024-12-31"
+                                }
+                            ]
+                        },
+                        "description": "Sales report (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Inventory Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/reports/inventory",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "reports",
+                                "inventory"
+                            ]
+                        },
+                        "description": "Inventory report (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Customers Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/reports/customers",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "reports",
+                                "customers"
+                            ]
+                        },
+                        "description": "Customers report (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Coupons Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/reports/coupons",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "reports",
+                                "coupons"
+                            ]
+                        },
+                        "description": "Coupons report (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Export Report",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"type\": \"sales\",\n  \"format\": \"csv\",\n  \"from\": \"2024-01-01\",\n  \"to\": \"2024-12-31\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/reports/export",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "reports",
+                                "export"
+                            ]
+                        },
+                        "description": "Export report (Admin only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Inventory Valuation",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/inventory/valuation",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "inventory",
+                                "valuation"
+                            ]
+                        },
+                        "description": "Inventory valuation report"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Variant Stock",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/inventory/variants/1/stock",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "inventory",
+                                "variants",
+                                "1",
+                                "stock"
+                            ]
+                        },
+                        "description": "Update stock for a specific variant",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"quantity\": 50,\n  \"type\": \"add\",\n  \"reason\": \"Restock\"\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Bulk Inventory Update",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/inventory/bulk-update",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "inventory",
+                                "bulk-update"
+                            ]
+                        },
+                        "description": "Bulk update inventory levels",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"updates\": [\n    { \"variant_id\": 1, \"quantity\": 10 },\n    { \"variant_id\": 2, \"quantity\": 20 }\n  ]\n}"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Variant Stock History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/admin/inventory/variants/1/history",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "admin",
+                                "inventory",
+                                "variants",
+                                "1",
+                                "history"
+                            ]
+                        },
+                        "description": "Get stock history for a variant"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "POS System",
+            "item": [
+                {
+                    "name": "Search POS Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/products/search?search=laptop&category_id=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "products",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "laptop"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Search products for POS. Returns regular price and auto-calculated wholesale_price."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Find Product by Barcode",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/products/barcode/2001234567890",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "products",
+                                "barcode",
+                                "2001234567890"
+                            ]
+                        },
+                        "description": "Find product by barcode or SKU for POS scanning."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create POS Order (Retail)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"variant_id\": null,\n      \"quantity\": 2,\n      \"price\": 120000.00\n    }\n  ],\n  \"subtotal\": 240000.00,\n  \"discount_amount\": 0,\n  \"tax_amount\": 12000.00,\n  \"total_amount\": 252000.00,\n  \"is_wholesale\": false,\n  \"payments\": [\n    {\n      \"method\": \"cash\",\n      \"amount\": 252000.00,\n      \"received_amount\": 260000.00,\n      \"change_amount\": 8000.00,\n      \"reference\": \"\"\n    }\n  ],\n  \"customer_name\": \"John Doe\",\n  \"customer_phone\": \"01711111111\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/order",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "order"
+                            ]
+                        },
+                        "description": "Create a retail POS order."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create POS Order (Wholesale)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"variant_id\": null,\n      \"quantity\": 10,\n      \"price\": 96000.00\n    }\n  ],\n  \"subtotal\": 960000.00,\n  \"discount_amount\": 0,\n  \"tax_amount\": 48000.00,\n  \"total_amount\": 1008000.00,\n  \"is_wholesale\": true,\n  \"payments\": [\n    {\n      \"method\": \"cash\",\n      \"amount\": 1008000.00,\n      \"received_amount\": 1008000.00,\n      \"change_amount\": 0,\n      \"reference\": \"\"\n    }\n  ],\n  \"customer_name\": \"Tech Wholesale Ltd\",\n  \"customer_phone\": \"01722222222\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/order",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "order"
+                            ]
+                        },
+                        "description": "Create a wholesale POS order. wholesale_price is auto-calculated from wholesale_percentage."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Hold Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"cart_data\": {\n    \"items\": [\n      {\n        \"product_id\": 1,\n        \"quantity\": 2,\n        \"price\": 120000.00\n      }\n    ],\n    \"total\": 252000.00,\n    \"item_count\": 2,\n    \"customer\": {\n      \"name\": \"John Doe\",\n      \"phone\": \"01711111111\",\n      \"id\": null\n    },\n    \"is_wholesale\": false\n  },\n  \"customer_name\": \"John Doe\",\n  \"customer_phone\": \"01711111111\",\n  \"note\": \"Will pick up tomorrow\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/cart/hold",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "cart",
+                                "hold"
+                            ]
+                        },
+                        "description": "Hold current cart for later retrieval."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Held Carts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/cart/held",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "cart",
+                                "held"
+                            ]
+                        },
+                        "description": "List all held carts for current user."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Retrieve Held Cart",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/cart/retrieve/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "cart",
+                                "retrieve",
+                                "1"
+                            ]
+                        },
+                        "description": "Retrieve a previously held cart."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Held Cart",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/cart/held/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "cart",
+                                "held",
+                                "1"
+                            ]
+                        },
+                        "description": "Delete a held cart permanently."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order Receipt",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/order/1/receipt",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "order",
+                                "1",
+                                "receipt"
+                            ]
+                        },
+                        "description": "Get printable receipt for a POS order."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order Tracking",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/order/1/tracking",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "order",
+                                "1",
+                                "tracking"
+                            ]
+                        },
+                        "description": "Get tracking timeline for a POS order."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Delivery Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"delivery_status\": \"shipped\",\n  \"notes\": \"Courier pickup scheduled\",\n  \"tracking_number\": \"TRK123456\",\n  \"courier_id\": 1,\n  \"estimated_delivery_date\": \"2025-04-15\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/order/1/delivery-status",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "order",
+                                "1",
+                                "delivery-status"
+                            ]
+                        },
+                        "description": "Update delivery status for a POS order."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Daily Report",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/reports/daily?date=2025-04-13",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "reports",
+                                "daily"
+                            ],
+                            "query": [
+                                {
+                                    "key": "date",
+                                    "value": "2025-04-13"
+                                }
+                            ]
+                        },
+                        "description": "Get daily POS sales report."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Open POS Session",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"opening_amount\": 5000.00,\n  \"opening_note\": \"Starting float\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/session/open",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "session",
+                                "open"
+                            ]
+                        },
+                        "description": "Open a new POS session."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Close POS Session",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"closing_amount\": 15000.00,\n  \"closing_note\": \"End of day\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/admin/pos/session/close",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "pos",
+                                "session",
+                                "close"
+                            ]
+                        },
+                        "description": "Close the current POS session."
+                    },
+                    "response": []
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "event": [],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8000",
-      "type": "string"
-    },
-    {
-      "key": "access_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "refresh_token",
-      "value": "",
-      "type": "string"
-    }
-  ]
+    ],
+    "event": [],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refresh_token",
+            "value": "",
+            "type": "string"
+        }
+    ]
 }

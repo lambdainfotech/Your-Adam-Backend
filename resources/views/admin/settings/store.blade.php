@@ -19,6 +19,9 @@
                 <a href="{{ route('admin.settings.email') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-envelope w-6"></i> Email Configuration
                 </a>
+                <a href="{{ route('admin.settings.sms') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-sms w-6"></i> SMS Configuration
+                </a>
                 <a href="{{ route('admin.settings.payment') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-credit-card w-6"></i> Payment Settings
                 </a>

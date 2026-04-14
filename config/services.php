@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'muthobarta' => [
+        'api_key' => env('MUTHOBARTA_API_KEY'),
+    ],
+
 ];

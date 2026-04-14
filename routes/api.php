@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\OTPAuthController;
 use App\Http\Controllers\Auth\JWTAuthController;
 use App\Http\Controllers\Frontend\SiteInfoController;
 use App\Http\Controllers\Frontend\SliderController;
@@ -88,8 +89,8 @@ Route::group(['prefix' => 'v1'], function () {
     // Auth Routes (Unified JWT)
     Route::group(['prefix' => 'auth'], function () {
         // Public auth routes
-        Route::post('/mobile/send-otp', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'sendOTP']);
-        Route::post('/mobile/verify', [\App\Modules\Auth\src\Http\Controllers\AuthController::class, 'verifyOTP']);
+        Route::post('/mobile/send-otp', [OTPAuthController::class, 'sendOTP']);
+        Route::post('/mobile/verify', [OTPAuthController::class, 'verifyOTP']);
         Route::post('/login', [JWTAuthController::class, 'login']);
         Route::post('/refresh', [JWTAuthController::class, 'refresh']);
 
