@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('weight', 8, 2)->nullable();
             $table->string('weight_unit', 10)->default('kg');
             $table->tinyInteger('status')->default(1)->comment('0=draft, 1=active, 2=archived');
+            $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->boolean('has_variants')->default(false);
             $table->string('seo_title', 255)->nullable();
