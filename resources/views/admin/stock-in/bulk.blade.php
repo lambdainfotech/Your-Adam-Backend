@@ -54,7 +54,7 @@
             </div>
 
             <!-- Items Table -->
-            <div class="border rounded-lg overflow-hidden">
+            <div class="border rounded-lg">
                 <table class="w-full" id="itemsTable">
                     <thead class="bg-gray-50">
                         <tr>
@@ -145,7 +145,7 @@
             </td>
             <td class="px-4 py-3">
                 <select name="items[${itemCount}][variant_id]"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg variant-select"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg variant-select bg-white cursor-pointer"
                     id="variant_${itemCount}"
                     onchange="updateCurrentStock(${itemCount})">
                     <option value="">Select Variant</option>
@@ -183,9 +183,13 @@
         const currentStock = document.getElementById(`currentStock_${itemId}`);
         const hasVariantsInput = document.getElementById(`hasVariants_${itemId}`);
         
+        // Reset variant select
         variantSelect.innerHTML = '<option value="">Select Variant</option>';
         currentStock.textContent = '-';
         variantSelect.required = false;
+        variantSelect.disabled = false;
+        variantSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+        variantSelect.classList.add('bg-white', 'cursor-pointer');
         
         if (!productId) return;
         
@@ -198,8 +202,8 @@
                 product.variants.forEach(variant => {
                     const option = document.createElement('option');
                     option.value = variant.id;
-                    option.textContent = variant.sku;
-                    option.setAttribute('data-stock', variant.stock_quantity);
+                    option.textContent = variant.sku || `Variant #${variant.id}`;
+                    option.setAttribute('data-stock', variant.stock_quantity ?? 0);
                     variantSelect.appendChild(option);
                 });
             } else {
@@ -207,6 +211,8 @@
                 hasVariantsInput.value = '0';
                 variantSelect.innerHTML = '<option value="">No Variants (Simple Product)</option>';
                 variantSelect.disabled = true;
+                variantSelect.classList.remove('bg-white', 'cursor-pointer');
+                variantSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
                 currentStock.textContent = product.stock_quantity || 0;
             }
         }
@@ -264,6 +270,15 @@
     // Add first item automatically on page load
     document.addEventListener('DOMContentLoaded', function() {
         addItem();
+        
+        // Handle browser autofill / pre-selected products
+        document.querySelectorAll('.product-select').forEach(select => {
+            if (select.value) {
+                const row = select.closest('tr');
+                const itemId = row.id.replace('itemRow_', '');
+                loadVariants(select, itemId);
+            }
+        });
     });
 </script>
 @endpush
