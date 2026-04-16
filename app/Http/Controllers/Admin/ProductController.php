@@ -457,7 +457,7 @@ class ProductController extends Controller
         $sku = $baseSku;
         $counter = 1;
 
-        while (\App\Models\Variant::withTrashed()->where('sku', $sku)->exists()) {
+        while (\App\Models\Variant::where('sku', $sku)->exists()) {
             $sku = $baseSku . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
             $counter++;
         }

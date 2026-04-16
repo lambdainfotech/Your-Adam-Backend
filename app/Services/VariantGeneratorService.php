@@ -271,7 +271,7 @@ class VariantGeneratorService
         $sku = $baseSku;
         $counter = 1;
 
-        while (Variant::withTrashed()->where('sku', $sku)->exists()) {
+        while (Variant::where('sku', $sku)->exists()) {
             $sku = $baseSku . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
             $counter++;
         }

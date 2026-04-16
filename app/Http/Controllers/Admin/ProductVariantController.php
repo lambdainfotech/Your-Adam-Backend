@@ -464,7 +464,7 @@ class ProductVariantController extends Controller
             if (str_contains($e->getMessage(), 'variants_sku_unique')) {
                 $counter = 1;
                 $sku = $validated['sku'];
-                while (Variant::withTrashed()->where('sku', $sku)->exists()) {
+                while (Variant::where('sku', $sku)->exists()) {
                     $sku = $validated['sku'] . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
                     $counter++;
                 }
