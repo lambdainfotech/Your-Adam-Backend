@@ -377,6 +377,11 @@ class ProductController extends Controller
         }
         
         foreach ($variantsData as $variantData) {
+            // Skip variants with stock quantity <= 0
+            if (($variantData['stock_quantity'] ?? 0) <= 0) {
+                continue;
+            }
+
             // Get attribute values for SKU generation
             $attributeValues = [];
             if (!empty($variantData['attribute_values'])) {
