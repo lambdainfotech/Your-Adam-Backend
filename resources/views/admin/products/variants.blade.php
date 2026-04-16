@@ -121,88 +121,88 @@
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10 align-middle">
                                         <input type="checkbox" id="selectAll" class="rounded border-gray-300">
                                     </th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variant</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WS %</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">Variant</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">SKU</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Price</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">WS %</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Stock</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Status</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="variantsTableBody" class="divide-y divide-gray-200">
                                 @foreach($product->variants as $variant)
                                 <tr class="variant-row" data-variant-id="{{ $variant->id }}">
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 align-middle">
                                         <input type="checkbox" class="variant-checkbox rounded border-gray-300" value="{{ $variant->id }}">
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 align-middle">
                                         <div class="flex items-center">
                                             @if($variant->mainImage)
-                                                <img src="{{ $variant->mainImage->full_thumbnail_url }}" class="w-10 h-10 rounded object-cover mr-3">
+                                                <img src="{{ $variant->mainImage->full_thumbnail_url }}" class="w-10 h-10 rounded object-cover mr-3 flex-shrink-0">
                                             @else
-                                                <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center mr-3">
+                                                <div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center mr-3 flex-shrink-0">
                                                     <i class="fas fa-image text-gray-400"></i>
                                                 </div>
                                             @endif
-                                            <div>
-                                                <div class="font-medium text-gray-900">{{ $variant->attribute_text_short }}</div>
-                                                <div class="text-xs text-gray-500">{{ $variant->attribute_text }}</div>
+                                            <div class="min-w-0">
+                                                <div class="font-medium text-gray-900 whitespace-nowrap">{{ $variant->attribute_text_short }}</div>
+                                                <div class="text-xs text-gray-500 whitespace-nowrap">{{ $variant->attribute_text }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
                                         <span class="font-mono text-sm">{{ $variant->sku }}</span>
                                     </td>
-                                    <td class="px-4 py-3">
-                                        <div class="inline-edit" contenteditable="true" 
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
+                                        <div class="inline-edit" contenteditable="true"
                                             onblur="updateVariantField({{ $variant->id }}, 'price', this)"
                                             data-original="{{ $variant->price }}">
                                             ৳{{ number_format($variant->price ?: $product->base_price, 2) }}
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3">
-                                        <div class="inline-edit w-16 text-center" contenteditable="true" 
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
+                                        <div class="inline-edit w-16 text-center" contenteditable="true"
                                             onblur="updateVariantField({{ $variant->id }}, 'wholesale_percentage', this)"
                                             data-original="{{ $variant->wholesale_percentage }}">
                                             {{ $variant->wholesale_percentage ? $variant->wholesale_percentage . '%' : ($product->wholesale_percentage ? $product->wholesale_percentage . '%' : '-') }}
                                         </div>
                                         @if($variant->effective_wholesale_price)
-                                            <div class="text-xs text-green-600 mt-1">
+                                            <div class="text-xs text-green-600 mt-1 whitespace-nowrap">
                                                 ৳{{ number_format($variant->effective_wholesale_price, 2) }}
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center space-x-2">
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
+                                        <div class="flex items-center space-x-2 flex-nowrap">
                                             <span class="inline-edit w-16 text-center" contenteditable="true"
                                                 onblur="updateVariantField({{ $variant->id }}, 'stock_quantity', this)"
                                                 data-original="{{ $variant->stock_quantity }}">
                                                 {{ $variant->stock_quantity }}
                                             </span>
                                             @if($variant->is_low_stock)
-                                                <span class="stock-badge bg-yellow-100 text-yellow-800">Low</span>
+                                                <span class="stock-badge bg-yellow-100 text-yellow-800 whitespace-nowrap">Low</span>
                                             @elseif($variant->stock_quantity <= 0)
-                                                <span class="stock-badge bg-red-100 text-red-800">Out</span>
+                                                <span class="stock-badge bg-red-100 text-red-800 whitespace-nowrap">Out</span>
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3">
-                                        <button type="button" onclick="toggleVariantStatus({{ $variant->id }}, this)" 
-                                            class="stock-badge {{ $variant->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
+                                        <button type="button" onclick="toggleVariantStatus({{ $variant->id }}, this)"
+                                            class="stock-badge {{ $variant->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }} whitespace-nowrap">
                                             {{ $variant->is_active ? 'Active' : 'Inactive' }}
                                         </button>
                                     </td>
-                                    <td class="px-4 py-3 text-center">
+                                    <td class="px-4 py-3 text-center align-middle whitespace-nowrap">
                                         <div class="flex items-center justify-center space-x-2">
-                                            <button type="button" onclick="editVariant({{ $variant->id }})" 
+                                            <button type="button" onclick="editVariant({{ $variant->id }})"
                                                 class="text-blue-600 hover:text-blue-800" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button type="button" onclick="deleteVariant({{ $variant->id }})" 
+                                            <button type="button" onclick="deleteVariant({{ $variant->id }})"
                                                 class="text-red-600 hover:text-red-800" title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -372,7 +372,7 @@
 <!-- Edit Variant Modal -->
 <div id="editVariantModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h3 class="text-lg font-semibold text-gray-900">Edit Variant</h3>
                 <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
@@ -521,6 +521,48 @@
     </div>
 </div>
 
+<!-- Configure Attributes Modal -->
+<div id="attributeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Configure Attributes</h3>
+                <button type="button" onclick="closeAttributeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.products.attributes.update', $product) }}" method="POST">
+                @csrf
+                <div class="p-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Select Attributes for this Product</label>
+                    <div class="space-y-3">
+                        @foreach($attributes as $attribute)
+                        <div class="flex items-center border rounded-lg p-3">
+                            <input type="checkbox" name="attributes[]" value="{{ $attribute->id }}"
+                                id="config_attr_{{ $attribute->id }}"
+                                class="rounded border-gray-300 mr-3"
+                                {{ in_array($attribute->id, $productAttributeIds) ? 'checked' : '' }}>
+                            <label for="config_attr_{{ $attribute->id }}" class="font-medium text-gray-900">{{ $attribute->name }}</label>
+                            <span class="ml-auto text-xs text-gray-500">{{ $attribute->values->count() }} values</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
+                    <button type="button" onclick="closeAttributeModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Save Attributes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -540,6 +582,14 @@
 
     function closeEditModal() {
         document.getElementById('editVariantModal').classList.add('hidden');
+    }
+
+    function openAttributeModal() {
+        document.getElementById('attributeModal').classList.remove('hidden');
+    }
+
+    function closeAttributeModal() {
+        document.getElementById('attributeModal').classList.add('hidden');
     }
 
     // Attribute checkbox handling
@@ -612,8 +662,6 @@
                 document.getElementById('edit_sku').value = data.variant.sku;
                 document.getElementById('edit_barcode').value = data.variant.barcode || '';
                 document.getElementById('edit_price').value = data.variant.price || '';
-                document.getElementById('edit_wholesale_price').value = data.variant.wholesale_price || '';
-                document.getElementById('edit_compare_price').value = data.variant.compare_price || '';
                 document.getElementById('edit_cost_price').value = data.variant.cost_price || '';
                 document.getElementById('edit_stock_quantity').value = data.variant.stock_quantity;
                 document.getElementById('edit_stock_status').value = data.variant.stock_status;
@@ -801,6 +849,7 @@
     window.addEventListener('click', function(e) {
         if (e.target.id === 'generateModal') closeGenerateModal();
         if (e.target.id === 'editVariantModal') closeEditModal();
+        if (e.target.id === 'attributeModal') closeAttributeModal();
     });
 </script>
 @endpush
