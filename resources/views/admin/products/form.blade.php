@@ -969,6 +969,19 @@
 <script>
     // Store attributes data for JavaScript
     const attributesData = @json($attributes->keyBy('id'));
+    const existingVariants = @json(isset($product) ? $product->variants->map(fn($v) => [
+        'id' => $v->id,
+        'sku' => $v->sku,
+        'price' => $v->price,
+        'stock_quantity' => $v->stock_quantity,
+        'is_active' => $v->is_active,
+        'attribute_value_ids' => $v->attributeValues->pluck('id')->values()->toArray(),
+        'attribute_values' => $v->attributeValues->map(fn($av) => [
+            'id' => $av->id,
+            'attribute_name' => $av->attribute->name ?? '',
+            'value' => $av->value,
+        ])->toArray(),
+    ]) : []);
     let generatedVariants = [];
 
     // Tab switching

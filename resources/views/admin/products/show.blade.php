@@ -129,8 +129,9 @@
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <h3 class="font-semibold text-gray-800 mb-4">Variants Summary</h3>
                 @php
-                    $totalStock = $product->variants->sum('stock_quantity');
-                    $variantCount = $product->variants->count();
+                    $visibleVariants = $product->variants->filter(fn($v) => $v->stock_quantity > 0);
+                    $totalStock = $visibleVariants->sum('stock_quantity');
+                    $variantCount = $visibleVariants->count();
                 @endphp
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -162,7 +163,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($product->variants as $variant)
+                    @forelse($visibleVariants as $variant)
                         <tr>
                             <td class="px-6 py-4 font-medium">{{ $variant->sku }}</td>
                             <td class="px-6 py-4">৳{{ number_format($variant->price, 2) }}</td>
