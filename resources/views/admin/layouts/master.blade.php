@@ -362,6 +362,15 @@
             // Clean URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }
+
+        // Auto-scroll sidebar to keep active menu item visible
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const activeItem = sidebar.querySelector('.nav-item.active');
+            if (activeItem) {
+                activeItem.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }
+        });
     </script>
     
     <!-- JWT Authentication Helper -->
