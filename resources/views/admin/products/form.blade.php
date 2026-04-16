@@ -966,22 +966,33 @@
 
 @push('scripts')
 <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+@php
+$existingVariantsForJs = [];
+if (isset($product)) {
+    $existingVariantsForJs = $product->variants->map(function ($v) {
+        return [
+            'id' => $v->id,
+            'sku' => $v->sku,
+            'price' => $v->price,
+            'stock_quantity' => $v->stock_quantity,
+            'is_active' => $v->is_active,
+            'attribute_value_ids' => $v->attributeValues->pluck('id')->values()->toArray(),
+            'attribute_values' => $v->attributeValues->map(function ($av) {
+                return [
+                    'id' => $av->id,
+                    'attribute_name' => $av->attribute->name ?? '',
+                    'value' => $av->value,
+                ];
+            })->values()->toArray(),
+        ];
+    })->values()->toArray();
+}
+@endphp
+
 <script>
     // Store attributes data for JavaScript
     const attributesData = @json($attributes->keyBy('id'));
-    const existingVariants = @json(isset($product) ? $product->variants->map(fn($v) => [
-        'id' => $v->id,
-        'sku' => $v->sku,
-        'price' => $v->price,
-        'stock_quantity' => $v->stock_quantity,
-        'is_active' => $v->is_active,
-        'attribute_value_ids' => $v->attributeValues->pluck('id')->values()->toArray(),
-        'attribute_values' => $v->attributeValues->map(fn($av) => [
-            'id' => $av->id,
-            'attribute_name' => $av->attribute->name ?? '',
-            'value' => $av->value,
-        ])->toArray(),
-    ]) : []);
+    const existingVariants = @json($existingVariantsForJs);
     let generatedVariants = [];
 
     // Tab switching
@@ -1171,6 +1182,91 @@
         }
     }
 
+    // Initialize existing variants when editing
+    function initializeExistingVariants() {
+        if (!existingVariants || existingVariants.length === 0) return;
+
+        const selectedAttributes = [];
+        document.querySelectorAll('.attribute-checkbox:checked').forEach(cb => {
+            const attrId = cb.value;
+            const attr = attributesData[attrId];
+            if (attr && attr.values) {
+                selectedAttributes.push({
+                    id: attrId,
+                    name: attr.name,
+                    values: attr.values
+                });
+            }
+        });
+
+        if (selectedAttributes.length === 0) return;
+
+        // Generate all combinations to maintain consistent ordering
+        const combinations = generateCombinations(selectedAttributes);
+
+        // Update badge
+        document.querySelector('.variant-count-badge').textContent = combinations.length;
+        document.querySelector('.variant-count-badge').classList.remove('hidden');
+
+        // Generate table rows
+        const tbody = document.getElementById('variantPreviewBody');
+        tbody.innerHTML = '';
+        generatedVariants = [];
+
+        const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
+        const skuPrefix = document.getElementById('skuPrefix').value || 'SKU';
+
+        combinations.forEach((combo, index) => {
+            const variantName = combo.map(c => c.value).join(' / ');
+            const sku = generateVariantSku(skuPrefix, combo, index);
+            const comboValueIds = combo.map(c => c.valueId).sort((a, b) => a - b);
+
+            // Find matching existing variant
+            const existing = existingVariants.find(ev => {
+                const evIds = [...ev.attribute_value_ids].sort((a, b) => a - b);
+                return JSON.stringify(evIds) === JSON.stringify(comboValueIds);
+            });
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="font-medium text-gray-900">${variantName}</div>
+                    <div class="text-xs text-gray-500">${combo.map(c => c.attrName + ': ' + c.value).join(', ')}</div>
+                    <input type="hidden" name="variants[${index}][attribute_values]" value="${combo.map(c => c.valueId).join(',')}">
+                    ${existing ? `<input type="hidden" name="variants[${index}][variant_id]" value="${existing.id}">` : ''}
+                </td>
+                <td>
+                    <input type="text" name="variants[${index}][sku]" value="${existing ? existing.sku : sku}" class="variant-input" required>
+                </td>
+                <td>
+                    <input type="number" name="variants[${index}][price]" value="${existing && existing.price ? parseFloat(existing.price).toFixed(2) : basePrice.toFixed(2)}" step="0.01" min="0" class="variant-input variant-price" required>
+                </td>
+                <td>
+                    <input type="number" name="variants[${index}][stock_quantity]" value="${existing ? existing.stock_quantity : 0}" min="0" class="variant-input variant-stock" required>
+                </td>
+                <td>
+                    <select name="variants[${index}][is_active]" class="variant-input">
+                        <option value="1" ${existing && existing.is_active ? 'selected' : ''}>Active</option>
+                        <option value="0" ${existing && !existing.is_active ? 'selected' : ''}>Inactive</option>
+                    </select>
+                </td>
+            `;
+            tbody.appendChild(row);
+
+            generatedVariants.push({
+                index,
+                name: variantName,
+                sku: existing ? existing.sku : sku,
+                combo
+            });
+        });
+
+        // Show configuration panel
+        document.getElementById('variantAttributesSelector').classList.add('hidden');
+        document.getElementById('variantConfiguration').classList.remove('hidden');
+        document.getElementById('displayBasePrice').textContent = basePrice.toFixed(2);
+    }
+
     // Sale schedule toggle
     document.getElementById('toggleSaleSchedule')?.addEventListener('click', function() {
         document.querySelectorAll('.sale-schedule').forEach(el => {
@@ -1323,12 +1419,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         calculateSalePrice();
         calculateWholesalePriceFromPercentage();
-        
+
         // Disable discount value if no discount type selected
         const selectedType = document.querySelector('input[name="discount_type"]:checked')?.value;
         const discountValueInput = document.getElementById('discountValue');
         if (selectedType === '' || !selectedType) {
             discountValueInput.disabled = true;
+        }
+
+        // Pre-populate existing variants when editing
+        const isVariable = document.querySelector('input[name="product_type"][value="variable"]')?.checked;
+        if (isVariable && existingVariants.length > 0) {
+            initializeExistingVariants();
         }
     });
 
