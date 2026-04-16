@@ -23,7 +23,13 @@ class ProductSearchController extends Controller
     {
         // Validate request
         $request->validate([
-            'q' => 'required|string|min:1|max:255',
+            'q' => 'nullable|string|min:1|max:255',
+            'category_slug' => 'nullable|string|max:255',
+            'subcategory_slug' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'slug' => 'nullable|string|max:255',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
             'page' => 'nullable|integer|min:1',
             'limit' => 'nullable|integer|min:1|max:100',
         ]);

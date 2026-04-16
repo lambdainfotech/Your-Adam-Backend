@@ -13,6 +13,12 @@ class ProductSearchService
     public function search(Request $request): array
     {
         $query = $request->get('q');
+        $categorySlug = $request->get('category_slug');
+        $subcategorySlug = $request->get('subcategory_slug');
+        $name = $request->get('name');
+        $slug = $request->get('slug');
+        $minPrice = $request->get('min_price');
+        $maxPrice = $request->get('max_price');
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 20);
 
@@ -21,12 +27,13 @@ class ProductSearchService
             $q->where('is_active', true)
                 ->orderBy('position');
         }])
-            ->where('status', 1);
+            ->where('status', 1)
+            ->where('is_active', true);
 
-        // Apply search on multiple fields
+        // Apply general search on multiple fields
         if ($query) {
             $searchTerm = '%' . $query . '%';
-            $searchQuery->where(function ($q) use ($searchTerm, $query) {
+            $searchQuery->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', $searchTerm)
                     ->orWhere('short_description', 'LIKE', $searchTerm)
                     ->orWhere('description', 'LIKE', $searchTerm)
@@ -36,6 +43,40 @@ class ProductSearchService
                         $cq->where('name', 'LIKE', $searchTerm);
                     });
             });
+        }
+
+        // Apply category filter
+        if ($categorySlug) {
+            $searchQuery->whereHas('category', function ($cq) use ($categorySlug) {
+                $cq->where('slug', $categorySlug)
+                    ->whereNull('parent_id');
+            });
+        }
+
+        // Apply subcategory filter
+        if ($subcategorySlug) {
+            $searchQuery->whereHas('category', function ($cq) use ($subcategorySlug) {
+                $cq->where('slug', $subcategorySlug)
+                    ->whereNotNull('parent_id');
+            });
+        }
+
+        // Apply name filter
+        if ($name) {
+            $searchQuery->where('name', 'LIKE', '%' . $name . '%');
+        }
+
+        // Apply slug filter
+        if ($slug) {
+            $searchQuery->where('slug', 'LIKE', '%' . $slug . '%');
+        }
+
+        // Apply price range filters
+        if ($minPrice !== null) {
+            $searchQuery->where('base_price', '>=', $minPrice);
+        }
+        if ($maxPrice !== null) {
+            $searchQuery->where('base_price', '<=', $maxPrice);
         }
 
         // Get total count before pagination
@@ -58,7 +99,15 @@ class ProductSearchService
             'page' => $page,
             'limit' => $limit,
             'totalPages' => (int) ceil($total / $limit),
-            'query' => $query,
+            'filters' => [
+                'q' => $query,
+                'category_slug' => $categorySlug,
+                'subcategory_slug' => $subcategorySlug,
+                'name' => $name,
+                'slug' => $slug,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+            ],
         ];
     }
 
