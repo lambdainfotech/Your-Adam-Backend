@@ -407,16 +407,34 @@ class ProductController extends Controller
             }
             
             // Create the variant
-            $variant = $product->variants()->create([
-                'sku' => $sku,
-                'barcode' => $barcode,
-                'price' => $variantData['price'] ?? $product->base_price,
-                'wholesale_percentage' => $variantData['wholesale_percentage'] ?? null,
-                'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
-                'is_active' => $variantData['is_active'] ?? true,
-                'position' => $position,
-            ]);
+            try {
+                $variant = $product->variants()->create([
+                    'sku' => $sku,
+                    'barcode' => $barcode,
+                    'price' => $variantData['price'] ?? $product->base_price,
+                    'wholesale_percentage' => $variantData['wholesale_percentage'] ?? null,
+                    'stock_quantity' => $variantData['stock_quantity'] ?? 0,
+                    'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
+                    'is_active' => $variantData['is_active'] ?? true,
+                    'position' => $position,
+                ]);
+            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                if (str_contains($e->getMessage(), 'variants_sku_unique')) {
+                    $sku = $this->makeUniqueVariantSku($sku);
+                    $variant = $product->variants()->create([
+                        'sku' => $sku,
+                        'barcode' => $barcode,
+                        'price' => $variantData['price'] ?? $product->base_price,
+                        'wholesale_percentage' => $variantData['wholesale_percentage'] ?? null,
+                        'stock_quantity' => $variantData['stock_quantity'] ?? 0,
+                        'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
+                        'is_active' => $variantData['is_active'] ?? true,
+                        'position' => $position,
+                    ]);
+                } else {
+                    throw $e;
+                }
+            }
 
             // Attach attribute values
             if (!empty($variantData['attribute_values'])) {
@@ -429,6 +447,22 @@ class ProductController extends Controller
 
         // Update product has_variants flag
         $product->update(['has_variants' => true]);
+    }
+
+    /**
+     * Make variant SKU unique by appending a counter
+     */
+    private function makeUniqueVariantSku(string $baseSku): string
+    {
+        $sku = $baseSku;
+        $counter = 1;
+
+        while (\App\Models\Variant::withTrashed()->where('sku', $sku)->exists()) {
+            $sku = $baseSku . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
+            $counter++;
+        }
+
+        return $sku;
     }
 
     public function destroy(Product $product)

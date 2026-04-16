@@ -736,36 +736,18 @@
                                 <!-- Step 1: Select Attributes -->
                                 <div class="form-card" id="variantAttributesSelector">
                                     <div class="form-card-title">
-                                        <i class="fas fa-check-square"></i>
-                                        <span>Step 1: Select Attributes</span>
+                                        <i class="fas fa-layer-group"></i>
+                                        <span>Product Variants</span>
                                     </div>
-                                    <p class="text-gray-500 text-sm mb-4">Choose attributes to create variant combinations:</p>
-                                    
-                                    <div class="space-y-3">
-                                        @foreach($attributes as $attribute)
-                                            <div class="attribute-selector-card" data-attribute-id="{{ $attribute->id }}" onclick="toggleAttributeSelection(this)">
-                                                <div class="flex items-start">
-                                                    <input type="checkbox" name="attributes[]" value="{{ $attribute->id }}" class="attribute-checkbox mt-1 mr-3 h-4 w-4 text-blue-600" {{ in_array($attribute->id, old('attributes', $selectedAttributeIds ?? [])) ? 'checked' : '' }}>
-                                                    <div class="flex-1">
-                                                        <div class="flex items-center justify-between">
-                                                            <span class="font-medium text-gray-900">{{ $attribute->name }}</span>
-                                                            <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{{ $attribute->values->count() }} values</span>
-                                                        </div>
-                                                        <p class="text-sm text-gray-500 mt-1">{{ $attribute->code }}</p>
-                                                        <div class="attribute-values-preview">
-                                                            @foreach($attribute->values as $value)
-                                                                <span class="value-tag">{{ $value->value }}</span>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    
-                                    <div class="mt-4 flex justify-end">
-                                        <button type="button" onclick="generateVariantPreview()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                            <i class="fas fa-magic mr-2"></i>Generate Variants
+                                    <p class="text-gray-500 text-sm mb-4">Configure variant combinations for this product.</p>
+                                    <div class="text-center py-8">
+                                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-magic text-2xl text-blue-500"></i>
+                                        </div>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Generate Variants</h3>
+                                        <p class="text-gray-500 mb-4">Select attributes and values to create variant combinations.</p>
+                                        <button type="button" onclick="openGenerateModal()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                            <i class="fas fa-cogs mr-2"></i>Configure Variants
                                         </button>
                                     </div>
                                 </div>
@@ -962,6 +944,63 @@
         </div>
     </form>
 </div>
+
+<!-- Generate Variants Modal -->
+<div id="generateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Generate Variants</h3>
+                <button type="button" onclick="closeGenerateModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Select Attributes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Attributes to Combine</label>
+                    <div class="space-y-3">
+                        @foreach($attributes as $attribute)
+                        <div class="border rounded-lg p-3 modal-attribute-item">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" name="modal_attributes[]" value="{{ $attribute->id }}" 
+                                    id="modal_attr_{{ $attribute->id }}"
+                                    class="modal-attribute-checkbox rounded border-gray-300 mr-3"
+                                    {{ in_array($attribute->id, old('attributes', $selectedAttributeIds ?? [])) ? 'checked' : '' }}>
+                                <label for="modal_attr_{{ $attribute->id }}" class="font-medium text-gray-900">{{ $attribute->name }}</label>
+                            </div>
+                            <div class="ml-6 modal-attribute-values {{ in_array($attribute->id, old('attributes', $selectedAttributeIds ?? [])) ? '' : 'hidden' }}">
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($attribute->values as $value)
+                                    <label class="inline-flex items-center px-3 py-1 bg-gray-100 rounded-full text-sm cursor-pointer hover:bg-gray-200">
+                                        <input type="checkbox" name="modal_attribute_values_{{ $attribute->id }}[]" value="{{ $value->id }}"
+                                            class="rounded border-gray-300 mr-2 modal-value-checkbox"
+                                            data-attribute-id="{{ $attribute->id }}">
+                                        {{ $value->value }}
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
+                <button type="button" onclick="closeGenerateModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                    Cancel
+                </button>
+                <button type="button" onclick="applyModalAndGenerate()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Generate Variants
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1035,36 +1074,65 @@ if (isset($product)) {
         });
     });
 
-    // Toggle attribute selection
-    function toggleAttributeSelection(card) {
-        const checkbox = card.querySelector('.attribute-checkbox');
-        checkbox.checked = !checkbox.checked;
-        card.classList.toggle('selected', checkbox.checked);
+    // Modal functions
+    function openGenerateModal() {
+        document.getElementById('generateModal').classList.remove('hidden');
     }
 
-    // Initialize selected attributes
-    document.querySelectorAll('.attribute-checkbox:checked').forEach(cb => {
-        cb.closest('.attribute-selector-card').classList.add('selected');
+    function closeGenerateModal() {
+        document.getElementById('generateModal').classList.add('hidden');
+    }
+
+    function applyModalAndGenerate() {
+        generateVariantPreview();
+        closeGenerateModal();
+    }
+
+    // Modal attribute checkbox handling
+    document.querySelectorAll('.modal-attribute-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const valuesDiv = this.closest('.modal-attribute-item').querySelector('.modal-attribute-values');
+            if (this.checked) {
+                valuesDiv.classList.remove('hidden');
+            } else {
+                valuesDiv.classList.add('hidden');
+                valuesDiv.querySelectorAll('.modal-value-checkbox').forEach(cb => cb.checked = false);
+            }
+        });
     });
 
     // Generate variant preview
     function generateVariantPreview() {
         const selectedAttributes = [];
-        document.querySelectorAll('.attribute-checkbox:checked').forEach(cb => {
+        document.querySelectorAll('.modal-attribute-checkbox:checked').forEach(cb => {
             const attrId = cb.value;
             const attr = attributesData[attrId];
             if (attr && attr.values) {
-                selectedAttributes.push({
-                    id: attrId,
-                    name: attr.name,
-                    values: attr.values
-                });
+                const selectedValueIds = Array.from(
+                    document.querySelectorAll(`input[name="modal_attribute_values_${attrId}[]"]:checked`)
+                ).map(v => parseInt(v.value));
+                
+                if (selectedValueIds.length > 0) {
+                    const selectedValues = attr.values.filter(v => selectedValueIds.includes(v.id));
+                    selectedAttributes.push({
+                        id: attrId,
+                        name: attr.name,
+                        values: selectedValues
+                    });
+                }
             }
         });
 
         if (selectedAttributes.length === 0) {
-            alert('Please select at least one attribute');
+            alert('Please select at least one attribute and value');
             return;
+        }
+        
+        for (const attr of selectedAttributes) {
+            if (attr.values.length === 0) {
+                alert(`Please select at least one value for ${attr.name}.`);
+                return;
+            }
         }
 
         // Generate all combinations
@@ -1082,9 +1150,10 @@ if (isset($product)) {
         const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
         const skuPrefix = document.getElementById('skuPrefix').value || 'SKU';
 
+        const productId = {{ isset($product) ? $product->id : 'null' }};
         combinations.forEach((combo, index) => {
             const variantName = combo.map(c => c.value).join(' / ');
-            const sku = generateVariantSku(skuPrefix, combo, index);
+            const sku = generateVariantSku(skuPrefix, combo, index, productId);
             
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -1156,8 +1225,13 @@ if (isset($product)) {
     }
 
     // Generate SKU for variant
-    function generateVariantSku(prefix, combo, index) {
+    function generateVariantSku(prefix, combo, index, productId = null) {
         const valueCodes = combo.map(c => c.value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 3));
+        if (productId) {
+            const productIdStr = String(productId).padStart(4, '0');
+            const variantIndex = String(index + 1).padStart(3, '0');
+            return prefix + '-' + productIdStr + '-' + variantIndex + '-' + valueCodes.join('-');
+        }
         return prefix + '-' + valueCodes.join('-');
     }
 
@@ -1187,7 +1261,7 @@ if (isset($product)) {
         if (!existingVariants || existingVariants.length === 0) return;
 
         const selectedAttributes = [];
-        document.querySelectorAll('.attribute-checkbox:checked').forEach(cb => {
+        document.querySelectorAll('.modal-attribute-checkbox:checked').forEach(cb => {
             const attrId = cb.value;
             const attr = attributesData[attrId];
             if (attr && attr.values) {
@@ -1216,9 +1290,10 @@ if (isset($product)) {
         const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
         const skuPrefix = document.getElementById('skuPrefix').value || 'SKU';
 
+        const productId = {{ isset($product) ? $product->id : 'null' }};
         combinations.forEach((combo, index) => {
             const variantName = combo.map(c => c.value).join(' / ');
-            const sku = generateVariantSku(skuPrefix, combo, index);
+            const sku = generateVariantSku(skuPrefix, combo, index, productId);
             const comboValueIds = combo.map(c => c.valueId).sort((a, b) => a - b);
 
             // Find matching existing variant
@@ -1432,6 +1507,25 @@ if (isset($product)) {
         if (isVariable && existingVariants.length > 0) {
             initializeExistingVariants();
         }
+
+        // Initialize modal attribute values visibility
+        document.querySelectorAll('.modal-attribute-checkbox').forEach(cb => {
+            const valuesDiv = cb.closest('.modal-attribute-item').querySelector('.modal-attribute-values');
+            if (cb.checked) {
+                valuesDiv.classList.remove('hidden');
+            } else {
+                valuesDiv.classList.add('hidden');
+            }
+        });
+
+        // Pre-check all values for existing attributes on edit
+        @if(isset($product) && count($selectedAttributeIds ?? []) > 0)
+            @foreach($attributes as $attribute)
+                @if(in_array($attribute->id, $selectedAttributeIds ?? []))
+                    document.querySelectorAll('input[name="modal_attribute_values_{{ $attribute->id }}[]"]').forEach(cb => cb.checked = true);
+                @endif
+            @endforeach
+        @endif
     });
 
     // ========== PREDEFINED DESCRIPTIONS ==========

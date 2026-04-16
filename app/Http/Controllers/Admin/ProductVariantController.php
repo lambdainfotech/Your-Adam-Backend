@@ -449,16 +449,39 @@ class ProductVariantController extends Controller
         $codeGenerator = app(\App\Services\CodeGeneratorService::class);
         $barcode = $codeGenerator->generateVariantBarcode($product, $product->variants()->count());
 
-        $variant = Variant::create([
-            'product_id' => $product->id,
-            'sku' => $validated['sku'],
-            'barcode' => $barcode,
-            'price' => $validated['price'] ?? $product->base_price,
-            'stock_quantity' => $validated['stock_quantity'] ?? 0,
-            'stock_status' => ($validated['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
-            'is_active' => true,
-            'position' => $product->variants()->count(),
-        ]);
+        try {
+            $variant = Variant::create([
+                'product_id' => $product->id,
+                'sku' => $validated['sku'],
+                'barcode' => $barcode,
+                'price' => $validated['price'] ?? $product->base_price,
+                'stock_quantity' => $validated['stock_quantity'] ?? 0,
+                'stock_status' => ($validated['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
+                'is_active' => true,
+                'position' => $product->variants()->count(),
+            ]);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            if (str_contains($e->getMessage(), 'variants_sku_unique')) {
+                $counter = 1;
+                $sku = $validated['sku'];
+                while (Variant::withTrashed()->where('sku', $sku)->exists()) {
+                    $sku = $validated['sku'] . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
+                    $counter++;
+                }
+                $variant = Variant::create([
+                    'product_id' => $product->id,
+                    'sku' => $sku,
+                    'barcode' => $barcode,
+                    'price' => $validated['price'] ?? $product->base_price,
+                    'stock_quantity' => $validated['stock_quantity'] ?? 0,
+                    'stock_status' => ($validated['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
+                    'is_active' => true,
+                    'position' => $product->variants()->count(),
+                ]);
+            } else {
+                throw $e;
+            }
+        }
 
         $variant->attributeValues()->attach($validated['attribute_values']);
 

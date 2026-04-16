@@ -179,8 +179,8 @@ class CodeGeneratorService
             return true;
         }
         
-        // Check in variants table
-        if (Variant::where('barcode', $barcode)->exists()) {
+        // Check in variants table (include soft-deleted since DB unique constraint does)
+        if (Variant::withTrashed()->where('barcode', $barcode)->exists()) {
             return true;
         }
         
@@ -195,7 +195,7 @@ class CodeGeneratorService
      */
     private function variantSkuExists(string $sku): bool
     {
-        return Variant::where('sku', $sku)->exists();
+        return Variant::withTrashed()->where('sku', $sku)->exists();
     }
     
     /**

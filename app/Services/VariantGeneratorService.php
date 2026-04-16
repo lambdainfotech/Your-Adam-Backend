@@ -107,18 +107,39 @@ class VariantGeneratorService
                 // Create new variant
                 $variantPrice = $options['base_price'] + $priceAdjustment;
 
-                $variant = Variant::create([
-                    'product_id' => $product->id,
-                    'sku' => $sku,
-                    'barcode' => $barcode,
-                    'price' => $variantPrice > 0 ? $variantPrice : $options['base_price'],
-                    'stock_quantity' => $options['default_stock'],
-                    'stock_status' => $options['default_stock'] > 0 ? 'in_stock' : 'out_of_stock',
-                    'low_stock_threshold' => $product->low_stock_threshold ?? 5,
-                    'manage_stock' => true,
-                    'is_active' => true,
-                    'position' => $index,
-                ]);
+                try {
+                    $variant = Variant::create([
+                        'product_id' => $product->id,
+                        'sku' => $sku,
+                        'barcode' => $barcode,
+                        'price' => $variantPrice > 0 ? $variantPrice : $options['base_price'],
+                        'stock_quantity' => $options['default_stock'],
+                        'stock_status' => $options['default_stock'] > 0 ? 'in_stock' : 'out_of_stock',
+                        'low_stock_threshold' => $product->low_stock_threshold ?? 5,
+                        'manage_stock' => true,
+                        'is_active' => true,
+                        'position' => $index,
+                    ]);
+                } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+                    // If SKU collision occurs (e.g. soft-deleted variant), regenerate with unique suffix
+                    if (str_contains($e->getMessage(), 'variants_sku_unique')) {
+                        $sku = $this->makeUniqueSku($sku);
+                        $variant = Variant::create([
+                            'product_id' => $product->id,
+                            'sku' => $sku,
+                            'barcode' => $barcode,
+                            'price' => $variantPrice > 0 ? $variantPrice : $options['base_price'],
+                            'stock_quantity' => $options['default_stock'],
+                            'stock_status' => $options['default_stock'] > 0 ? 'in_stock' : 'out_of_stock',
+                            'low_stock_threshold' => $product->low_stock_threshold ?? 5,
+                            'manage_stock' => true,
+                            'is_active' => true,
+                            'position' => $index,
+                        ]);
+                    } else {
+                        throw $e;
+                    }
+                }
 
                 // Attach attribute values
                 $variant->attributeValues()->attach($attributeValueIds);
@@ -250,8 +271,8 @@ class VariantGeneratorService
         $sku = $baseSku;
         $counter = 1;
 
-        while (Variant::where('sku', $sku)->exists()) {
-            $sku = $baseSku . '-' . $counter;
+        while (Variant::withTrashed()->where('sku', $sku)->exists()) {
+            $sku = $baseSku . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
             $counter++;
         }
 
