@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\PricingService;
+use App\Services\ProductApiTransformer;
 use App\Services\StockManagerService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -13,11 +14,13 @@ class ProductController extends Controller
 {
     protected PricingService $pricingService;
     protected StockManagerService $stockManager;
+    protected ProductApiTransformer $transformer;
 
-    public function __construct(PricingService $pricingService, StockManagerService $stockManager)
+    public function __construct(PricingService $pricingService, StockManagerService $stockManager, ProductApiTransformer $transformer)
     {
         $this->pricingService = $pricingService;
         $this->stockManager = $stockManager;
+        $this->transformer = $transformer;
     }
 
     /**
@@ -62,7 +65,7 @@ class ProductController extends Controller
 
         // Transform data
         $products->getCollection()->transform(function ($product) {
-            return $this->transformProduct($product);
+            return $this->transformer->transform($product);
         });
 
         return response()->json($products);
@@ -77,7 +80,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $this->transformProduct($product, true),
+            'data' => $this->transformer->transform($product, true),
         ]);
     }
 
@@ -92,7 +95,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $this->transformProduct($product, true),
+            'data' => $this->transformer->transform($product, true),
         ]);
     }
 
@@ -218,77 +221,5 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Transform product for API response
-     */
-    private function transformProduct(Product $product, bool $full = false): array
-    {
-        $data = [
-            'id' => $product->id,
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'product_type' => $product->product_type,
-            'short_description' => $product->short_description,
-            'base_price' => $product->base_price,
-            'final_price' => $product->final_price,
-            'compare_price' => $product->compare_price,
-            'is_on_sale' => $product->is_on_sale,
-            'sale_schedule' => $this->pricingService->getSaleSchedule($product),
-            'category' => $product->category ? [
-                'id' => $product->category->id,
-                'name' => $product->category->name,
-                'slug' => $product->category->slug,
-            ] : null,
-            'main_image' => $product->mainImage ? $product->mainImage->full_image_url : null,
-            'is_in_stock' => $product->is_in_stock,
-            'total_stock' => $product->total_stock,
-            'is_featured' => $product->is_featured,
-        ];
 
-        if ($product->product_type === 'variable') {
-            $data['price_range'] = $this->pricingService->getVariableProductPriceRange($product);
-        }
-
-        if ($full) {
-            $data['description'] = $product->description;
-            $data['images'] = $product->images->map(fn($img) => [
-                'id' => $img->id,
-                'url' => $img->full_image_url,
-                'is_main' => $img->is_main,
-            ]);
-
-            $data['variants'] = $product->variants->map(fn($variant) => [
-                'id' => $variant->id,
-                'sku' => $variant->sku,
-                'price' => $variant->price,
-                'final_price' => $variant->final_price,
-                'compare_price' => $variant->compare_price,
-                'stock_quantity' => $variant->stock_quantity,
-                'stock_status' => $variant->stock_status,
-                'is_in_stock' => $variant->is_in_stock,
-                'is_active' => $variant->is_active,
-                'weight' => $variant->weight,
-                'attribute_text' => $variant->attribute_text,
-                'attribute_values' => $variant->attributeValues->map(fn($av) => [
-                    'id' => $av->id,
-                    'attribute_name' => $av->attribute->name,
-                    'value' => $av->value,
-                    'color_code' => $av->color_code,
-                ]),
-                'image' => $variant->mainImage?->full_image_url,
-            ]);
-
-            $data['attributes'] = $product->productAttributes->map(fn($pa) => [
-                'id' => $pa->attribute->id,
-                'name' => $pa->attribute->name,
-                'values' => $pa->attribute->values->map(fn($v) => [
-                    'id' => $v->id,
-                    'value' => $v->value,
-                    'color_code' => $v->color_code,
-                ]),
-            ]);
-        }
-
-        return $data;
-    }
 }
