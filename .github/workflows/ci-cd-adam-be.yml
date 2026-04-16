@@ -30,10 +30,10 @@ jobs:
           script: |
             cd /www/wwwroot/Your-Adam-Backend
             git stash
-            git pull origin main
+            git pull origin master
             COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction
-            php artisan migrate
-            php artisan db:seed
+            php artisan migrate --force
+            php artisan db:seed --force
             chown -R www:www /www/wwwroot/Your-Adam-Backend
             find . -type d -exec chmod 755 {} \; && find . -type f -exec chmod 644 {} \;
             chmod -R 775 /www/wwwroot/Your-Adam-Backend/storage /www/wwwroot/Your-Adam-Backend/bootstrap/cache
