@@ -40,6 +40,8 @@ class HomepageService
                 'title' => $slider->title,
                 'subtitle' => $slider->subtitle,
                 'description' => $slider->description,
+                'titleColor' => $slider->title_color,
+                'subtitleColor' => $slider->subtitle_color,
                 'image' => $slider->banner_image_url,
                 'mobileImage' => $slider->mobile_image ? asset('storage/' . $slider->mobile_image) : null,
                 'cta' => null,
@@ -53,6 +55,8 @@ class HomepageService
                 $slide['cta'] = [
                     'text' => $slider->button_text,
                     'href' => $slider->button_url,
+                    'textColor' => $slider->button_text_color,
+                    'bgColor' => $slider->button_bg_color,
                 ];
             }
 
@@ -61,6 +65,8 @@ class HomepageService
                 $slide['secondaryCta'] = [
                     'text' => $slider->secondary_button_text,
                     'href' => $slider->secondary_button_url,
+                    'textColor' => $slider->secondary_button_text_color,
+                    'bgColor' => $slider->secondary_button_bg_color,
                 ];
             }
 
