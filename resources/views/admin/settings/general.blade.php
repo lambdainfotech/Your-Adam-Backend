@@ -61,8 +61,8 @@
                     @csrf
                     <label class="block text-sm font-medium text-gray-700 mb-2">Upload Logo</label>
                     <div class="flex items-center gap-4">
-                        @if($settings['store_logo'] ?? false)
-                            <img src="{{ $settings['store_logo'] }}" alt="Logo" class="h-12">
+                        @if($settings['site_logo_url'] ?? false)
+                            <img src="{{ $settings['site_logo_url'] }}" alt="Logo" class="h-12">
                         @endif
                         <input type="file" name="logo" accept="image/*" class="flex-1">
                         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>
@@ -72,8 +72,8 @@
                     @csrf
                     <label class="block text-sm font-medium text-gray-700 mb-2">Upload Favicon</label>
                     <div class="flex items-center gap-4">
-                        @if($settings['store_favicon'] ?? false)
-                            <img src="{{ $settings['store_favicon'] }}" alt="Favicon" class="h-8 w-8">
+                        @if($settings['site_favicon'] ?? false)
+                            <img src="{{ $settings['site_favicon'] }}" alt="Favicon" class="h-8 w-8">
                         @endif
                         <input type="file" name="favicon" accept=".ico,.png" class="flex-1">
                         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>

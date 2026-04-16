@@ -158,28 +158,46 @@ class SettingController extends Controller
     public function uploadLogo(Request $request)
     {
         $request->validate([
-            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
-        
-        $path = $request->file('logo')->store('public/settings');
-        $url = Storage::url($path);
-        
-        Setting::set('store_logo', $url);
-        
+
+        // Delete old logo file if it exists locally
+        $oldUrl = Setting::get('site_logo_url');
+        if ($oldUrl && str_contains($oldUrl, '/storage/')) {
+            $oldPath = str_replace(Storage::disk('public')->url(''), '', $oldUrl);
+            if ($oldPath) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
+        $path = $request->file('logo')->store('settings', 'public');
+        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
+
+        Setting::set('site_logo_url', $url, 'site');
+
         return redirect()->back()->with('success', 'Logo uploaded successfully.');
     }
 
     public function uploadFavicon(Request $request)
     {
         $request->validate([
-            'favicon' => 'required|image|mimes:ico,png|max:512',
+            'favicon' => 'required|mimes:ico,png,jpg,svg,webp|max:512',
         ]);
-        
-        $path = $request->file('favicon')->store('public/settings');
-        $url = Storage::url($path);
-        
-        Setting::set('store_favicon', $url);
-        
+
+        // Delete old favicon file if it exists locally
+        $oldUrl = Setting::get('site_favicon');
+        if ($oldUrl && str_contains($oldUrl, '/storage/')) {
+            $oldPath = str_replace(Storage::disk('public')->url(''), '', $oldUrl);
+            if ($oldPath) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
+        $path = $request->file('favicon')->store('settings', 'public');
+        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
+
+        Setting::set('site_favicon', $url, 'site');
+
         return redirect()->back()->with('success', 'Favicon uploaded successfully.');
     }
 
