@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -45,12 +46,18 @@ class ProductSearchService
             });
         }
 
-        // Apply category filter
+        // Apply category filter (includes subcategories when parent slug is provided)
         if ($categorySlug) {
-            $searchQuery->whereHas('category', function ($cq) use ($categorySlug) {
-                $cq->where('slug', $categorySlug)
-                    ->whereNull('parent_id');
-            });
+            $category = Category::where('slug', $categorySlug)->first();
+            if ($category) {
+                $categoryIds = [$category->id];
+                if ($category->parent_id === null) {
+                    // Parent category: include all subcategories
+                    $descendantIds = $this->getDescendantCategoryIds($category->id);
+                    $categoryIds = array_merge($categoryIds, $descendantIds);
+                }
+                $searchQuery->whereIn('category_id', $categoryIds);
+            }
         }
 
         // Apply subcategory filter
@@ -226,6 +233,22 @@ class ProductSearchService
 
         $colorLower = strtolower($color);
         return $colorCodes[$colorLower] ?? '#000000';
+    }
+
+    /**
+     * Get all descendant category IDs recursively
+     */
+    private function getDescendantCategoryIds(int $categoryId): array
+    {
+        $ids = [];
+        $children = Category::where('parent_id', $categoryId)->pluck('id')->toArray();
+        
+        foreach ($children as $childId) {
+            $ids[] = $childId;
+            $ids = array_merge($ids, $this->getDescendantCategoryIds($childId));
+        }
+        
+        return $ids;
     }
 
     /**
