@@ -1,0 +1,37 @@
+name: 🚀 Deploy on srv1.lambdainfotech.com
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deployment:
+    name: 🎉 Deployment Flow
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          known_hosts: 'adam_be_deploy'
+
+      - name: 🚚 Adding Known Hosts
+        run: ssh-keyscan -p ${{ secrets.STAGING_SSH_PORT }} -H ${{ secrets.STAGING_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Run Deployment Script
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.STAGING_SSH_PORT }}
+          command_timeout: 30m
+          script: |
+            cd /www/wwwroot/Your-Adam-Backend
+            git stash
+            git pull origin main
+            COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction
+            chown -R www:www /www/wwwroot/Your-Adam-Backend
+            find . -type d -exec chmod 755 {} \; && find . -type f -exec chmod 644 {} \;
+            chmod -R 775 /www/wwwroot/Your-Adam-Backend/storage /www/wwwroot/Your-Adam-Backend/bootstrap/cache
