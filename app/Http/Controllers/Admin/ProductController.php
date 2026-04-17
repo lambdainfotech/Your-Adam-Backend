@@ -102,7 +102,7 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
         $predefinedShortDescriptions = \App\Models\PredefinedDescription::shortDescriptions()->active()->orderBy('sort_order')->get();
@@ -249,7 +249,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load(['variants.attributeValues', 'variationAttributes']);
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $selectedAttributeIds = $product->variationAttributes->pluck('id')->toArray();
         $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();

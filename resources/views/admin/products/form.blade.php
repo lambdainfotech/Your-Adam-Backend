@@ -593,11 +593,26 @@
                                 <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
+                                        @if($category->children->count() > 0)
+                                            <option value="{{ $category->id }}" disabled {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                &#128193; {{ $category->name }}
+                                            </option>
+                                            @foreach($category->children as $child)
+                                                <option value="{{ $child->id }}" {{ old('category_id', $product->category_id ?? '') == $child->id ? 'selected' : '' }}>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endif
                                     @endforeach
                                 </select>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span class="mr-2">&#128193; = Category</span>
+                                    <span>&#9492;&#9472; = Sub-category</span>
+                                </p>
                             </div>
                         </div>
 
