@@ -136,7 +136,7 @@
                 // If user is active, ensure token is fresh
                 activityTimeout = setTimeout(() => {
                     this.checkAndRefreshToken();
-                }, 60000); // Check 1 minute after last activity
+                }, 60 * 60 * 1000); // Check 60 minutes after last activity
             };
 
             // Monitor user activity
