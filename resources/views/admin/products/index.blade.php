@@ -14,10 +14,23 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <select name="category" class="w-full md:w-48 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select name="category" class="w-full md:w-52 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">All Categories</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @if($category->children->count() > 0)
+                                <option value="{{ $category->id }}" disabled {{ request('category') == $category->id ? 'selected' : '' }}>
+                                    &#128193; {{ $category->name }}
+                                </option>
+                                @foreach($category->children as $child)
+                                    <option value="{{ $child->id }}" {{ request('category') == $child->id ? 'selected' : '' }}>
+                                        &nbsp;&nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endif
                         @endforeach
                     </select>
                 </div>
@@ -53,6 +66,7 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Product</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">SKU</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Category</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Sub Category</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Price</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Stock</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
@@ -82,6 +96,13 @@
                             <td class="px-6 py-4 text-gray-600">{{ $product->sku_prefix }}</td>
                             <td class="px-6 py-4">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $product->category->name ?? 'N/A' }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($product->subCategory)
+                                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">{{ $product->subCategory->name }}</span>
+                                @else
+                                    <span class="text-gray-400 text-xs">-</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 font-medium">৳{{ number_format($product->base_price, 2) }}</td>
                             <td class="px-6 py-4">
@@ -129,7 +150,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-6 py-12 text-center">
                                 <div class="text-gray-400">
                                     <i class="fas fa-box-open text-4xl mb-3"></i>
                                     <p>No products found</p>

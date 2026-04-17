@@ -14,10 +14,8 @@ class CategoryApiService
      */
     public function getCategories(): array
     {
-        $parentCategories = Category::withCount('products')
-            ->with(['children' => function ($query) {
-                $query->withCount('products')
-                    ->where('is_active', true)
+        $parentCategories = Category::with(['children' => function ($query) {
+                $query->where('is_active', true)
                     ->orderBy('sort_order')
                     ->orderBy('name');
             }])
@@ -37,6 +35,11 @@ class CategoryApiService
      */
     private function formatCategory(Category $category): array
     {
+        // Parent category: count products by category_id
+        $productCount = Product::where('category_id', $category->id)
+            ->where('status', 1)
+            ->count();
+
         $data = [
             'id' => 'cat_' . $this->generateId($category->slug),
             'name' => $category->name,
@@ -44,7 +47,7 @@ class CategoryApiService
             'description' => $category->description,
             'image' => $category->image,
             'heroImage' => $category->hero_image,
-            'productCount' => $category->products_count,
+            'productCount' => $productCount,
             'sortOrder' => $category->sort_order,
             'isActive' => $category->is_active,
         ];
@@ -64,16 +67,24 @@ class CategoryApiService
      */
     private function formatChildCategory(Category $child, Category $parent): array
     {
+        // Child category: count products by sub_category_id (fallback to category_id)
+        $productCount = Product::where(function ($query) use ($child) {
+                $query->where('sub_category_id', $child->id)
+                      ->orWhere('category_id', $child->id);
+            })
+            ->where('status', 1)
+            ->count();
+
         $data = [
             'id' => 'cat_' . $this->generateId($parent->slug) . '_' . $this->generateId($child->slug),
             'name' => $child->name,
             'slug' => $parent->slug . '-' . $child->slug,
             'parentId' => 'cat_' . $this->generateId($parent->slug),
-            'productCount' => $child->products_count,
+            'productCount' => $productCount,
         ];
 
         // Add filters for categories with products
-        if ($child->products_count > 0) {
+        if ($productCount > 0) {
             $filters = $this->getCategoryFilters($child->id);
             if (!empty($filters)) {
                 $data['filters'] = $filters;
@@ -90,8 +101,11 @@ class CategoryApiService
     {
         $filters = [];
 
-        // Get product IDs in this category
-        $productIds = Product::where('category_id', $categoryId)
+        // Get product IDs in this category (check both category_id and sub_category_id)
+        $productIds = Product::where(function ($query) use ($categoryId) {
+                $query->where('category_id', $categoryId)
+                      ->orWhere('sub_category_id', $categoryId);
+            })
             ->where('status', 1)
             ->pluck('id');
 

@@ -29,7 +29,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'variants', 'mainImage']);
+        $query = Product::with(['category', 'subCategory', 'variants', 'mainImage']);
         
         // Search
         if ($request->filled('search')) {
@@ -43,7 +43,16 @@ class ProductController extends Controller
         
         // Category filter
         if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
+            $selectedCat = Category::find($request->category);
+            if ($selectedCat) {
+                if ($selectedCat->parent_id === null && $selectedCat->children()->count() > 0) {
+                    // Parent category selected — filter by category_id
+                    $query->where('category_id', $request->category);
+                } else {
+                    // Sub-category or leaf category selected — filter by sub_category_id
+                    $query->where('sub_category_id', $request->category);
+                }
+            }
         }
         
         // Status filter
@@ -95,7 +104,7 @@ class ProductController extends Controller
             ->paginate(20)
             ->withQueryString();
         
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         
         return view('admin.products.index', compact('products', 'categories'));
     }
@@ -145,6 +154,9 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
         
+        // Auto-resolve category_id and sub_category_id based on selected category
+        $validated = $this->resolveCategoryIds($validated);
+
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_featured'] = $request->boolean('is_featured', false);
@@ -291,6 +303,9 @@ class ProductController extends Controller
         }
         
         $validated = $request->validate($rules);
+
+        // Auto-resolve category_id and sub_category_id based on selected category
+        $validated = $this->resolveCategoryIds($validated);
         
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_featured'] = $request->boolean('is_featured', false);
@@ -530,6 +545,28 @@ class ProductController extends Controller
             'new_stock' => $newStock,
             'stock_status' => $product->stock_status,
         ]);
+    }
+
+    /**
+     * Resolve category_id and sub_category_id from the selected category.
+     * If user selects a sub-category, set category_id to parent and sub_category_id to selected.
+     * If user selects a leaf main category, keep category_id and set sub_category_id to null.
+     */
+    private function resolveCategoryIds(array $validated): array
+    {
+        $selectedCategoryId = $validated['category_id'];
+        $category = Category::find($selectedCategoryId);
+
+        if ($category && $category->parent_id !== null) {
+            // User selected a sub-category
+            $validated['category_id'] = $category->parent_id;
+            $validated['sub_category_id'] = $selectedCategoryId;
+        } else {
+            // User selected a main (leaf) category
+            $validated['sub_category_id'] = null;
+        }
+
+        return $validated;
     }
 
     /**

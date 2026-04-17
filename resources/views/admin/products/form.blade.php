@@ -590,20 +590,28 @@
 
                             <div class="form-card">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
+                                @php
+                                    // Determine which value should be pre-selected in the dropdown
+                                    // If product has sub_category_id, show that; otherwise show category_id
+                                    $selectedCategoryValue = old('category_id');
+                                    if ($selectedCategoryValue === null && isset($product)) {
+                                        $selectedCategoryValue = $product->sub_category_id ?? $product->category_id;
+                                    }
+                                @endphp
                                 <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
                                         @if($category->children->count() > 0)
-                                            <option value="{{ $category->id }}" disabled {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                            <option value="{{ $category->id }}" disabled {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
                                                 &#128193; {{ $category->name }}
                                             </option>
                                             @foreach($category->children as $child)
-                                                <option value="{{ $child->id }}" {{ old('category_id', $product->category_id ?? '') == $child->id ? 'selected' : '' }}>
+                                                <option value="{{ $child->id }}" {{ $selectedCategoryValue == $child->id ? 'selected' : '' }}>
                                                     &nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
                                                 </option>
                                             @endforeach
                                         @else
-                                            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                            <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}
                                             </option>
                                         @endif

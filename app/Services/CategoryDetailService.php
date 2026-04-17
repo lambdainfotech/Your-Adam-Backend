@@ -98,23 +98,27 @@ class CategoryDetailService
         $colors = $request->get('colors') ? explode(',', $request->get('colors')) : [];
         $inStock = $request->boolean('inStock');
 
-        // Determine category IDs to include
-        $categoryIds = [$category->id];
-        
-        // If it's a parent category, include all children products
-        if ($category->children && $category->children->count() > 0) {
-            foreach ($category->children as $child) {
-                $categoryIds[] = $child->id;
-            }
-        }
+        // Determine how to filter products based on category type
+        $isParentCategory = $category->children && $category->children->count() > 0;
 
         // Build query
-        $query = Product::with(['category', 'images', 'variants' => function ($q) {
+        $query = Product::with(['category', 'subCategory', 'images', 'variants' => function ($q) {
             $q->where('is_active', true)
                 ->orderBy('position');
-        }])
-            ->whereIn('category_id', $categoryIds)
-            ->where('status', 1);
+        }]);
+
+        if ($isParentCategory) {
+            // Parent category: match category_id (main category)
+            $query->where('category_id', $category->id);
+        } else {
+            // Sub-category: match sub_category_id, fallback to category_id for backward compatibility
+            $query->where(function ($q) use ($category) {
+                $q->where('sub_category_id', $category->id)
+                  ->orWhere('category_id', $category->id);
+            });
+        }
+
+        $query->where('status', 1);
 
         // Apply price filter
         if ($minPrice !== null) {
@@ -197,19 +201,23 @@ class CategoryDetailService
      */
     private function getFilters(Category $category, Request $request): array
     {
-        // Determine category IDs to include
-        $categoryIds = [$category->id];
-        
-        // If it's a parent category, include all children
-        if ($category->children && $category->children->count() > 0) {
-            foreach ($category->children as $child) {
-                $categoryIds[] = $child->id;
-            }
+        // Determine how to filter products based on category type
+        $isParentCategory = $category->children && $category->children->count() > 0;
+
+        $productQuery = Product::where('status', 1);
+
+        if ($isParentCategory) {
+            // Parent category: match category_id (main category)
+            $productQuery->where('category_id', $category->id);
+        } else {
+            // Sub-category: match sub_category_id, fallback to category_id for backward compatibility
+            $productQuery->where(function ($q) use ($category) {
+                $q->where('sub_category_id', $category->id)
+                  ->orWhere('category_id', $category->id);
+            });
         }
 
-        $productIds = Product::whereIn('category_id', $categoryIds)
-            ->where('status', 1)
-            ->pluck('id');
+        $productIds = $productQuery->pluck('id');
 
         $variantIds = Variant::whereIn('product_id', $productIds)
             ->pluck('id');
@@ -251,7 +259,11 @@ class CategoryDetailService
         $subcategories = [];
         if ($category->children && $category->children->count() > 0) {
             foreach ($category->children as $child) {
-                $childProductCount = Product::where('category_id', $child->id)
+                // Count products by sub_category_id, fallback to category_id
+                $childProductCount = Product::where(function ($q) use ($child) {
+                        $q->where('sub_category_id', $child->id)
+                          ->orWhere('category_id', $child->id);
+                    })
                     ->where('status', 1)
                     ->count();
                 
@@ -300,6 +312,11 @@ class CategoryDetailService
                 'id' => 'cat_' . $this->generateId($product->category->slug),
                 'name' => $product->category->name,
                 'slug' => $product->category->slug,
+            ] : null,
+            'subCategory' => $product->subCategory ? [
+                'id' => 'cat_' . $this->generateId($product->subCategory->slug),
+                'name' => $product->subCategory->name,
+                'slug' => $product->subCategory->slug,
             ] : null,
             'images' => $product->images->map(function ($image) {
                 return [
