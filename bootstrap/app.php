@@ -48,6 +48,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Note: We don't set redirectGuestsTo here because our JWT middleware
         // handles its own redirects. Setting it globally can cause redirect loops.
     })
+    ->booted(function ($app) {
+        // Re-register JWT middleware aliases AFTER package service providers boot
+        // The jwt-auth package overwrites these in its service provider boot method
+        $app['router']->aliasMiddleware('jwt.auth', JWTAuthMiddleware::class);
+        $app['router']->aliasMiddleware('jwt.refresh', JWTRefreshMiddleware::class);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         // Handle authentication exceptions
         $exceptions->render(function (AuthenticationException $e, $request) {
