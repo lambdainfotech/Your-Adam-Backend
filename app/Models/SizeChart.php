@@ -14,6 +14,7 @@ class SizeChart extends Model
 
     protected $fillable = [
         'category_id',
+        'sub_category_id',
         'name',
         'unit',
         'size_type',
@@ -29,6 +30,11 @@ class SizeChart extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function subCategory(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'sub_category_id');
     }
 
     public function rows(): HasMany

@@ -10,7 +10,20 @@
             <select name="category_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                 <option value="">All Categories</option>
                 @foreach($categories as $category)
-                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                    @if($category->children->count() > 0)
+                        <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                            &#128193; {{ $category->name }}
+                        </option>
+                        @foreach($category->children as $child)
+                            <option value="{{ $child->id }}" {{ request('category_id') == $child->id ? 'selected' : '' }}>
+                                &nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
+                            </option>
+                        @endforeach
+                    @else
+                        <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endif
                 @endforeach
             </select>
             <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"><i class="fas fa-search"></i></button>
@@ -34,7 +47,12 @@
                 @forelse($sizeCharts as $chart)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 font-medium">{{ $chart->name }}</td>
-                    <td class="px-6 py-4">{{ $chart->category?->name }}</td>
+                    <td class="px-6 py-4">
+                        {{ $chart->category?->name }}
+                        @if($chart->subCategory)
+                            <span class="text-gray-400">/</span> <span class="text-sm text-gray-600">{{ $chart->subCategory->name }}</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">{{ $chart->unit }}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 text-xs rounded-full {{ $chart->size_type === 'european' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">

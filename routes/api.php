@@ -41,6 +41,11 @@ Route::get('/campaigns', [\App\Http\Controllers\Api\CampaignController::class, '
 Route::get('/campaigns/featured', [\App\Http\Controllers\Api\CampaignController::class, 'featured']);
 Route::get('/campaigns/{slug}', [\App\Http\Controllers\Api\CampaignController::class, 'show']);
 
+// Size Charts (Public)
+Route::get('/size-charts', [\App\Http\Controllers\Api\SizeChartController::class, 'index']);
+Route::get('/size-charts/{id}', [\App\Http\Controllers\Api\SizeChartController::class, 'show']);
+Route::get('/size-charts/category/{slug}', [\App\Http\Controllers\Api\SizeChartController::class, 'byCategory']);
+
 // Product Reviews (Public - View)
 Route::get('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'index']);
 Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\ReviewController::class, 'helpful']);

@@ -11,10 +11,13 @@ class SizeChartController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SizeChart::with('category');
+        $query = SizeChart::with(['category', 'subCategory']);
         
         if ($request->filled('category_id')) {
-            $query->byCategory($request->category_id);
+            $query->where(function ($q) use ($request) {
+                $q->where('category_id', $request->category_id)
+                  ->orWhere('sub_category_id', $request->category_id);
+            });
         }
         
         if ($request->filled('status')) {
@@ -22,14 +25,14 @@ class SizeChartController extends Controller
         }
         
         $sizeCharts = $query->orderBy('name')->paginate(20)->withQueryString();
-        $categories = Category::active()->select('id', 'name')->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         
         return view('admin.size-charts.index', compact('sizeCharts', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::active()->select('id', 'name')->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
         $sizeTypes = ['asian' => 'Asian Size', 'european' => 'European Size'];
         
@@ -51,6 +54,7 @@ class SizeChartController extends Controller
         ]);
         
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated = $this->resolveCategoryIds($validated);
         
         $sizeChart = SizeChart::create($validated);
         
@@ -76,7 +80,7 @@ class SizeChartController extends Controller
     public function edit(SizeChart $sizeChart)
     {
         $sizeChart->load('rows');
-        $categories = Category::active()->select('id', 'name')->get();
+        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
         $sizeTypes = ['asian' => 'Asian Size', 'european' => 'European Size'];
         
@@ -98,6 +102,7 @@ class SizeChartController extends Controller
         ]);
         
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated = $this->resolveCategoryIds($validated);
         
         $sizeChart->update($validated);
         
@@ -131,5 +136,25 @@ class SizeChartController extends Controller
         
         return redirect()->back()
             ->with('success', "Size chart {$status} successfully.");
+    }
+
+    /**
+     * Resolve category_id and sub_category_id from the selected category.
+     * If user selects a sub-category, set category_id to parent and sub_category_id to selected.
+     * If user selects a leaf main category, keep category_id and set sub_category_id to null.
+     */
+    private function resolveCategoryIds(array $validated): array
+    {
+        $selectedCategoryId = $validated['category_id'];
+        $category = Category::find($selectedCategoryId);
+
+        if ($category && $category->parent_id !== null) {
+            $validated['category_id'] = $category->parent_id;
+            $validated['sub_category_id'] = $selectedCategoryId;
+        } else {
+            $validated['sub_category_id'] = null;
+        }
+
+        return $validated;
     }
 }
