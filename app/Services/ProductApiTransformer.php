@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\Review;
+use App\Models\SizeChart;
 use Carbon\Carbon;
 
 class ProductApiTransformer
@@ -81,6 +83,12 @@ class ProductApiTransformer
                 'name' => $product->category->name,
                 'slug' => $product->category->slug,
             ] : null,
+            'sub_category' => $product->subCategory ? [
+                'id' => 'cat_' . $this->generateId($product->subCategory->slug),
+                'legacy_id' => $product->subCategory->id,
+                'name' => $product->subCategory->name,
+                'slug' => $product->subCategory->slug,
+            ] : null,
             'media' => [
                 'main_image' => $product->mainImage?->full_image_url ?? $images['images'][0]['url'] ?? null,
                 'default_image' => $images['default_image'],
@@ -91,8 +99,6 @@ class ProductApiTransformer
             'meta' => [
                 'is_featured' => $product->is_featured,
                 'tags' => [],
-                'rating' => 4.8,
-                'review_count' => 124,
             ],
             'timestamps' => [
                 'created_at' => $product->created_at?->toDateTimeString(),
@@ -102,6 +108,18 @@ class ProductApiTransformer
 
         if ($full) {
             $data['seo'] = $this->formatSeo($product);
+            $data['size_chart'] = $this->formatSizeChart($product->sizeChart);
+            $data['reviews_summary'] = $this->getReviewsSummary($product->id);
+            $data['related_products'] = $this->getRelatedProducts($product->id, 8);
+            $data['active_campaigns'] = $this->getActiveCampaigns($product);
+            $data['additional_info'] = [
+                'weight' => $product->weight ? (float) $product->weight : null,
+                'sku_prefix' => $product->sku_prefix,
+                'barcode' => $product->barcode,
+                'cost_price' => $product->cost_price ? (float) $product->cost_price : null,
+                'wholesale_price' => $product->wholesale_price ? (float) $product->wholesale_price : null,
+                'wholesale_percentage' => $product->wholesale_percentage ? (float) $product->wholesale_percentage : null,
+            ];
         }
 
         return $data;
@@ -240,7 +258,10 @@ class ProductApiTransformer
             foreach ($variant->attributeValues as $attrValue) {
                 $attrName = strtolower($attrValue->attribute->name ?? '');
                 if (str_contains($attrName, 'color') && !in_array($attrValue->value, $colors)) {
-                    $colors[] = $attrValue->value;
+                    $colors[] = [
+                        'name' => $attrValue->value,
+                        'code' => $attrValue->color_code ?: $this->getColorCode($attrValue->value),
+                    ];
                 }
                 if (str_contains($attrName, 'size') && !in_array($attrValue->value, $sizes)) {
                     $sizes[] = $attrValue->value;
@@ -253,8 +274,11 @@ class ProductApiTransformer
             foreach ($product->productAttributes as $pa) {
                 $attrName = strtolower($pa->attribute->name ?? '');
                 foreach ($pa->attribute->values as $value) {
-                    if (str_contains($attrName, 'color') && !in_array($value->value, $colors)) {
-                        $colors[] = $value->value;
+                    if (str_contains($attrName, 'color') && !in_array($value->value, array_column($colors, 'name'))) {
+                        $colors[] = [
+                            'name' => $value->value,
+                            'code' => $value->color_code ?: $this->getColorCode($value->value),
+                        ];
                     }
                     if (str_contains($attrName, 'size') && !in_array($value->value, $sizes)) {
                         $sizes[] = $value->value;
@@ -366,5 +390,133 @@ class ProductApiTransformer
     private function generateId(string $slug): string
     {
         return str_replace('-', '_', strtolower($slug));
+    }
+
+    /**
+     * Format size chart for API
+     */
+    private function formatSizeChart(?SizeChart $sizeChart): ?array
+    {
+        if (!$sizeChart) {
+            return null;
+        }
+
+        $data = [
+            'id' => $sizeChart->id,
+            'name' => $sizeChart->name,
+            'unit' => $sizeChart->unit,
+            'size_type' => $sizeChart->size_type,
+            'description' => $sizeChart->description,
+        ];
+
+        if ($sizeChart->relationLoaded('rows') && $sizeChart->rows->isNotEmpty()) {
+            $firstRowMeasurements = $sizeChart->rows->first()->measurements ?? [];
+            $data['measurement_columns'] = array_keys((array) $firstRowMeasurements);
+            $data['rows'] = $sizeChart->rows->map(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'size_name' => $row->size_name,
+                    'measurements' => $row->measurements,
+                    'sort_order' => $row->sort_order,
+                ];
+            });
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get real reviews summary for a product
+     */
+    private function getReviewsSummary(int $productId): array
+    {
+        $ratingSummary = Review::where('product_id', $productId)
+            ->where('is_approved', true)
+            ->selectRaw('rating, COUNT(*) as count')
+            ->groupBy('rating')
+            ->pluck('count', 'rating')
+            ->toArray();
+
+        $totalReviews = array_sum($ratingSummary);
+        $averageRating = $totalReviews > 0
+            ? round(array_sum(array_map(fn($r, $c) => $r * $c, array_keys($ratingSummary), $ratingSummary)) / $totalReviews, 1)
+            : 0;
+
+        return [
+            'average_rating' => $averageRating,
+            'total_reviews' => $totalReviews,
+            'rating_breakdown' => [
+                '5' => $ratingSummary[5.0] ?? 0,
+                '4' => $ratingSummary[4.0] ?? 0,
+                '3' => $ratingSummary[3.0] ?? 0,
+                '2' => $ratingSummary[2.0] ?? 0,
+                '1' => $ratingSummary[1.0] ?? 0,
+            ],
+        ];
+    }
+
+    /**
+     * Get related products
+     */
+    private function getRelatedProducts(int $productId, int $limit = 8): array
+    {
+        $product = Product::with('category')->find($productId);
+
+        if (!$product) {
+            return [];
+        }
+
+        $related = Product::with(['category', 'mainImage'])
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $productId)
+            ->where('status', 1)
+            ->where('is_active', true)
+            ->take($limit)
+            ->get();
+
+        return $related->map(function ($item) {
+            return [
+                'id' => 'prod_' . str_pad((string) $item->id, 3, '0', STR_PAD_LEFT),
+                'legacy_id' => $item->id,
+                'name' => $item->name,
+                'slug' => $item->slug,
+                'base_price' => (float) $item->base_price,
+                'final_price' => (float) $item->final_price,
+                'image' => $item->mainImage?->full_image_url,
+                'category' => $item->category ? [
+                    'name' => $item->category->name,
+                    'slug' => $item->category->slug,
+                ] : null,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get active campaigns for a product
+     */
+    private function getActiveCampaigns(Product $product): array
+    {
+        if (!$product->relationLoaded('campaigns')) {
+            return [];
+        }
+
+        return $product->campaigns->map(function ($campaign) use ($product) {
+            $pivot = $campaign->pivot;
+            $specialPrice = $pivot?->special_price ?? null;
+
+            return [
+                'id' => $campaign->id,
+                'name' => $campaign->name,
+                'slug' => $campaign->slug,
+                'banner_image' => $campaign->banner_image_url,
+                'discount' => [
+                    'type' => $campaign->discount_type,
+                    'value' => (float) $campaign->discount_value,
+                ],
+                'special_price' => $specialPrice ? (float) $specialPrice : null,
+                'savings' => $specialPrice ? round($product->final_price - $specialPrice, 2) : null,
+                'ends_at' => $campaign->ends_at?->toDateTimeString(),
+            ];
+        })->toArray();
     }
 }

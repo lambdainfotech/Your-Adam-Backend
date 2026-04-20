@@ -90,7 +90,19 @@ class ProductController extends Controller
     public function bySlug(string $slug): JsonResponse
     {
         $product = Product::where('slug', $slug)
-            ->with(['category', 'images', 'variants.attributeValues.attribute', 'variants.images', 'sizeChart'])
+            ->with([
+                'category',
+                'subCategory',
+                'images',
+                'variants.attributeValues.attribute',
+                'variants.images',
+                'sizeChart.rows',
+                'campaigns' => function ($q) {
+                    $q->where('is_active', true)
+                        ->where('starts_at', '<=', now())
+                        ->where('ends_at', '>=', now());
+                },
+            ])
             ->firstOrFail();
 
         return response()->json([

@@ -215,7 +215,7 @@ class Product extends Model
 
     public function sizeChart(): HasOne
     {
-        return $this->hasOne(SizeChart::class);
+        return $this->hasOne(SizeChart::class, 'category_id', 'category_id');
     }
 
     public function inventoryMovements(): HasMany
