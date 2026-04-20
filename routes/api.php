@@ -36,6 +36,11 @@ Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryControl
 // Product Search
 Route::get('/products/search', [\App\Http\Controllers\Frontend\ProductSearchController::class, 'search']);
 
+// Campaigns (Public)
+Route::get('/campaigns', [\App\Http\Controllers\Api\CampaignController::class, 'index']);
+Route::get('/campaigns/featured', [\App\Http\Controllers\Api\CampaignController::class, 'featured']);
+Route::get('/campaigns/{slug}', [\App\Http\Controllers\Api\CampaignController::class, 'show']);
+
 // Product Reviews (Public - View)
 Route::get('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'index']);
 Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\ReviewController::class, 'helpful']);

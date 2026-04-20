@@ -73,7 +73,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                                        {{ $category->products_count + $categories->where('parent_id', $category->id)->sum('products_count') }} products
+                                        {{ $category->products_count }} products
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">{{ $category->sort_order }}</td>

@@ -41,7 +41,12 @@ class Category extends Model
 
     public function products(): HasMany
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class, 'category_id');
+    }
+
+    public function subCategoryProducts(): HasMany
+    {
+        return $this->hasMany(Product::class, 'sub_category_id');
     }
 
     public function scopeActive($query)
@@ -67,6 +72,17 @@ class Category extends Model
                     ->from('categories')
                     ->where('parent_id', $this->id);
             });
+    }
+
+    /**
+     * Override products_count to use sub_category_id for subcategories
+     */
+    public function getProductsCountAttribute($value): int
+    {
+        if ($this->parent_id) {
+            return (int) ($this->attributes['sub_category_products_count'] ?? 0);
+        }
+        return (int) $value;
     }
 
     public function getBreadcrumbAttribute(): array

@@ -20,7 +20,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::withCount('products')
+        $categories = Category::withCount(['products', 'subCategoryProducts'])
             ->with(['parent', 'children'])
             ->orderByRaw('COALESCE(parent_id, id)')
             ->orderBy('parent_id')
