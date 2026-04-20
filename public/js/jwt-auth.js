@@ -162,7 +162,7 @@
             this.state.lastCheck = now;
 
             try {
-                const response = await fetch('/api/v1/auth/check', {
+                const response = await fetch('/api/auth/check', {
                     method: 'GET',
                     credentials: 'same-origin',
                     headers: {

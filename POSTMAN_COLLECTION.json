@@ -103,7 +103,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/sliders",
+                            "raw": "{{base_url}}/api/sliders",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -137,7 +137,7 @@
                             "raw": "{\n  \"mobile\": \"01730586226\",\n  \"purpose\": \"registration\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/mobile/send-otp",
+                            "raw": "{{base_url}}/api/auth/mobile/send-otp",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -168,7 +168,7 @@
                             "raw": "{\n  \"mobile\": \"01730586226\",\n  \"otp\": \"123456\",\n  \"reference\": \"abc123xyz789\",\n  \"is_registration\": true,\n  \"password\": \"secret123\",\n  \"password_confirmation\": \"secret123\",\n  \"full_name\": \"John Doe\",\n  \"email\": \"john@example.com\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "raw": "{{base_url}}/api/auth/mobile/verify",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -199,7 +199,7 @@
                             "raw": "{\n  \"mobile\": \"01730586226\",\n  \"otp\": \"123456\",\n  \"reference\": \"abc123xyz789\",\n  \"is_registration\": false\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "raw": "{{base_url}}/api/auth/mobile/verify",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -230,7 +230,7 @@
                             "raw": "{\n  \"mobile\": \"01711111111\",\n  \"otp\": \"123456\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/mobile/verify",
+                            "raw": "{{base_url}}/api/auth/mobile/verify",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -261,7 +261,7 @@
                             "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"admin123\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/login",
+                            "raw": "{{base_url}}/api/auth/login",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -287,7 +287,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/refresh",
+                            "raw": "{{base_url}}/api/auth/refresh",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -313,7 +313,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/logout",
+                            "raw": "{{base_url}}/api/auth/logout",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -339,7 +339,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/me",
+                            "raw": "{{base_url}}/api/auth/me",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -365,7 +365,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/auth/check",
+                            "raw": "{{base_url}}/api/auth/check",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -391,7 +391,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/categories",
+                            "raw": "{{base_url}}/api/categories",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -411,7 +411,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/categories/electronics",
+                            "raw": "{{base_url}}/api/categories/electronics",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -437,7 +437,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/inventory/summary",
+                            "raw": "{{base_url}}/api/inventory/summary",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -458,7 +458,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/inventory/low-stock",
+                            "raw": "{{base_url}}/api/inventory/low-stock",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -479,7 +479,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/inventory/out-of-stock",
+                            "raw": "{{base_url}}/api/inventory/out-of-stock",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -500,7 +500,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/inventory/movements",
+                            "raw": "{{base_url}}/api/inventory/movements",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -622,7 +622,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/coupons/available",
+                            "raw": "{{base_url}}/api/coupons/available",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -716,7 +716,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products?page=1&per_page=20",
+                            "raw": "{{base_url}}/api/products?page=1&per_page=20",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -746,7 +746,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/search?q=laptop&category_id=1",
+                            "raw": "{{base_url}}/api/products/search?q=laptop&category_id=1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -777,7 +777,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/laptop-dell-xps-15",
+                            "raw": "{{base_url}}/api/products/laptop-dell-xps-15",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -798,7 +798,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/1",
+                            "raw": "{{base_url}}/api/products/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -828,7 +828,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/check-availability",
+                            "raw": "{{base_url}}/api/products/check-availability",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -853,7 +853,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/1/price",
+                            "raw": "{{base_url}}/api/products/1/price",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -884,7 +884,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/1/find-variant",
+                            "raw": "{{base_url}}/api/products/1/find-variant",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1004,7 +1004,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/profile",
+                            "raw": "{{base_url}}/api/users/profile",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1038,7 +1038,7 @@
                             "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"phone\": \"01711111111\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/profile",
+                            "raw": "{{base_url}}/api/users/profile",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1069,7 +1069,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/addresses",
+                            "raw": "{{base_url}}/api/users/addresses",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1103,7 +1103,7 @@
                             "raw": "{\n  \"address_line_1\": \"123 Main Street\",\n  \"address_line_2\": \"Apt 4B\",\n  \"city\": \"Dhaka\",\n  \"state\": \"Dhaka\",\n  \"postal_code\": \"1200\",\n  \"country\": \"Bangladesh\",\n  \"is_default\": true\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/addresses",
+                            "raw": "{{base_url}}/api/users/addresses",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1137,7 +1137,7 @@
                             "raw": "{\n  \"address_line_1\": \"456 New Street\",\n  \"city\": \"Chittagong\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/addresses/1",
+                            "raw": "{{base_url}}/api/users/addresses/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1164,7 +1164,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/addresses/1",
+                            "raw": "{{base_url}}/api/users/addresses/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1191,7 +1191,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/users/addresses/1/default",
+                            "raw": "{{base_url}}/api/users/addresses/1/default",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1224,7 +1224,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart",
+                            "raw": "{{base_url}}/api/cart",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1257,7 +1257,7 @@
                             "raw": "{\n  \"variant_id\": 1,\n  \"quantity\": 2\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart/items",
+                            "raw": "{{base_url}}/api/cart/items",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1291,7 +1291,7 @@
                             "raw": "{\n  \"quantity\": 3\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart/items/1",
+                            "raw": "{{base_url}}/api/cart/items/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1318,7 +1318,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart/items/1",
+                            "raw": "{{base_url}}/api/cart/items/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1353,7 +1353,7 @@
                             "raw": "{\n  \"code\": \"SUMMER2024\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart/apply-coupon",
+                            "raw": "{{base_url}}/api/cart/apply-coupon",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1379,7 +1379,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/cart/coupon",
+                            "raw": "{{base_url}}/api/cart/coupon",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1410,7 +1410,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders",
+                            "raw": "{{base_url}}/api/orders",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1443,7 +1443,7 @@
                             "raw": "{\n  \"address_id\": 1,\n  \"payment_method\": \"cod\",\n  \"notes\": \"Please deliver after 5 PM\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders",
+                            "raw": "{{base_url}}/api/orders",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1468,7 +1468,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders/1",
+                            "raw": "{{base_url}}/api/orders/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1494,7 +1494,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders/1/track",
+                            "raw": "{{base_url}}/api/orders/1/track",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1521,7 +1521,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders/1/cancel",
+                            "raw": "{{base_url}}/api/orders/1/cancel",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1556,7 +1556,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders/1/payment/initiate",
+                            "raw": "{{base_url}}/api/orders/1/payment/initiate",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1588,7 +1588,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/orders/1/payment/status",
+                            "raw": "{{base_url}}/api/orders/1/payment/status",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1621,7 +1621,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/wishlist",
+                            "raw": "{{base_url}}/api/wishlist",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1654,7 +1654,7 @@
                             "raw": "{\n  \"product_id\": 1\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/wishlist",
+                            "raw": "{{base_url}}/api/wishlist",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1679,7 +1679,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/wishlist/1",
+                            "raw": "{{base_url}}/api/wishlist/1",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1710,7 +1710,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/notifications",
+                            "raw": "{{base_url}}/api/notifications",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1735,7 +1735,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/notifications/1/read",
+                            "raw": "{{base_url}}/api/notifications/1/read",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1762,7 +1762,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/notifications/unread-count",
+                            "raw": "{{base_url}}/api/notifications/unread-count",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1801,7 +1801,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/products/1/reviews",
+                            "raw": "{{base_url}}/api/products/1/reviews",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1832,7 +1832,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/tracking?order_number=ORD-123456",
+                            "raw": "{{base_url}}/api/tracking?order_number=ORD-123456",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1868,7 +1868,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/dashboard",
+                            "raw": "{{base_url}}/api/admin/dashboard",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1894,7 +1894,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/reports/sales?from=2024-01-01&to=2024-12-31",
+                            "raw": "{{base_url}}/api/admin/reports/sales?from=2024-01-01&to=2024-12-31",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1931,7 +1931,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/reports/inventory",
+                            "raw": "{{base_url}}/api/admin/reports/inventory",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1958,7 +1958,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/reports/customers",
+                            "raw": "{{base_url}}/api/admin/reports/customers",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -1985,7 +1985,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/reports/coupons",
+                            "raw": "{{base_url}}/api/admin/reports/coupons",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2020,7 +2020,7 @@
                             "raw": "{\n  \"type\": \"sales\",\n  \"format\": \"csv\",\n  \"from\": \"2024-01-01\",\n  \"to\": \"2024-12-31\"\n}"
                         },
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/reports/export",
+                            "raw": "{{base_url}}/api/admin/reports/export",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2047,7 +2047,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/inventory/valuation",
+                            "raw": "{{base_url}}/api/admin/inventory/valuation",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2082,7 +2082,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/inventory/variants/1/stock",
+                            "raw": "{{base_url}}/api/admin/inventory/variants/1/stock",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2123,7 +2123,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/inventory/bulk-update",
+                            "raw": "{{base_url}}/api/admin/inventory/bulk-update",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -2154,7 +2154,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/v1/admin/inventory/variants/1/history",
+                            "raw": "{{base_url}}/api/admin/inventory/variants/1/history",
                             "host": [
                                 "{{base_url}}"
                             ],
