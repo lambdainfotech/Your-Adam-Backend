@@ -79,21 +79,32 @@ class RelatedProductService
     private function formatProduct(Product $product): array
     {
         $basePrice = (float) $product->base_price;
-        $salePrice = $product->compare_price ? (float) $product->compare_price : null;
+        $finalPrice = (float) $product->final_price;
+        $salePrice = $product->sale_price ? (float) $product->sale_price : null;
+        $image = $product->images->first()?->image_url ?? $product->mainImage?->full_image_url;
+
+        // Get real review summary
+        $reviewSummary = \App\Models\Review::where('product_id', $product->id)
+            ->where('is_approved', true)
+            ->selectRaw('AVG(rating) as avg_rating, COUNT(*) as total')
+            ->first();
 
         return [
             'id' => 'prod_' . str_pad($product->id, 3, '0', STR_PAD_LEFT),
+            'legacy_id' => $product->id,
             'name' => $product->name,
             'slug' => $product->slug,
-            'basePrice' => $basePrice,
-            'salePrice' => $salePrice,
-            'image' => $product->images->first()?->image_url,
+            'base_price' => $basePrice,
+            'final_price' => $finalPrice,
+            'sale_price' => $salePrice,
+            'image' => $image,
             'category' => $product->category ? [
                 'id' => 'cat_' . str_replace('-', '_', strtolower($product->category->slug)),
                 'name' => $product->category->name,
+                'slug' => $product->category->slug,
             ] : null,
-            'rating' => 4.5,
-            'reviewCount' => rand(10, 200),
+            'rating' => $reviewSummary?->avg_rating ? round((float) $reviewSummary->avg_rating, 1) : 0,
+            'review_count' => (int) ($reviewSummary?->total ?? 0),
         ];
     }
 }

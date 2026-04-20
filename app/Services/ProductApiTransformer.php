@@ -194,7 +194,7 @@ class ProductApiTransformer
             ];
         }
 
-        $options = [];
+        $optionNames = [];
         $items = [];
         $colors = [];
         $sizes = [];
@@ -208,8 +208,8 @@ class ProductApiTransformer
                 $attrName = strtolower($attrValue->attribute->name ?? '');
                 if (str_contains($attrName, 'size')) {
                     $size = $attrValue->value;
-                    if (!in_array('size', $options)) {
-                        $options[] = 'size';
+                    if (!in_array('size', $optionNames)) {
+                        $optionNames[] = 'size';
                     }
                     if (!in_array($size, $sizes)) {
                         $sizes[] = $size;
@@ -218,8 +218,8 @@ class ProductApiTransformer
                 if (str_contains($attrName, 'color')) {
                     $color = $attrValue->value;
                     $colorCode = $attrValue->color_code ?: $this->getColorCode($attrValue->value);
-                    if (!in_array('color', $options)) {
-                        $options[] = 'color';
+                    if (!in_array('color', $optionNames)) {
+                        $optionNames[] = 'color';
                     }
                     if (!in_array($color, $colors)) {
                         $colors[] = $color;
@@ -242,6 +242,14 @@ class ProductApiTransformer
             ];
         }
 
+        $options = [];
+        foreach ($optionNames as $name) {
+            $options[] = [
+                'name' => ucfirst($name),
+                'code' => $name,
+            ];
+        }
+
         return [
             'has_variants' => true,
             'options' => $options,
@@ -257,7 +265,7 @@ class ProductApiTransformer
         foreach ($product->variants as $variant) {
             foreach ($variant->attributeValues as $attrValue) {
                 $attrName = strtolower($attrValue->attribute->name ?? '');
-                if (str_contains($attrName, 'color') && !in_array($attrValue->value, $colors)) {
+                if (str_contains($attrName, 'color') && !in_array($attrValue->value, array_column($colors, 'name'))) {
                     $colors[] = [
                         'name' => $attrValue->value,
                         'code' => $attrValue->color_code ?: $this->getColorCode($attrValue->value),
@@ -288,8 +296,8 @@ class ProductApiTransformer
         }
 
         return [
-            'available_colors' => $colors,
-            'available_sizes' => $sizes,
+            'color' => $colors,
+            'size' => $sizes,
         ];
     }
 
@@ -342,11 +350,7 @@ class ProductApiTransformer
                     'availability' => $product->is_in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                     'url' => $canonicalUrl,
                 ],
-                'aggregateRating' => [
-                    '@type' => 'AggregateRating',
-                    'ratingValue' => 4.8,
-                    'reviewCount' => 124,
-                ],
+                'aggregateRating' => $this->getStructuredDataRating($product->id),
             ],
         ];
     }
@@ -489,6 +493,28 @@ class ProductApiTransformer
                 ] : null,
             ];
         })->toArray();
+    }
+
+    /**
+     * Get structured data rating for SEO
+     */
+    private function getStructuredDataRating(int $productId): array
+    {
+        $summary = $this->getReviewsSummary($productId);
+
+        if ($summary['total_reviews'] === 0) {
+            return [
+                '@type' => 'AggregateRating',
+                'ratingValue' => 0,
+                'reviewCount' => 0,
+            ];
+        }
+
+        return [
+            '@type' => 'AggregateRating',
+            'ratingValue' => $summary['average_rating'],
+            'reviewCount' => $summary['total_reviews'],
+        ];
     }
 
     /**
