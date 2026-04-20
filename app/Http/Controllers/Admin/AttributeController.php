@@ -68,6 +68,7 @@ class AttributeController extends Controller
         ]);
 
         // Insert attribute values if provided
+        $colorCodes = $request->input('color_codes', []);
         if (!empty($validated['values'])) {
             $values = [];
             foreach ($validated['values'] as $index => $value) {
@@ -75,6 +76,7 @@ class AttributeController extends Controller
                     $values[] = [
                         'attribute_id' => $attributeId,
                         'value' => $value,
+                        'color_code' => $colorCodes[$index] ?? null,
                         'sort_order' => $index,
                         'created_at' => now(),
                         'updated_at' => now(),

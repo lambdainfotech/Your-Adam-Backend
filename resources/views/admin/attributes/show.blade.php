@@ -151,10 +151,15 @@
             
             @if($attribute->type === 'color')
             <div class="w-40">
-                <label for="color_code" class="block text-sm font-medium text-gray-700 mb-2">Color Code</label>
-                <input type="text" name="color_code" id="color_code"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="#FF0000">
+                <label for="color_code" class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                <div class="flex items-center space-x-2">
+                    <input type="color" name="color_code" id="color_code"
+                        class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer"
+                        title="Pick color">
+                    <input type="text" id="color_code_text"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        placeholder="#FF0000" readonly>
+                </div>
             </div>
             @endif
             
@@ -170,4 +175,15 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+    const colorPicker = document.getElementById('color_code');
+    const colorText = document.getElementById('color_code_text');
+    if (colorPicker && colorText) {
+        colorPicker.addEventListener('input', function() {
+            colorText.value = this.value.toUpperCase();
+        });
+    }
+</script>
+@endpush
 @endsection

@@ -101,10 +101,13 @@
                     <p class="text-sm text-gray-500 mb-3">Add values for this attribute (e.g., Red, Blue, Green for Color)</p>
                     
                     <div id="valuesContainer" class="space-y-2">
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2 value-row">
                             <input type="text" name="values[]" 
                                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Value (e.g., Red)">
+                            <input type="color" name="color_codes[]" 
+                                class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer color-picker"
+                                title="Pick color">
                             <button type="button" onclick="removeValue(this)" class="text-red-600 hover:text-red-800 px-2">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -133,14 +136,33 @@
 
 @push('scripts')
 <script>
+    const typeSelect = document.getElementById('type');
+    const valuesContainer = document.getElementById('valuesContainer');
+
+    function isColorType() {
+        return typeSelect.value === 'color';
+    }
+
+    function toggleColorPickers() {
+        const colorPickers = document.querySelectorAll('.color-picker');
+        colorPickers.forEach(picker => {
+            picker.style.display = isColorType() ? 'block' : 'none';
+        });
+    }
+
     function addValue() {
         const container = document.getElementById('valuesContainer');
         const div = document.createElement('div');
-        div.className = 'flex items-center space-x-2';
+        div.className = 'flex items-center space-x-2 value-row';
+        const showColor = isColorType();
         div.innerHTML = `
-            <input type="text" name="values[]" 
+            <input type="text" name="values[]"
                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Value (e.g., Red)">
+            <input type="color" name="color_codes[]"
+                class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer color-picker"
+                title="Pick color"
+                style="display: ${showColor ? 'block' : 'none'}">
             <button type="button" onclick="removeValue(this)" class="text-red-600 hover:text-red-800 px-2">
                 <i class="fas fa-times"></i>
             </button>
@@ -153,10 +175,17 @@
         if (container.children.length > 1) {
             button.parentElement.remove();
         } else {
-            // Clear the input instead of removing
-            button.parentElement.querySelector('input').value = '';
+            // Clear the inputs instead of removing
+            const inputs = button.parentElement.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
         }
     }
+
+    // Show/hide color pickers when type changes
+    typeSelect.addEventListener('change', toggleColorPickers);
+
+    // Initialize on page load
+    toggleColorPickers();
 
     // Auto-generate code from name
     document.getElementById('name').addEventListener('blur', function() {
