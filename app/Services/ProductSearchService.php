@@ -86,7 +86,7 @@ class ProductSearchService
 
         // Apply subcategory filter
         if ($subcategorySlug) {
-            $searchQuery->whereHas('category', function ($cq) use ($subcategorySlug) {
+            $searchQuery->whereHas('subCategory', function ($cq) use ($subcategorySlug) {
                 $cq->where('slug', $subcategorySlug)
                     ->whereNotNull('parent_id');
             });

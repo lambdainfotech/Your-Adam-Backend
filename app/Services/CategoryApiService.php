@@ -78,7 +78,7 @@ class CategoryApiService
         $data = [
             'id' => 'cat_' . $this->generateId($parent->slug) . '_' . $this->generateId($child->slug),
             'name' => $child->name,
-            'slug' => $parent->slug . '-' . $child->slug,
+            'slug' => $child->slug,
             'parentId' => 'cat_' . $this->generateId($parent->slug),
             'productCount' => $productCount,
         ];
