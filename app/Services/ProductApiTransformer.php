@@ -19,7 +19,7 @@ class ProductApiTransformer
     /**
      * Transform product to standardized API format
      */
-    public function transform(Product $product, bool $full = false): array
+    public function transform(Product $product, bool $full = false, bool $includeRelated = true): array
     {
         $basePrice = (float) $product->base_price;
         $finalPrice = (float) $product->final_price;
@@ -110,7 +110,9 @@ class ProductApiTransformer
             $data['seo'] = $this->formatSeo($product);
             $data['size_chart'] = $this->formatSizeChart($product->sizeChart);
             $data['reviews_summary'] = $this->getReviewsSummary($product->id);
-            $data['related_products'] = $this->getRelatedProducts($product->id, 8);
+            if ($includeRelated) {
+                $data['related_products'] = $this->getRelatedProducts($product->id, 8);
+            }
             $data['active_campaigns'] = $this->getActiveCampaigns($product);
             $data['additional_info'] = [
                 'weight' => $product->weight ? (float) $product->weight : null,
@@ -470,7 +472,19 @@ class ProductApiTransformer
             return [];
         }
 
-        $related = Product::with(['category', 'mainImage'])
+        $related = Product::with([
+                'category',
+                'subCategory',
+                'images',
+                'variants.attributeValues.attribute',
+                'variants.images',
+                'sizeChart.rows',
+                'campaigns' => function ($q) {
+                    $q->where('is_active', true)
+                        ->where('starts_at', '<=', now())
+                        ->where('ends_at', '>=', now());
+                },
+            ])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $productId)
             ->where('status', 1)
@@ -479,19 +493,7 @@ class ProductApiTransformer
             ->get();
 
         return $related->map(function ($item) {
-            return [
-                'id' => 'prod_' . str_pad((string) $item->id, 3, '0', STR_PAD_LEFT),
-                'legacy_id' => $item->id,
-                'name' => $item->name,
-                'slug' => $item->slug,
-                'base_price' => (float) $item->base_price,
-                'final_price' => (float) $item->final_price,
-                'image' => $item->mainImage?->full_image_url,
-                'category' => $item->category ? [
-                    'name' => $item->category->name,
-                    'slug' => $item->category->slug,
-                ] : null,
-            ];
+            return $this->transform($item, true, false);
         })->toArray();
     }
 
