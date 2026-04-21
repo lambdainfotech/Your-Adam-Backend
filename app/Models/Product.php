@@ -41,6 +41,7 @@ class Product extends Model
         'manage_stock',
         'stock_quantity',
         'stock_status',
+        'total_stock',
         'low_stock_threshold',
         'weight',
         'status',

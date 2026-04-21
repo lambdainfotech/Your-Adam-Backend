@@ -107,7 +107,7 @@
                             <td class="px-6 py-4 font-medium">৳{{ number_format($product->base_price, 2) }}</td>
                             <td class="px-6 py-4">
                                 @php
-                                    $totalStock = $product->variants->sum('stock_quantity');
+                                    $totalStock = $product->total_stock;
                                 @endphp
                                 <span class="{{ $totalStock <= 10 ? 'text-red-600 font-medium' : 'text-gray-600' }}">
                                     {{ $totalStock }}
