@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ProfitReportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -99,5 +100,29 @@ class ReportController extends Controller
         })->count();
         
         return view('admin.reports.inventory', compact('products', 'totalProducts', 'outOfStock', 'lowStock'));
+    }
+
+    public function profit(Request $request, ProfitReportService $service)
+    {
+        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
+        $status = $request->get('status', 'completed');
+
+        $filters = ['status' => $status];
+
+        $summary = $service->getProfitSummary($startDate, $endDate, $filters);
+        $products = $service->getProfitByProduct($startDate, $endDate, $filters);
+        $daily = $service->getDailyProfit($startDate, $endDate, $filters);
+        $missingCostPrice = $service->getProductsWithoutCostPrice();
+
+        return view('admin.reports.profit', compact(
+            'summary',
+            'products',
+            'daily',
+            'missingCostPrice',
+            'startDate',
+            'endDate',
+            'status'
+        ));
     }
 }

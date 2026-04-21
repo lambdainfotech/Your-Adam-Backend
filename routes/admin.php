@@ -203,6 +203,7 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('/reports/products', [ReportController::class, 'products'])->name('admin.reports.products');
     Route::get('/reports/customers', [ReportController::class, 'customers'])->name('admin.reports.customers');
     Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('admin.reports.inventory');
+    Route::get('/reports/profit', [ReportController::class, 'profit'])->name('admin.reports.profit');
 
     // Sliders / Banners
     Route::resource('sliders', SliderController::class)->names('admin.sliders');

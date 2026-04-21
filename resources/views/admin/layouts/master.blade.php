@@ -225,6 +225,11 @@
                     <i class="fas fa-warehouse w-6 text-center"></i>
                     <span class="ml-3 sidebar-text">Inventory Report</span>
                 </a>
+                
+                <a href="{{ route('admin.reports.profit') }}" class="nav-item {{ request()->routeIs('admin.reports.profit') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-coins w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Profit Report</span>
+                </a>
             </nav>
         </aside>
         
