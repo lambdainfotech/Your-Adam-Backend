@@ -40,7 +40,7 @@
             <p class="text-2xl font-bold text-gray-800 mt-1">৳{{ number_format($summary['total_revenue'], 2) }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <p class="text-sm font-medium text-gray-500">Total Cost</p>
+            <p class="text-sm font-medium text-gray-500">Total Cost (COGS)</p>
             <p class="text-2xl font-bold text-red-600 mt-1">৳{{ number_format($summary['total_cost'], 2) }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -48,10 +48,82 @@
             <p class="text-2xl font-bold text-green-600 mt-1">৳{{ number_format($summary['total_profit'], 2) }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <p class="text-sm font-medium text-gray-500">Profit Margin</p>
+            <p class="text-sm font-medium text-gray-500">Gross Margin</p>
             <p class="text-2xl font-bold text-blue-600 mt-1">{{ $summary['profit_margin'] }}%</p>
         </div>
     </div>
+
+    <!-- Net Profit Section -->
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl shadow-sm p-6 text-white">
+        <h3 class="text-lg font-semibold mb-4">Net Profit Calculation</h3>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+            <div class="text-center">
+                <p class="text-sm text-gray-400">Revenue</p>
+                <p class="text-xl font-bold">৳{{ number_format($netSummary['total_revenue'], 2) }}</p>
+            </div>
+            <div class="text-center text-red-400">
+                <p class="text-lg">- COGS</p>
+                <p class="text-xl font-bold">৳{{ number_format($netSummary['total_cost'], 2) }}</p>
+            </div>
+            <div class="text-center text-yellow-400">
+                <p class="text-lg">- Expenses</p>
+                <p class="text-xl font-bold">৳{{ number_format($netSummary['total_expenses'], 2) }}</p>
+            </div>
+            <div class="text-center text-2xl">=</div>
+            <div class="text-center bg-white bg-opacity-10 rounded-lg p-4">
+                <p class="text-sm text-gray-300">NET PROFIT</p>
+                <p class="text-2xl font-bold {{ $netSummary['net_profit'] >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                    ৳{{ number_format($netSummary['net_profit'], 2) }}
+                </p>
+                <p class="text-sm text-gray-400">{{ $netSummary['net_margin'] }}% margin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Breakdown -->
+    @if(count($expenseBreakdown) > 0)
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800">Expense Breakdown</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">% of Expenses</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($expenseBreakdown as $expense)
+                        <tr>
+                            <td class="px-6 py-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium" style="background-color: {{ $expense['color'] }}20; color: {{ $expense['color'] }}">
+                                    {{ $expense['category_name'] }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-3 font-medium text-red-600">৳{{ number_format($expense['total_amount'], 2) }}</td>
+                            <td class="px-6 py-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-24 bg-gray-200 rounded-full h-2">
+                                        <div class="h-2 rounded-full" style="width: {{ $netSummary['total_expenses'] > 0 ? ($expense['total_amount'] / $netSummary['total_expenses'] * 100) : 0 }}%; background-color: {{ $expense['color'] }}"></div>
+                                    </div>
+                                    <span class="text-sm text-gray-600">{{ $netSummary['total_expenses'] > 0 ? round($expense['total_amount'] / $netSummary['total_expenses'] * 100, 1) : 0 }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    <tr class="bg-gray-50 font-semibold">
+                        <td class="px-6 py-3">Total Expenses</td>
+                        <td class="px-6 py-3 text-red-600">৳{{ number_format($netSummary['total_expenses'], 2) }}</td>
+                        <td class="px-6 py-3">100%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 
     <!-- Stats Row -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

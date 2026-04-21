@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\BrandValueController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\ExpenseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -204,6 +205,19 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('/reports/customers', [ReportController::class, 'customers'])->name('admin.reports.customers');
     Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('admin.reports.inventory');
     Route::get('/reports/profit', [ReportController::class, 'profit'])->name('admin.reports.profit');
+    Route::get('/reports/expenses', [ReportController::class, 'expenses'])->name('admin.reports.expenses');
+
+    // Expenses
+    Route::get('/expenses', [ExpenseController::class, 'index'])->name('admin.expenses.index');
+    Route::get('/expenses/create', [ExpenseController::class, 'create'])->name('admin.expenses.create');
+    Route::post('/expenses', [ExpenseController::class, 'store'])->name('admin.expenses.store');
+    Route::get('/expenses/{expense}/edit', [ExpenseController::class, 'edit'])->name('admin.expenses.edit');
+    Route::put('/expenses/{expense}', [ExpenseController::class, 'update'])->name('admin.expenses.update');
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('admin.expenses.destroy');
+    Route::get('/expenses/categories', [ExpenseController::class, 'categories'])->name('admin.expenses.categories');
+    Route::post('/expenses/categories', [ExpenseController::class, 'storeCategory'])->name('admin.expenses.categories.store');
+    Route::put('/expenses/categories/{category}', [ExpenseController::class, 'updateCategory'])->name('admin.expenses.categories.update');
+    Route::delete('/expenses/categories/{category}', [ExpenseController::class, 'destroyCategory'])->name('admin.expenses.categories.destroy');
 
     // Sliders / Banners
     Route::resource('sliders', SliderController::class)->names('admin.sliders');

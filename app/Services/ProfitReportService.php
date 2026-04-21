@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -116,6 +117,54 @@ class ProfitReportService
             ->toArray();
 
         return $daily;
+    }
+
+    /**
+     * Get net profit summary (revenue - COGS - expenses)
+     */
+    public function getNetProfitSummary(string $startDate, string $endDate, array $filters = []): array
+    {
+        $grossSummary = $this->getProfitSummary($startDate, $endDate, $filters);
+        $totalExpenses = (float) Expense::byDateRange($startDate, $endDate)->sum('amount');
+        $netProfit = $grossSummary['total_profit'] - $totalExpenses;
+
+        return [
+            'total_revenue' => $grossSummary['total_revenue'],
+            'total_cost' => $grossSummary['total_cost'],
+            'gross_profit' => $grossSummary['total_profit'],
+            'gross_margin' => $grossSummary['profit_margin'],
+            'total_expenses' => $totalExpenses,
+            'net_profit' => $netProfit,
+            'net_margin' => $grossSummary['total_revenue'] > 0 ? round(($netProfit / $grossSummary['total_revenue']) * 100, 2) : 0,
+            'total_orders' => $grossSummary['total_orders'],
+            'total_items_sold' => $grossSummary['total_items_sold'],
+        ];
+    }
+
+    /**
+     * Get expense breakdown by category for profit report
+     */
+    public function getExpenseBreakdown(string $startDate, string $endDate): array
+    {
+        return DB::table('expenses')
+            ->join('expense_categories', 'expenses.category_id', '=', 'expense_categories.id')
+            ->whereBetween('expenses.date', [$startDate, $endDate])
+            ->select(
+                'expense_categories.name as category_name',
+                'expense_categories.color',
+                DB::raw('SUM(expenses.amount) as total_amount')
+            )
+            ->groupBy('expense_categories.id', 'expense_categories.name', 'expense_categories.color')
+            ->orderByDesc('total_amount')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'category_name' => $item->category_name,
+                    'color' => $item->color,
+                    'total_amount' => (float) $item->total_amount,
+                ];
+            })
+            ->toArray();
     }
 
     /**

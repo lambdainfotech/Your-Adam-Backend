@@ -230,6 +230,28 @@
                     <i class="fas fa-coins w-6 text-center"></i>
                     <span class="ml-3 sidebar-text">Profit Report</span>
                 </a>
+                
+                <a href="{{ route('admin.reports.expenses') }}" class="nav-item {{ request()->routeIs('admin.reports.expenses') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-chart-pie w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Expense Report</span>
+                </a>
+                
+                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Expenses</div>
+                
+                <a href="{{ route('admin.expenses.index') }}" class="nav-item {{ request()->routeIs('admin.expenses.*') && !request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-list w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">All Expenses</span>
+                </a>
+                
+                <a href="{{ route('admin.expenses.create') }}" class="nav-item {{ request()->routeIs('admin.expenses.create') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-plus-circle w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Add Expense</span>
+                </a>
+                
+                <a href="{{ route('admin.expenses.categories') }}" class="nav-item {{ request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
+                    <i class="fas fa-tags w-6 text-center"></i>
+                    <span class="ml-3 sidebar-text">Categories</span>
+                </a>
             </nav>
         </aside>
         

@@ -102,6 +102,29 @@ class ReportController extends Controller
         return view('admin.reports.inventory', compact('products', 'totalProducts', 'outOfStock', 'lowStock'));
     }
 
+    public function expenses(Request $request, \App\Services\ExpenseReportService $service)
+    {
+        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
+
+        $summary = $service->getExpenseSummary($startDate, $endDate);
+        $byCategory = $service->getExpensesByCategory($startDate, $endDate);
+        $daily = $service->getDailyExpenses($startDate, $endDate);
+        $topExpenses = $service->getTopExpenses($startDate, $endDate, 10);
+
+        $topCategory = collect($byCategory)->first();
+
+        return view('admin.reports.expenses', compact(
+            'summary',
+            'byCategory',
+            'daily',
+            'topExpenses',
+            'topCategory',
+            'startDate',
+            'endDate'
+        ));
+    }
+
     public function profit(Request $request, ProfitReportService $service)
     {
         $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
@@ -111,12 +134,16 @@ class ReportController extends Controller
         $filters = ['status' => $status];
 
         $summary = $service->getProfitSummary($startDate, $endDate, $filters);
+        $netSummary = $service->getNetProfitSummary($startDate, $endDate, $filters);
+        $expenseBreakdown = $service->getExpenseBreakdown($startDate, $endDate);
         $products = $service->getProfitByProduct($startDate, $endDate, $filters);
         $daily = $service->getDailyProfit($startDate, $endDate, $filters);
         $missingCostPrice = $service->getProductsWithoutCostPrice();
 
         return view('admin.reports.profit', compact(
             'summary',
+            'netSummary',
+            'expenseBreakdown',
             'products',
             'daily',
             'missingCostPrice',
