@@ -33,6 +33,7 @@ class Order extends Model
         'billing_address',
         'estimated_delivery_date',
         'delivered_at',
+        'transaction_id',
         'ip_address',
         'user_agent',
     ];

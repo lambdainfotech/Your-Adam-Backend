@@ -61,6 +61,9 @@ Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingControll
 // Coupon Validation (Public)
 Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponController::class, 'validate']);
 
+// Guest Checkout (Public)
+Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout');
+
 // Payment Callbacks (Public - Webhook endpoints)
 Route::post('/payment/aamarpay/success', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPaySuccess'])->name('api.payment.aamarpay.success');
 Route::post('/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail');
