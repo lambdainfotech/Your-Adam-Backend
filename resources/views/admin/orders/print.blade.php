@@ -365,12 +365,13 @@
                 </div>
                 <div class="info-card">
                     <h4>Shipping Address</h4>
-                    @if($order->address)
-                        <p>{{ $order->address->address_line_1 }}</p>
-                        @if($order->address->address_line_2)
-                            <p class="small">{{ $order->address->address_line_2 }}</p>
+                    @if($order->delivery_address)
+                        <p>{{ $order->delivery_address['name'] ?? 'N/A' }}</p>
+                        <p class="small">{{ $order->delivery_address['address_line_1'] ?? '' }}</p>
+                        @if(!empty($order->delivery_address['address_line_2']))
+                            <p class="small">{{ $order->delivery_address['address_line_2'] }}</p>
                         @endif
-                        <p class="small">{{ $order->address->city }}, {{ $order->address->state }} {{ $order->address->postal_code }}</p>
+                        <p class="small">{{ $order->delivery_address['city'] ?? '' }}, {{ $order->delivery_address['state'] ?? '' }} {{ $order->delivery_address['postal_code'] ?? '' }}</p>
                     @else
                         <p class="small">No shipping address</p>
                     @endif

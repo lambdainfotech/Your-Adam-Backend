@@ -62,16 +62,17 @@
                 </div>
             </div>
             
-            @if($order->address)
+            @if($order->delivery_address)
                 <div class="mt-6">
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Shipping Address</h3>
                     <address class="not-italic text-gray-600">
-                        {{ $order->address->address_line_1 }}<br>
-                        @if($order->address->address_line_2)
-                            {{ $order->address->address_line_2 }}<br>
+                        {{ $order->delivery_address['name'] ?? 'N/A' }}<br>
+                        {{ $order->delivery_address['address_line_1'] ?? '' }}<br>
+                        @if(!empty($order->delivery_address['address_line_2']))
+                            {{ $order->delivery_address['address_line_2'] }}<br>
                         @endif
-                        {{ $order->address->city }}, {{ $order->address->state }} {{ $order->address->postal_code }}<br>
-                        {{ $order->address->country }}
+                        {{ $order->delivery_address['city'] ?? '' }}, {{ $order->delivery_address['state'] ?? '' }} {{ $order->delivery_address['postal_code'] ?? '' }}<br>
+                        {{ $order->delivery_address['country'] ?? '' }}
                     </address>
                 </div>
             @endif

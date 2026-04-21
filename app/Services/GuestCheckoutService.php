@@ -48,10 +48,11 @@ class GuestCheckoutService
             $deliveryAddress = [
                 'name' => $data['shippingAddress']['name'],
                 'phone' => $data['shippingAddress']['phone'],
-                'address' => $data['shippingAddress']['address'],
+                'address_line_1' => $data['shippingAddress']['address'],
+                'address_line_2' => null,
                 'city' => $data['shippingAddress']['city'],
-                'district' => $data['shippingAddress']['district'] ?? null,
-                'postcode' => $data['shippingAddress']['postcode'],
+                'state' => $data['shippingAddress']['district'] ?? null,
+                'postal_code' => $data['shippingAddress']['postcode'],
                 'country' => 'Bangladesh',
             ];
 
@@ -207,21 +208,23 @@ class GuestCheckoutService
                 ]);
             }
 
+            $productName = $variant->product?->name ?? 'Unknown Product';
+
             if (!$variant->canPurchase($item['quantity'])) {
                 throw ValidationException::withMessages([
-                    'items' => "Insufficient stock for {$variant->product->name}. Available: {$variant->stock_quantity}, Requested: {$item['quantity']}",
+                    'items' => "Insufficient stock for {$productName}. Available: {$variant->stock_quantity}, Requested: {$item['quantity']}",
                 ]);
             }
 
             $unitPrice = $variant->final_price;
-            $originalPrice = $variant->compare_price ?? $variant->price ?? $variant->product->base_price ?? $unitPrice;
+            $originalPrice = $variant->compare_price ?? $variant->price ?? $variant->product?->base_price ?? $unitPrice;
             $discountAmount = ($originalPrice - $unitPrice) * $item['quantity'];
             $totalPrice = $unitPrice * $item['quantity'];
 
             $processed[] = [
                 'variant_id' => $variant->id,
                 'variant' => $variant,
-                'product_name' => $variant->product->name,
+                'product_name' => $productName,
                 'variant_sku' => $variant->sku,
                 'variant_attributes' => $variant->attributeValues->pluck('value', 'attribute.name')->toArray(),
                 'quantity' => $item['quantity'],
