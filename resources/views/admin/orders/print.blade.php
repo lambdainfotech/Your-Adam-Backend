@@ -366,12 +366,18 @@
                 <div class="info-card">
                     <h4>Shipping Address</h4>
                     @if($order->delivery_address)
+                        @php
+                            $addrLine1 = $order->delivery_address['address_line_1'] ?? $order->delivery_address['address'] ?? '';
+                            $addrLine2 = $order->delivery_address['address_line_2'] ?? '';
+                            $state = $order->delivery_address['state'] ?? $order->delivery_address['district'] ?? '';
+                            $postcode = $order->delivery_address['postal_code'] ?? $order->delivery_address['postcode'] ?? '';
+                        @endphp
                         <p>{{ $order->delivery_address['name'] ?? 'N/A' }}</p>
-                        <p class="small">{{ $order->delivery_address['address_line_1'] ?? '' }}</p>
-                        @if(!empty($order->delivery_address['address_line_2']))
-                            <p class="small">{{ $order->delivery_address['address_line_2'] }}</p>
+                        <p class="small">{{ $addrLine1 }}</p>
+                        @if($addrLine2)
+                            <p class="small">{{ $addrLine2 }}</p>
                         @endif
-                        <p class="small">{{ $order->delivery_address['city'] ?? '' }}, {{ $order->delivery_address['state'] ?? '' }} {{ $order->delivery_address['postal_code'] ?? '' }}</p>
+                        <p class="small">{{ $order->delivery_address['city'] ?? '' }}, {{ $state }} {{ $postcode }}</p>
                     @else
                         <p class="small">No shipping address</p>
                     @endif

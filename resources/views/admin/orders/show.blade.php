@@ -117,11 +117,17 @@
                     <h3 class="font-semibold text-gray-800 mb-4">Shipping Address</h3>
                     <address class="not-italic text-gray-600">
                         {{ $order->delivery_address['name'] ?? 'N/A' }}<br>
-                        {{ $order->delivery_address['address_line_1'] ?? '' }}<br>
-                        @if(!empty($order->delivery_address['address_line_2']))
-                            {{ $order->delivery_address['address_line_2'] }}<br>
+                        @php
+                            $addrLine1 = $order->delivery_address['address_line_1'] ?? $order->delivery_address['address'] ?? '';
+                            $addrLine2 = $order->delivery_address['address_line_2'] ?? '';
+                            $state = $order->delivery_address['state'] ?? $order->delivery_address['district'] ?? '';
+                            $postcode = $order->delivery_address['postal_code'] ?? $order->delivery_address['postcode'] ?? '';
+                        @endphp
+                        {{ $addrLine1 }}<br>
+                        @if($addrLine2)
+                            {{ $addrLine2 }}<br>
                         @endif
-                        {{ $order->delivery_address['city'] ?? '' }}, {{ $order->delivery_address['state'] ?? '' }} {{ $order->delivery_address['postal_code'] ?? '' }}<br>
+                        {{ $order->delivery_address['city'] ?? '' }}, {{ $state }} {{ $postcode }}<br>
                         {{ $order->delivery_address['country'] ?? '' }}
                     </address>
                 </div>
