@@ -28,9 +28,9 @@ class InventoryServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Module migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 
         // Module routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
     }
 }
