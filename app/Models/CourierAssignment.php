@@ -15,18 +15,19 @@ class CourierAssignment extends Model
         'order_id',
         'courier_id',
         'tracking_number',
-        'shipping_cost',
-        'estimated_delivery_date',
-        'shipped_at',
+        'tracking_url',
+        'assigned_at',
+        'picked_up_at',
         'delivered_at',
-        'status',
+        'shipping_cost',
         'notes',
+        'created_by',
     ];
 
     protected $casts = [
         'shipping_cost' => 'decimal:2',
-        'estimated_delivery_date' => 'date',
-        'shipped_at' => 'datetime',
+        'assigned_at' => 'datetime',
+        'picked_up_at' => 'datetime',
         'delivered_at' => 'datetime',
     ];
 
@@ -42,7 +43,7 @@ class CourierAssignment extends Model
 
     public function trackingHistory(): HasMany
     {
-        return $this->hasMany(TrackingHistory::class);
+        return $this->hasMany(TrackingHistory::class, 'order_id', 'order_id');
     }
 
     public function getTrackingUrlAttribute(): ?string

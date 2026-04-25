@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "your-adam/backend",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
@@ -12,8 +12,9 @@
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "php-open-source-saver/jwt-auth": "^2.8",
+        "predis/predis": "^3.4",
         "spatie/laravel-sluggable": "^3.8",
-        "zircote/swagger-php": "*"
+        "zircote/swagger-php": "^4.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -38,6 +39,8 @@
             "App\\Modules\\Notification\\": "app/Modules/Notification/src/",
             "App\\Modules\\Report\\": "app/Modules/Report/src/",
             "App\\Modules\\Audit\\": "app/Modules/Audit/src/",
+            "App\\Modules\\Address\\": "app/Modules/Address/",
+            "App\\Modules\\Shared\\": "app/Modules/Shared/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

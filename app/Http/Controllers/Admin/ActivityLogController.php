@@ -10,26 +10,35 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'user_id' => 'nullable|integer|exists:users,id',
+            'action' => 'nullable|string|max:50',
+            'entity_type' => 'nullable|string|max:50',
+            'entity_id' => 'nullable|integer',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
+        ]);
+
         $query = ActivityLog::with('user');
         
-        if ($request->filled('user_id')) {
-            $query->forUser($request->user_id);
+        if (!empty($validated['user_id'])) {
+            $query->forUser($validated['user_id']);
         }
         
-        if ($request->filled('action')) {
-            $query->byAction($request->action);
+        if (!empty($validated['action'])) {
+            $query->byAction($validated['action']);
         }
         
-        if ($request->filled('entity_type')) {
-            $query->forEntity($request->entity_type, $request->entity_id);
+        if (!empty($validated['entity_type'])) {
+            $query->forEntity($validated['entity_type'], $validated['entity_id'] ?? null);
         }
         
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+        if (!empty($validated['date_from'])) {
+            $query->whereDate('created_at', '>=', $validated['date_from']);
         }
         
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+        if (!empty($validated['date_to'])) {
+            $query->whereDate('created_at', '<=', $validated['date_to']);
         }
         
         $logs = $query->recent()->paginate(50)->withQueryString();

@@ -52,6 +52,7 @@ class CampaignController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -95,6 +96,11 @@ class CampaignController extends Controller
         
         return redirect()->route('admin.campaigns.index')
             ->with('success', 'Campaign created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to create campaign: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function show(Campaign $campaign)
@@ -118,6 +124,7 @@ class CampaignController extends Controller
 
     public function update(Request $request, Campaign $campaign)
     {
+        try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -167,6 +174,11 @@ class CampaignController extends Controller
         
         return redirect()->route('admin.campaigns.index')
             ->with('success', 'Campaign updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update campaign: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function destroy(Campaign $campaign)

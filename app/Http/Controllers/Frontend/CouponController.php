@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\CouponService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CouponController extends Controller
 {
+    use ApiResponse;
     private CouponService $couponService;
 
     public function __construct(CouponService $couponService)
@@ -36,16 +38,10 @@ class CouponController extends Controller
         );
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => $result['message'],
-            ], 422);
+            return $this->error($result['message'], 422);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['coupon'],
-        ]);
+        return $this->success($result['coupon'], 'Coupon validated successfully');
     }
 
     /**
@@ -56,9 +52,6 @@ class CouponController extends Controller
         $userId = Auth::id();
         $coupons = $this->couponService->getAvailableCoupons($userId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $coupons,
-        ]);
+        return $this->success($coupons, 'Available coupons retrieved successfully');
     }
 }

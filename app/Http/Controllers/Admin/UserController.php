@@ -46,6 +46,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -75,6 +76,11 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to create user: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     private function generateRandomPassword(): string

@@ -22,6 +22,7 @@ class SliderController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
@@ -60,6 +61,11 @@ class SliderController extends Controller
 
         return redirect()->route('admin.sliders.index')
             ->with('success', 'Slider created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to create slider: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function edit(Slider $slider)
@@ -69,6 +75,7 @@ class SliderController extends Controller
 
     public function update(Request $request, Slider $slider)
     {
+        try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'subtitle' => 'nullable|string|max:500',
@@ -114,6 +121,11 @@ class SliderController extends Controller
 
         return redirect()->route('admin.sliders.index')
             ->with('success', 'Slider updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update slider: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function destroy(Slider $slider)

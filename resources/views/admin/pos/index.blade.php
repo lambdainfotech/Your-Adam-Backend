@@ -154,6 +154,35 @@
 
             <!-- Cart Summary -->
             <div class="p-3 border-t bg-gray-50">
+                <!-- Discount Controls -->
+                <div x-show="!appliedDiscount.active" class="mb-2">
+                    <button @click="showDiscountInput = !showDiscountInput" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                        <i class="fas fa-tag mr-1"></i>Add Discount
+                    </button>
+                    <div x-show="showDiscountInput" class="mt-1 flex gap-1">
+                        <select x-model="discountType" class="text-xs px-2 py-1 border rounded">
+                            <option value="fixed">Fixed ৳</option>
+                            <option value="percentage">% Off</option>
+                        </select>
+                        <input type="number" x-model="discountInput" placeholder="0" min="0"
+                            :max="discountType === 'percentage' ? 100 : subtotal"
+                            class="text-xs w-16 px-2 py-1 border rounded">
+                        <button @click="applyDiscount()" class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Apply</button>
+                    </div>
+                </div>
+                <div x-show="appliedDiscount.active" class="mb-2 p-2 bg-green-50 rounded flex justify-between items-center">
+                    <div class="text-xs">
+                        <span class="font-medium text-green-700">
+                            <i class="fas fa-check mr-1"></i>Discount:
+                        </span>
+                        <span x-show="appliedDiscount.type === 'fixed'">৳<span x-text="formatPrice(appliedDiscount.value)"></span></span>
+                        <span x-show="appliedDiscount.type === 'percentage'" x-text="appliedDiscount.value + '%'"></span>
+                    </div>
+                    <button @click="removeDiscount()" class="text-xs text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
                 <div class="space-y-1 text-sm">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Subtotal:</span>
@@ -356,16 +385,26 @@ function posSystem() {
                 { method: 'card', amount: 0 }
             ]
         },
-        
+
+        // Discount
+        showDiscountInput: false,
+        discountType: 'fixed',
+        discountInput: 0,
+        appliedDiscount: { active: false, type: 'fixed', value: 0 },
+
         // Computed
         get subtotal() {
             return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         },
         get discount() {
-            return 0; // TODO: Implement discount logic
+            if (!this.appliedDiscount.active) return 0;
+            if (this.appliedDiscount.type === 'fixed') {
+                return Math.min(this.appliedDiscount.value, this.subtotal);
+            }
+            return Math.min((this.subtotal * this.appliedDiscount.value) / 100, this.subtotal);
         },
         get tax() {
-            return this.subtotal * 0.05; // 5% tax
+            return Math.max(0, (this.subtotal - this.discount) * 0.05); // 5% tax after discount
         },
         get total() {
             return this.subtotal - this.discount + this.tax;
@@ -706,10 +745,50 @@ function posSystem() {
         },
         
         async searchCustomers() {
-            // TODO: Implement customer search API
-            // For now, using mock data
+            try {
+                const params = new URLSearchParams();
+                if (this.customerSearch) params.append('query', this.customerSearch);
+
+                const response = await fetch(`/admin/pos/customers/search?${params}`, {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to search customers');
+
+                const data = await response.json();
+                if (data.success) {
+                    this.customers = data.data;
+                }
+            } catch (error) {
+                console.error('Error searching customers:', error);
+                this.customers = [];
+            }
         },
-        
+
+        applyDiscount() {
+            const value = parseFloat(this.discountInput);
+            if (!value || value <= 0) return;
+            if (this.discountType === 'percentage' && value > 100) {
+                alert('Discount percentage cannot exceed 100%');
+                return;
+            }
+            if (this.discountType === 'fixed' && value > this.subtotal) {
+                alert('Discount cannot exceed subtotal');
+                return;
+            }
+            this.appliedDiscount = { active: true, type: this.discountType, value: value };
+            this.showDiscountInput = false;
+            this.discountInput = 0;
+        },
+
+        removeDiscount() {
+            this.appliedDiscount = { active: false, type: 'fixed', value: 0 };
+        },
+
         selectCustomer(cust) {
             if (cust) {
                 this.customer = { name: cust.name, phone: cust.phone, id: cust.id };

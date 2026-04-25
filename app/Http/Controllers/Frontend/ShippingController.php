@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\ShippingCalculatorService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ShippingController extends Controller
 {
+    use ApiResponse;
     private ShippingCalculatorService $shippingService;
 
     public function __construct(ShippingCalculatorService $shippingService)
@@ -36,10 +38,7 @@ class ShippingController extends Controller
             $request->get('city')
         );
 
-        return response()->json([
-            'success' => true,
-            'data' => $result,
-        ]);
+        return $this->success($result, 'Shipping cost calculated successfully');
     }
 
     /**
@@ -49,9 +48,6 @@ class ShippingController extends Controller
     {
         $methods = $this->shippingService->getShippingMethods();
 
-        return response()->json([
-            'success' => true,
-            'data' => $methods,
-        ]);
+        return $this->success($methods, 'Shipping methods retrieved successfully');
     }
 }

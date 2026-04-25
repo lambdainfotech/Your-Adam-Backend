@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
 use App\Services\ProductApiTransformer;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CampaignController extends Controller
 {
+    use ApiResponse;
     protected ProductApiTransformer $productTransformer;
 
     public function __construct(ProductApiTransformer $productTransformer)
@@ -45,10 +47,7 @@ class CampaignController extends Controller
             return $this->transformCampaign($campaign);
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => $campaigns,
-        ]);
+        return $this->paginated($campaigns, 'Campaigns retrieved successfully');
     }
 
     /**
@@ -70,10 +69,7 @@ class CampaignController extends Controller
 
         $data = $this->transformCampaign($campaign, true);
 
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->success($data, 'Campaign retrieved successfully');
     }
 
     /**
@@ -86,12 +82,9 @@ class CampaignController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'campaigns' => $campaigns->map(fn ($c) => $this->transformCampaign($c)),
-            ],
-        ]);
+        return $this->success([
+            'campaigns' => $campaigns->map(fn ($c) => $this->transformCampaign($c)),
+        ], 'Featured campaigns retrieved successfully');
     }
 
     /**

@@ -244,7 +244,7 @@ return [
     |
     */
 
-    'show_black_list_exception' => env('JWT_SHOW_BLACKLIST_EXCEPTION', true),
+    'show_black_list_exception' => env('JWT_SHOW_BLACKLIST_EXCEPTION', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -285,7 +285,7 @@ return [
     |
     */
 
-    'cookie_secure' => env('JWT_COOKIE_SECURE', false),
+    'cookie_secure' => env('JWT_COOKIE_SECURE', true),
 
     /*
     |--------------------------------------------------------------------------

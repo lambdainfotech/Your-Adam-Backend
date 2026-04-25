@@ -5,30 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\CodeGeneratorService;
-use App\Services\ImageUploadService;
-use App\Services\PricingService;
+use App\Services\CategoryService;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    protected ImageUploadService $imageService;
-    protected PricingService $pricingService;
-    protected CodeGeneratorService $codeGenerator;
+    protected ProductService $productService;
+    protected CategoryService $categoryService;
 
     public function __construct(
-        ImageUploadService $imageService, 
-        PricingService $pricingService,
-        CodeGeneratorService $codeGenerator
+        ProductService $productService,
+        CategoryService $categoryService,
     ) {
-        $this->imageService = $imageService;
-        $this->pricingService = $pricingService;
-        $this->codeGenerator = $codeGenerator;
+        $this->productService = $productService;
+        $this->categoryService = $categoryService;
     }
 
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'category' => 'nullable|integer|exists:categories,id',
+            'status' => 'nullable|in:active,inactive',
+            'type' => 'nullable|in:simple,variable',
+            'stock_status' => 'nullable|in:in_stock,out_of_stock,on_backorder',
+        ]);
+
         $query = Product::with(['category', 'subCategory', 'variants', 'mainImage']);
         
         // Search
@@ -104,14 +107,14 @@ class ProductController extends Controller
             ->paginate(20)
             ->withQueryString();
         
-        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
+        $categories = $this->categoryService->getHierarchicalCategories();
         
         return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
+        $categories = $this->categoryService->getHierarchicalCategories();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
         $predefinedShortDescriptions = \App\Models\PredefinedDescription::shortDescriptions()->active()->orderBy('sort_order')->get();
@@ -120,121 +123,50 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:products',
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string|max:500',
-            'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
-            'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
-            'product_type' => 'required|in:simple,variable',
-            'category_id' => 'required|exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
-            'wholesale_percentage' => 'nullable|numeric|min:0|max:99.99',
-            'cost_price' => 'nullable|numeric|min:0',
-            'discount_type' => 'nullable|in:percentage,flat',
-            'discount_value' => 'nullable|numeric|min:0',
-            'sale_start_date' => 'nullable|date',
-            'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
-            'weight' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            
-            // Simple product fields
-            'sku' => 'nullable|string|max:50|unique:products,sku',
-            'manage_stock' => 'boolean',
-            'stock_quantity' => 'nullable|integer|min:0',
-            'stock_status' => 'nullable|in:in_stock,out_of_stock,on_backorder',
-            'low_stock_threshold' => 'nullable|integer|min:0',
-            
-            // Variable product fields
-            'sku_prefix' => 'nullable|string|max:20',
-            
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
-        ]);
-        
-        // Auto-resolve category_id and sub_category_id based on selected category
-        $validated = $this->resolveCategoryIds($validated);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'slug' => 'nullable|string|max:255|unique:products',
+                'description' => 'nullable|string',
+                'short_description' => 'nullable|string|max:500',
+                'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
+                'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
+                'product_type' => 'required|in:simple,variable',
+                'category_id' => 'required|exists:categories,id',
+                'base_price' => 'required|numeric|min:0',
+                'wholesale_percentage' => 'nullable|numeric|min:0|max:99.99',
+                'cost_price' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:percentage,flat',
+                'discount_value' => 'nullable|numeric|min:0',
+                'sale_start_date' => 'nullable|date',
+                'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
+                'weight' => 'nullable|numeric|min:0',
+                'is_active' => 'boolean',
+                'is_featured' => 'boolean',
+                'sku' => 'nullable|string|max:50|unique:products,sku',
+                'manage_stock' => 'boolean',
+                'stock_quantity' => 'nullable|integer|min:0',
+                'stock_status' => 'nullable|in:in_stock,out_of_stock,on_backorder',
+                'low_stock_threshold' => 'nullable|integer|min:0',
+                'sku_prefix' => 'nullable|string|max:20',
+                'images' => 'nullable|array',
+                'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            ]);
 
-        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
-        $validated['is_active'] = $request->boolean('is_active', true);
-        $validated['is_featured'] = $request->boolean('is_featured', false);
-        $validated['manage_stock'] = $request->boolean('manage_stock', true);
-        
-        // Handle predefined descriptions
-        if ($request->filled('predefined_description_id')) {
-            $predefinedDesc = \App\Models\PredefinedDescription::find($request->predefined_description_id);
-            $validated['description'] = $predefinedDesc->content;
-        }
-        
-        if ($request->filled('predefined_short_description_id')) {
-            $predefinedShortDesc = \App\Models\PredefinedDescription::find($request->predefined_short_description_id);
-            $validated['short_description'] = $predefinedShortDesc->content;
-        }
-        
-        // Calculate sale price based on discount
-        $validated['sale_price'] = $this->pricingService->calculateSalePrice(
-            (float) ($validated['base_price'] ?? 0),
-            $validated['discount_type'] ?? null,
-            isset($validated['discount_value']) ? (float) $validated['discount_value'] : null
-        );
-        
-        // Set default stock status based on quantity
-        if ($validated['product_type'] === 'simple') {
-            $validated['stock_quantity'] = $validated['stock_quantity'] ?? 0;
-            $validated['stock_status'] = $validated['stock_quantity'] > 0 ? 'in_stock' : 'out_of_stock';
-        }
-        
-        // Create product
-        $product = Product::create($validated);
-        
-        // Auto-generate SKU and Barcode for simple products if not provided
-        if ($product->product_type === 'simple') {
-            $updateData = [];
-            
-            // Generate SKU if not provided
-            if (empty($product->sku)) {
-                $category = Category::find($product->category_id);
-                $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : null;
-                $updateData['sku'] = $this->codeGenerator->generateProductSku($categoryCode . '-PRD');
+            $product = $this->productService->createProduct($request, $validated);
+
+            if ($product->product_type === 'variable' && !$request->has('variants')) {
+                return redirect()->route('admin.products.variants', $product)
+                    ->with('success', 'Product created. Now configure variants.');
             }
-            
-            // Generate Barcode if not provided
-            if (empty($product->barcode)) {
-                $updateData['barcode'] = $this->codeGenerator->generateBarcode();
-            }
-            
-            // Update product with generated codes
-            if (!empty($updateData)) {
-                $product->update($updateData);
-            }
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to create product: ' . $e->getMessage())
+                ->withInput();
         }
-        
-        // Save product attributes
-        if ($request->has('attributes')) {
-            $attributeIds = $request->input('attributes', []);
-            $product->variationAttributes()->sync($attributeIds);
-        }
-        
-        // Create variants if provided (for variable products)
-        if ($product->product_type === 'variable' && $request->has('variants')) {
-            $this->createVariants($product, $request->input('variants', []));
-        }
-        
-        // Handle image uploads
-        if ($request->hasFile('images')) {
-            $this->imageService->uploadImages($product->id, $request->file('images'));
-        }
-        
-        // Redirect to variants page if variable product and variants not created
-        if ($product->product_type === 'variable' && !$request->has('variants')) {
-            return redirect()->route('admin.products.variants', $product)
-                ->with('success', 'Product created. Now configure variants.');
-        }
-        
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product created successfully.');
     }
 
     public function show(Product $product)
@@ -261,7 +193,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $product->load(['variants.attributeValues', 'variationAttributes']);
-        $categories = Category::where('is_active', true)->with('children')->whereNull('parent_id')->get();
+        $categories = $this->categoryService->getHierarchicalCategories();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $selectedAttributeIds = $product->variationAttributes->pluck('id')->toArray();
         $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
@@ -272,226 +204,68 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        $rules = [
-            'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string|max:500',
-            'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
-            'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
-            'category_id' => 'required|exists:categories,id',
-            'base_price' => 'required|numeric|min:0',
-            'wholesale_percentage' => 'nullable|numeric|min:0|max:99.99',
-            'cost_price' => 'nullable|numeric|min:0',
-            'discount_type' => 'nullable|in:percentage,flat',
-            'discount_value' => 'nullable|numeric|min:0',
-            'sale_start_date' => 'nullable|date',
-            'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
-            'weight' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
-        ];
-        
-        // Add product-type specific rules
-        if ($product->product_type === 'simple') {
-            $rules['sku'] = 'nullable|string|max:50|unique:products,sku,' . $product->id;
-            $rules['manage_stock'] = 'boolean';
-            $rules['stock_quantity'] = 'nullable|integer|min:0';
-            $rules['low_stock_threshold'] = 'nullable|integer|min:0';
-        }
-        
-        $validated = $request->validate($rules);
+        try {
+            $rules = [
+                'name' => 'required|string|max:255',
+                'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
+                'description' => 'nullable|string',
+                'short_description' => 'nullable|string|max:500',
+                'predefined_description_id' => 'nullable|exists:predefined_descriptions,id',
+                'predefined_short_description_id' => 'nullable|exists:predefined_descriptions,id',
+                'category_id' => 'required|exists:categories,id',
+                'base_price' => 'required|numeric|min:0',
+                'wholesale_percentage' => 'nullable|numeric|min:0|max:99.99',
+                'cost_price' => 'nullable|numeric|min:0',
+                'discount_type' => 'nullable|in:percentage,flat',
+                'discount_value' => 'nullable|numeric|min:0',
+                'sale_start_date' => 'nullable|date',
+                'sale_end_date' => 'nullable|date|after_or_equal:sale_start_date',
+                'weight' => 'nullable|numeric|min:0',
+                'is_active' => 'boolean',
+                'is_featured' => 'boolean',
+                'images' => 'nullable|array',
+                'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            ];
 
-        // Auto-resolve category_id and sub_category_id based on selected category
-        $validated = $this->resolveCategoryIds($validated);
-        
-        $validated['is_active'] = $request->boolean('is_active', true);
-        $validated['is_featured'] = $request->boolean('is_featured', false);
-        
-        // Handle predefined descriptions
-        if ($request->filled('predefined_description_id')) {
-            $predefinedDesc = \App\Models\PredefinedDescription::find($request->predefined_description_id);
-            $validated['description'] = $predefinedDesc->content;
-        }
-        
-        if ($request->filled('predefined_short_description_id')) {
-            $predefinedShortDesc = \App\Models\PredefinedDescription::find($request->predefined_short_description_id);
-            $validated['short_description'] = $predefinedShortDesc->content;
-        }
-        
-        // Calculate sale price based on discount
-        $validated['sale_price'] = $this->pricingService->calculateSalePrice(
-            (float) ($validated['base_price'] ?? 0),
-            $validated['discount_type'] ?? null,
-            isset($validated['discount_value']) ? (float) $validated['discount_value'] : null
-        );
-        
-        if ($product->product_type === 'simple') {
-            $validated['manage_stock'] = $request->boolean('manage_stock', true);
-            
-            // Auto-update stock status if stock quantity changed
-            if (isset($validated['stock_quantity'])) {
-                $validated['stock_status'] = $validated['stock_quantity'] > 0 ? 'in_stock' : 'out_of_stock';
+            if ($product->product_type === 'simple') {
+                $rules['sku'] = 'nullable|string|max:50|unique:products,sku,' . $product->id;
+                $rules['manage_stock'] = 'boolean';
+                $rules['stock_quantity'] = 'nullable|integer|min:0';
+                $rules['low_stock_threshold'] = 'nullable|integer|min:0';
             }
+
+            $validated = $request->validate($rules);
+
+            $this->productService->updateProduct($request, $product, $validated);
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update product: ' . $e->getMessage())
+                ->withInput();
         }
-        
-        $product->update($validated);
-        
-        // Auto-generate SKU and Barcode for simple products if not provided
-        if ($product->product_type === 'simple') {
-            $updateData = [];
-            
-            // Generate SKU if not provided
-            if (empty($product->sku)) {
-                $category = Category::find($product->category_id);
-                $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : null;
-                $updateData['sku'] = $this->codeGenerator->generateProductSku($categoryCode . '-PRD');
-            }
-            
-            // Generate Barcode if not provided
-            if (empty($product->barcode)) {
-                $updateData['barcode'] = $this->codeGenerator->generateBarcode();
-            }
-            
-            // Update product with generated codes
-            if (!empty($updateData)) {
-                $product->update($updateData);
-            }
-        }
-        
-        // Update product attributes
-        if ($request->has('attributes')) {
-            $attributeIds = $request->input('attributes', []);
-            $product->variationAttributes()->sync($attributeIds);
-        }
-        
-        // Handle image uploads
-        if ($request->hasFile('images')) {
-            $this->imageService->uploadImages($product->id, $request->file('images'));
-        }
-        
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product updated successfully.');
     }
 
-    /**
-     * Create variants for variable product
-     */
-    private function createVariants(Product $product, array $variantsData): void
-    {
-        $position = 0;
-        
-        // Ensure SKU prefix exists
-        if (empty($product->sku_prefix)) {
-            $category = Category::find($product->category_id);
-            $categoryCode = $category ? strtoupper(substr($category->slug, 0, 3)) : 'VAR';
-            $product->update(['sku_prefix' => $categoryCode]);
-            $product->refresh();
-        }
-        
-        foreach ($variantsData as $variantData) {
-            // Skip variants with stock quantity <= 0
-            if (($variantData['stock_quantity'] ?? 0) <= 0) {
-                continue;
-            }
 
-            // Get attribute values for SKU generation
-            $attributeValues = [];
-            if (!empty($variantData['attribute_values'])) {
-                $valueIds = explode(',', $variantData['attribute_values']);
-                $values = \App\Models\AttributeValue::whereIn('id', $valueIds)->get();
-                $attributeValues = $values->pluck('value')->toArray();
-            }
-            
-            // Generate SKU if not provided
-            $sku = $variantData['sku'] ?? null;
-            if (empty($sku)) {
-                $sku = $this->codeGenerator->generateVariantSku(
-                    $product, 
-                    $attributeValues, 
-                    $position
-                );
-            }
-            
-            // Generate Barcode if not provided (using related barcode strategy)
-            $barcode = $variantData['barcode'] ?? null;
-            if (empty($barcode)) {
-                $barcode = $this->codeGenerator->generateVariantBarcode($product, $position);
-            }
-            
-            // Create the variant
-            try {
-                $variant = $product->variants()->create([
-                    'sku' => $sku,
-                    'barcode' => $barcode,
-                    'price' => $variantData['price'] ?? $product->base_price,
-                    'wholesale_percentage' => $variantData['wholesale_percentage'] ?? null,
-                    'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                    'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
-                    'is_active' => $variantData['is_active'] ?? true,
-                    'position' => $position,
-                ]);
-            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-                if (str_contains($e->getMessage(), 'variants_sku_unique')) {
-                    $sku = $this->makeUniqueVariantSku($sku);
-                    $variant = $product->variants()->create([
-                        'sku' => $sku,
-                        'barcode' => $barcode,
-                        'price' => $variantData['price'] ?? $product->base_price,
-                        'wholesale_percentage' => $variantData['wholesale_percentage'] ?? null,
-                        'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                        'stock_status' => ($variantData['stock_quantity'] ?? 0) > 0 ? 'in_stock' : 'out_of_stock',
-                        'is_active' => $variantData['is_active'] ?? true,
-                        'position' => $position,
-                    ]);
-                } else {
-                    throw $e;
-                }
-            }
-
-            // Attach attribute values
-            if (!empty($variantData['attribute_values'])) {
-                $valueIds = explode(',', $variantData['attribute_values']);
-                $variant->attributeValues()->attach($valueIds);
-            }
-
-            $position++;
-        }
-
-        // Update product has_variants flag
-        $product->update(['has_variants' => true]);
-    }
-
-    /**
-     * Make variant SKU unique by appending a counter
-     */
-    private function makeUniqueVariantSku(string $baseSku): string
-    {
-        $sku = $baseSku;
-        $counter = 1;
-
-        while (\App\Models\Variant::where('sku', $sku)->exists()) {
-            $sku = $baseSku . '-' . str_pad((string) $counter, 2, '0', STR_PAD_LEFT);
-            $counter++;
-        }
-
-        return $sku;
-    }
 
     public function destroy(Product $product)
     {
-        // Check if product has orders
-        if ($product->variants()->whereHas('orderItems')->exists()) {
+        try {
+            // Check if product has orders
+            if ($product->variants()->whereHas('orderItems')->exists()) {
+                return redirect()->route('admin.products.index')
+                    ->with('error', 'Cannot delete product with existing orders.');
+            }
+            
+            $product->delete();
+            
             return redirect()->route('admin.products.index')
-                ->with('error', 'Cannot delete product with existing orders.');
+                ->with('success', 'Product deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Failed to delete product: ' . $e->getMessage());
         }
-        
-        $product->delete();
-        
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
     }
     
     public function toggleStatus(Product $product)
@@ -547,54 +321,14 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Resolve category_id and sub_category_id from the selected category.
-     * If user selects a sub-category, set category_id to parent and sub_category_id to selected.
-     * If user selects a leaf main category, keep category_id and set sub_category_id to null.
-     */
-    private function resolveCategoryIds(array $validated): array
-    {
-        $selectedCategoryId = $validated['category_id'];
-        $category = Category::find($selectedCategoryId);
 
-        if ($category && $category->parent_id !== null) {
-            // User selected a sub-category
-            $validated['category_id'] = $category->parent_id;
-            $validated['sub_category_id'] = $selectedCategoryId;
-        } else {
-            // User selected a main (leaf) category
-            $validated['sub_category_id'] = null;
-        }
-
-        return $validated;
-    }
 
     /**
      * Duplicate product
      */
     public function duplicate(Product $product)
     {
-        $newProduct = $product->replicate();
-        $newProduct->slug = $product->slug . '-copy-' . time();
-        $newProduct->sku = $product->sku ? $product->sku . '-COPY' : null;
-        $newProduct->sku_prefix = $product->sku_prefix ? $product->sku_prefix . '-COPY' : null;
-        $newProduct->is_active = false;
-        $newProduct->save();
-
-        // Duplicate variants if variable product
-        if ($product->product_type === 'variable') {
-            foreach ($product->variants as $variant) {
-                $newVariant = $variant->replicate();
-                $newVariant->product_id = $newProduct->id;
-                $newVariant->sku = $variant->sku . '-COPY';
-                $newVariant->stock_quantity = 0;
-                $newVariant->stock_status = 'out_of_stock';
-                $newVariant->save();
-
-                // Copy attribute values
-                $newVariant->attributeValues()->attach($variant->attributeValues->pluck('id'));
-            }
-        }
+        $newProduct = $this->productService->duplicateProduct($product);
 
         return redirect()->route('admin.products.edit', $newProduct)
             ->with('success', 'Product duplicated. Please review and activate.');

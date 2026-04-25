@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\ProductSearchService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductSearchController extends Controller
 {
+    use ApiResponse;
     private ProductSearchService $searchService;
 
     public function __construct(ProductSearchService $searchService)
@@ -36,9 +38,6 @@ class ProductSearchController extends Controller
 
         $results = $this->searchService->search($request);
 
-        return response()->json([
-            'success' => true,
-            'data' => $results,
-        ]);
+        return $this->success($results, 'Search results retrieved successfully');
     }
 }

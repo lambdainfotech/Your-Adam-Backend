@@ -16,13 +16,7 @@ class ProductAttribute extends Model
     protected $fillable = [
         'product_id',
         'attribute_id',
-        'use_for_variation',
-        'is_visible',
-    ];
-
-    protected $casts = [
-        'use_for_variation' => 'boolean',
-        'is_visible' => 'boolean',
+        'custom_value',
     ];
 
     public function product(): BelongsTo

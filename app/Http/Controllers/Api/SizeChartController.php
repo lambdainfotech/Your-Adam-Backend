@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\SizeChart;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SizeChartController extends Controller
 {
+    use ApiResponse;
     /**
      * List all active size charts
      */
@@ -31,10 +33,7 @@ class SizeChartController extends Controller
 
         $sizeCharts = $query->orderBy('name')->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $sizeCharts->map(fn ($chart) => $this->transformSizeChart($chart)),
-        ]);
+        return $this->success($sizeCharts->map(fn ($chart) => $this->transformSizeChart($chart)), 'Size charts retrieved successfully');
     }
 
     /**
@@ -47,16 +46,10 @@ class SizeChartController extends Controller
             ->find($id);
 
         if (!$sizeChart) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Size chart not found',
-            ], 404);
+            return $this->error('Size chart not found', 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $this->transformSizeChart($sizeChart, true),
-        ]);
+        return $this->success($this->transformSizeChart($sizeChart, true), 'Size chart retrieved successfully');
     }
 
     /**
@@ -69,10 +62,7 @@ class SizeChartController extends Controller
             ->first();
 
         if (!$category) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Category not found',
-            ], 404);
+            return $this->error('Category not found', 404);
         }
 
         $sizeCharts = SizeChart::with(['rows'])
@@ -81,17 +71,14 @@ class SizeChartController extends Controller
             ->orderBy('name')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'category' => [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'slug' => $category->slug,
-                ],
-                'sizeCharts' => $sizeCharts->map(fn ($chart) => $this->transformSizeChart($chart, true)),
+        return $this->success([
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
             ],
-        ]);
+            'sizeCharts' => $sizeCharts->map(fn ($chart) => $this->transformSizeChart($chart, true)),
+        ], 'Size charts by category retrieved successfully');
     }
 
     /**

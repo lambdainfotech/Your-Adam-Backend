@@ -13,19 +13,21 @@ class TrackingHistory extends Model
     protected $table = 'tracking_history';
 
     protected $fillable = [
-        'courier_assignment_id',
+        'order_id',
         'status',
         'location',
         'description',
+        'raw_data',
         'tracked_at',
     ];
 
     protected $casts = [
+        'raw_data' => 'array',
         'tracked_at' => 'datetime',
     ];
 
-    public function courierAssignment(): BelongsTo
+    public function order(): BelongsTo
     {
-        return $this->belongsTo(CourierAssignment::class);
+        return $this->belongsTo(Order::class);
     }
 }

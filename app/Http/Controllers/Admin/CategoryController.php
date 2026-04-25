@@ -4,18 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Services\ImageUploadService;
+use App\Services\CategoryService;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    protected ImageUploadService $imageService;
+    protected CategoryService $categoryService;
+    protected FileUploadService $fileUploadService;
 
-    public function __construct(ImageUploadService $imageService)
+    public function __construct(CategoryService $categoryService, FileUploadService $fileUploadService)
     {
-        $this->imageService = $imageService;
+        $this->categoryService = $categoryService;
+        $this->fileUploadService = $fileUploadService;
     }
 
     public function index()
@@ -33,7 +34,7 @@ class CategoryController extends Controller
 
     public function create(Request $request)
     {
-        $parentCategories = $this->getHierarchicalCategories();
+        $parentCategories = $this->categoryService->getHierarchicalCategories();
         $preselectedParent = $request->get('parent_id');
         return view('admin.categories.create', compact('parentCategories', 'preselectedParent'));
     }
@@ -61,14 +62,12 @@ class CategoryController extends Controller
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['is_active'] = $request->boolean('is_active', true);
         
-        // Handle image upload
         if ($request->hasFile('image')) {
-            $validated['image'] = $this->uploadCategoryImage($request->file('image'));
+            $validated['image'] = $this->fileUploadService->upload($request->file('image'), 'categories');
         }
-        
-        // Handle hero image upload
+
         if ($request->hasFile('hero_image')) {
-            $validated['hero_image'] = $this->uploadCategoryImage($request->file('hero_image'));
+            $validated['hero_image'] = $this->fileUploadService->upload($request->file('hero_image'), 'categories');
         }
         
         Category::create($validated);
@@ -79,11 +78,10 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        // Get all categories except the current one and its descendants (to prevent circular reference)
-        $excludeIds = $this->getDescendantIds($category);
+        $excludeIds = $this->categoryService->getDescendantIds($category);
         $excludeIds[] = $category->id;
-        
-        $parentCategories = $this->getHierarchicalCategories($excludeIds);
+
+        $parentCategories = $this->categoryService->getHierarchicalCategories($excludeIds);
         return view('admin.categories.edit', compact('category', 'parentCategories'));
     }
 
@@ -109,22 +107,14 @@ class CategoryController extends Controller
         
         $validated['is_active'] = $request->boolean('is_active', true);
         
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($category->image) {
-                $this->deleteCategoryImage($category->image);
-            }
-            $validated['image'] = $this->uploadCategoryImage($request->file('image'));
+            $this->fileUploadService->deleteByUrl($category->image);
+            $validated['image'] = $this->fileUploadService->upload($request->file('image'), 'categories');
         }
-        
-        // Handle hero image upload
+
         if ($request->hasFile('hero_image')) {
-            // Delete old hero image if exists
-            if ($category->hero_image) {
-                $this->deleteCategoryImage($category->hero_image);
-            }
-            $validated['hero_image'] = $this->uploadCategoryImage($request->file('hero_image'));
+            $this->fileUploadService->deleteByUrl($category->hero_image);
+            $validated['hero_image'] = $this->fileUploadService->upload($request->file('hero_image'), 'categories');
         }
         
         $category->update($validated);
@@ -140,15 +130,8 @@ class CategoryController extends Controller
                 ->with('error', 'Cannot delete category with associated products.');
         }
         
-        // Delete image if exists
-        if ($category->image) {
-            $this->deleteCategoryImage($category->image);
-        }
-        
-        // Delete hero image if exists
-        if ($category->hero_image) {
-            $this->deleteCategoryImage($category->hero_image);
-        }
+        $this->fileUploadService->deleteByUrl($category->image);
+        $this->fileUploadService->deleteByUrl($category->hero_image);
         
         $category->delete();
         
@@ -167,85 +150,5 @@ class CategoryController extends Controller
             ->with('success', "Category {$status} successfully.");
     }
 
-    /**
-     * Upload category image
-     */
-    protected function uploadCategoryImage($file): string
-    {
-        $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('categories', $filename, 'public');
-        return Storage::url($path);
-    }
 
-    /**
-     * Delete category image
-     */
-    protected function deleteCategoryImage(string $imageUrl): void
-    {
-        $path = str_replace(Storage::url(''), '', $imageUrl);
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
-    }
-
-    /**
-     * Get hierarchical categories for dropdown
-     */
-    protected function getHierarchicalCategories(array $excludeIds = []): array
-    {
-        $query = Category::where('is_active', true)
-            ->whereNull('parent_id');
-            
-        if (!empty($excludeIds)) {
-            $query->whereNotIn('id', $excludeIds);
-        }
-        
-        $rootCategories = $query->orderBy('name')->get();
-        $result = [];
-        
-        foreach ($rootCategories as $root) {
-            $result[] = $root;
-            $this->addChildrenRecursively($root, $result, 1, $excludeIds);
-        }
-        
-        return $result;
-    }
-
-    /**
-     * Recursively add children to hierarchical list
-     */
-    protected function addChildrenRecursively(Category $category, array &$result, int $level, array $excludeIds = []): void
-    {
-        $children = Category::where('parent_id', $category->id)
-            ->where('is_active', true);
-            
-        if (!empty($excludeIds)) {
-            $children->whereNotIn('id', $excludeIds);
-        }
-        
-        $children = $children->orderBy('name')->get();
-        
-        foreach ($children as $child) {
-            $child->name = str_repeat('— ', $level) . $child->name;
-            $child->hierarchical_level = $level;
-            $result[] = $child;
-            $this->addChildrenRecursively($child, $result, $level + 1, $excludeIds);
-        }
-    }
-
-    /**
-     * Get all descendant IDs of a category
-     */
-    protected function getDescendantIds(Category $category): array
-    {
-        $ids = [];
-        $children = Category::where('parent_id', $category->id)->get();
-        
-        foreach ($children as $child) {
-            $ids[] = $child->id;
-            $ids = array_merge($ids, $this->getDescendantIds($child));
-        }
-        
-        return $ids;
-    }
 }

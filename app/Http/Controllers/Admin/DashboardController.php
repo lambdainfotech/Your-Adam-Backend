@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -36,14 +37,7 @@ class DashboardController extends Controller
         
         $salesChart = $this->getSalesChartData();
         
-        $topProducts = DB::table('order_items')
-            ->select('products.name', DB::raw('SUM(order_items.quantity) as total_sold'))
-            ->join('variants', 'order_items.variant_id', '=', 'variants.id')
-            ->join('products', 'variants.product_id', '=', 'products.id')
-            ->groupBy('products.id', 'products.name')
-            ->orderBy('total_sold', 'desc')
-            ->limit(5)
-            ->get();
+        $topProducts = OrderItem::topSelling(5)->get();
         
         // Prepare data for view
         $totalOrders = $stats['total_orders'];

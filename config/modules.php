@@ -9,7 +9,20 @@ return [
     | Modules have been disabled. Using default Laravel structure instead.
     |
     */
-    'enabled' => [],
+    'enabled' => [
+        'Core',
+        'Auth',
+        'User',
+        'Address',
+        'Catalog',
+        'Inventory',
+        'Sales',
+        'Marketing',
+        'Notification',
+        'Report',
+        'Courier',
+        'Audit',
+    ],
 
     /*
     |--------------------------------------------------------------------------

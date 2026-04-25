@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StockInController extends Controller
 {
@@ -44,6 +45,7 @@ class StockInController extends Controller
         $successCount = 0;
         $errorMessages = [];
 
+        DB::transaction(function () use ($validated, &$successCount, &$errorMessages) {
         foreach ($validated['items'] as $item) {
             $product = Product::find($item['product_id']);
             
@@ -76,6 +78,7 @@ class StockInController extends Controller
                 $successCount++;
             }
         }
+        });
 
         if ($successCount > 0) {
             $message = "Successfully added stock for {$successCount} item(s).";

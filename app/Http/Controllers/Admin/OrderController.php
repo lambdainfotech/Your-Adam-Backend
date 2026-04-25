@@ -13,21 +13,50 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        // Get regular orders
-        $regularOrdersQuery = Order::with('user', 'items');
-        
-        if ($request->filled('status')) {
-            $regularOrdersQuery->where('status', $request->status);
+        $validated = $request->validate([
+            'status' => 'nullable|in:pending,processing,shipped,delivered,completed,cancelled',
+            'from_date' => 'nullable|date',
+            'to_date' => 'nullable|date|after_or_equal:from_date',
+            'page' => 'nullable|integer|min:1',
+        ]);
+
+        $perPage = 20;
+        $page = $validated['page'] ?? 1;
+
+        // Get regular orders (paginated)
+        $regularOrdersQuery = Order::with('user', 'items')
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($validated['status'])) {
+            $regularOrdersQuery->where('status', $validated['status']);
         }
-        
-        if ($request->filled('from_date')) {
-            $regularOrdersQuery->whereDate('created_at', '>=', $request->from_date);
+        if (!empty($validated['from_date'])) {
+            $regularOrdersQuery->whereDate('created_at', '>=', $validated['from_date']);
         }
-        if ($request->filled('to_date')) {
-            $regularOrdersQuery->whereDate('created_at', '<=', $request->to_date);
+        if (!empty($validated['to_date'])) {
+            $regularOrdersQuery->whereDate('created_at', '<=', $validated['to_date']);
         }
-        
-        $regularOrders = collect($regularOrdersQuery->get()->map(function ($order) {
+
+        $regularOrders = $regularOrdersQuery->paginate($perPage, ['*'], 'page', $page);
+
+        // Get POS orders (paginated)
+        $posOrdersQuery = PosOrder::with('user', 'items')
+            ->orderBy('created_at', 'desc');
+
+        if (!empty($validated['status'])) {
+            $posOrdersQuery->where('status', $validated['status']);
+        }
+        if (!empty($validated['from_date'])) {
+            $posOrdersQuery->whereDate('created_at', '>=', $validated['from_date']);
+        }
+        if (!empty($validated['to_date'])) {
+            $posOrdersQuery->whereDate('created_at', '<=', $validated['to_date']);
+        }
+
+        $posOrders = $posOrdersQuery->paginate($perPage, ['*'], 'page', $page);
+
+        // Map to unified structure
+        $mappedRegular = $regularOrders->getCollection()->map(function ($order) {
             return [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
@@ -38,23 +67,9 @@ class OrderController extends Controller
                 'type' => 'online',
                 'source' => 'Website',
             ];
-        }));
+        });
 
-        // Get POS orders
-        $posOrdersQuery = PosOrder::with('user', 'items');
-        
-        if ($request->filled('status')) {
-            $posOrdersQuery->where('status', $request->status);
-        }
-        
-        if ($request->filled('from_date')) {
-            $posOrdersQuery->whereDate('created_at', '>=', $request->from_date);
-        }
-        if ($request->filled('to_date')) {
-            $posOrdersQuery->whereDate('created_at', '<=', $request->to_date);
-        }
-        
-        $posOrders = collect($posOrdersQuery->get()->map(function ($order) {
+        $mappedPos = $posOrders->getCollection()->map(function ($order) {
             return [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
@@ -67,28 +82,26 @@ class OrderController extends Controller
                 'type' => 'pos',
                 'source' => 'POS',
             ];
-        }));
+        });
 
-        // Merge and sort orders
-        $allOrders = $regularOrders->merge($posOrders)
+        // Merge only current page results, sort, and take perPage
+        $merged = $mappedRegular->merge($mappedPos)
             ->sortByDesc('created_at')
-            ->values();
+            ->values()
+            ->take($perPage);
 
-        // Paginate manually
-        $perPage = 20;
-        $page = $request->get('page', 1);
-        $total = $allOrders->count();
-        
+        $total = $regularOrders->total() + $posOrders->total();
+
         $orders = new LengthAwarePaginator(
-            $allOrders->forPage($page, $perPage),
+            $merged,
             $total,
             $perPage,
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
-        
+
         $statuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
-        
+
         return view('admin.orders.index', compact('orders', 'statuses'));
     }
 

@@ -18,6 +18,7 @@ class CampaignProduct extends Model
     protected $fillable = [
         'campaign_id',
         'product_id',
+        'variant_id',
         'special_price',
     ];
 

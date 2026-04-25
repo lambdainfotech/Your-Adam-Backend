@@ -4,12 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
+    protected FileUploadService $fileUploadService;
+
+    public function __construct(FileUploadService $fileUploadService)
+    {
+        $this->fileUploadService = $fileUploadService;
+    }
     public function index()
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
@@ -161,18 +167,10 @@ class SettingController extends Controller
             'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
 
-        // Delete old logo file if it exists locally
         $oldUrl = Setting::get('site_logo_url');
-        if ($oldUrl && str_contains($oldUrl, '/storage/')) {
-            $oldPath = str_replace(Storage::disk('public')->url(''), '', $oldUrl);
-            if ($oldPath) {
-                Storage::disk('public')->delete($oldPath);
-            }
-        }
+        $this->fileUploadService->deleteByUrl($oldUrl);
 
-        $path = $request->file('logo')->store('settings', 'public');
-        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
-
+        $url = $this->fileUploadService->uploadPath($request->file('logo'), 'settings');
         Setting::set('site_logo_url', $url, 'site');
 
         return redirect()->back()->with('success', 'Logo uploaded successfully.');
@@ -184,18 +182,10 @@ class SettingController extends Controller
             'favicon' => 'required|mimes:ico,png,jpg,svg,webp|max:512',
         ]);
 
-        // Delete old favicon file if it exists locally
         $oldUrl = Setting::get('site_favicon');
-        if ($oldUrl && str_contains($oldUrl, '/storage/')) {
-            $oldPath = str_replace(Storage::disk('public')->url(''), '', $oldUrl);
-            if ($oldPath) {
-                Storage::disk('public')->delete($oldPath);
-            }
-        }
+        $this->fileUploadService->deleteByUrl($oldUrl);
 
-        $path = $request->file('favicon')->store('settings', 'public');
-        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
-
+        $url = $this->fileUploadService->uploadPath($request->file('favicon'), 'settings');
         Setting::set('site_favicon', $url, 'site');
 
         return redirect()->back()->with('success', 'Favicon uploaded successfully.');

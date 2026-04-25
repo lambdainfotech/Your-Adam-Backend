@@ -15,8 +15,13 @@ class ReportController extends Controller
 {
     public function sales(Request $request)
     {
-        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $validated['start_date'] ?? Carbon::now()->subDays(30)->format('Y-m-d');
+        $endDate = $validated['end_date'] ?? Carbon::now()->format('Y-m-d');
         
         $sales = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->where('status', 'completed')
@@ -38,22 +43,7 @@ class ReportController extends Controller
 
     public function products(Request $request)
     {
-        $topProducts = DB::table('order_items')
-            ->select(
-                'products.id',
-                'products.name',
-                'products.sku_prefix',
-                DB::raw('SUM(order_items.quantity) as total_sold'),
-                DB::raw('SUM(order_items.quantity * order_items.unit_price) as total_revenue')
-            )
-            ->join('variants', 'order_items.variant_id', '=', 'variants.id')
-            ->join('products', 'variants.product_id', '=', 'products.id')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.status', 'completed')
-            ->groupBy('products.id', 'products.name', 'products.sku_prefix')
-            ->orderBy('total_sold', 'desc')
-            ->limit(50)
-            ->get();
+        $topProducts = OrderItem::topSelling(50)->get();
         
         $lowStockProducts = Product::whereHas('variants', function($query) {
             $query->where('stock_quantity', '<=', 10);
@@ -104,8 +94,13 @@ class ReportController extends Controller
 
     public function expenses(Request $request, \App\Services\ExpenseReportService $service)
     {
-        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $validated['start_date'] ?? Carbon::now()->subDays(30)->format('Y-m-d');
+        $endDate = $validated['end_date'] ?? Carbon::now()->format('Y-m-d');
 
         $summary = $service->getExpenseSummary($startDate, $endDate);
         $byCategory = $service->getExpensesByCategory($startDate, $endDate);
@@ -127,9 +122,15 @@ class ReportController extends Controller
 
     public function profit(Request $request, ProfitReportService $service)
     {
-        $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
-        $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
-        $status = $request->get('status', 'completed');
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'status' => 'nullable|in:pending,processing,shipped,delivered,completed,cancelled',
+        ]);
+
+        $startDate = $validated['start_date'] ?? Carbon::now()->subDays(30)->format('Y-m-d');
+        $endDate = $validated['end_date'] ?? Carbon::now()->format('Y-m-d');
+        $status = $validated['status'] ?? 'completed';
 
         $filters = ['status' => $status];
 

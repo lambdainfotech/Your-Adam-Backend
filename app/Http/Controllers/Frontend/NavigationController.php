@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\NavigationService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class NavigationController extends Controller
 {
+    use ApiResponse;
     private NavigationService $navigationService;
 
     public function __construct(NavigationService $navigationService)
@@ -22,9 +24,6 @@ class NavigationController extends Controller
     {
         $data = $this->navigationService->getNavigation();
 
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->success($data, 'Navigation data retrieved successfully');
     }
 }

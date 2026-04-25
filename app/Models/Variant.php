@@ -134,7 +134,11 @@ class Variant extends Model
         }
 
         // Otherwise fall back to product price
-        return $this->product->final_price;
+        if ($this->relationLoaded('product') && $this->product) {
+            return $this->product->final_price;
+        }
+
+        return (float) $this->price;
     }
 
     public function hasDiscount(): bool
@@ -198,7 +202,8 @@ class Variant extends Model
             return 0;
         }
 
-        $basePrice = (float) ($this->price ?? $this->product->base_price ?? 0);
+        $productBasePrice = $this->relationLoaded('product') && $this->product ? $this->product->base_price : null;
+        $basePrice = (float) ($this->price ?? $productBasePrice ?? 0);
 
         if ($this->discount_type === 'percentage') {
             return $basePrice * ($this->discount_value / 100);
@@ -255,8 +260,16 @@ class Variant extends Model
 
     public function getAttributeTextAttribute(): string
     {
+        if (!$this->relationLoaded('attributeValues')) {
+            return '';
+        }
+
         return $this->attributeValues
-            ->map(fn ($av) => $av->attribute->name . ': ' . $av->value)
+            ->map(function ($av) {
+                $attributeName = $av->relationLoaded('attribute') && $av->attribute ? $av->attribute->name : null;
+                return $attributeName ? $attributeName . ': ' . $av->value : $av->value;
+            })
+            ->filter()
             ->join(', ');
     }
 

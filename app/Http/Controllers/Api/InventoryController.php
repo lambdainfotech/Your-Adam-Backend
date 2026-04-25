@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\StockManagerService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class InventoryController extends Controller
 {
+    use ApiResponse;
     protected StockManagerService $stockManager;
 
     public function __construct(StockManagerService $stockManager)
@@ -33,10 +35,7 @@ class InventoryController extends Controller
             'valuation' => $this->stockManager->getInventoryValuation(),
         ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $summary,
-        ]);
+        return $this->success($summary, 'Inventory summary retrieved successfully');
     }
 
     /**
@@ -46,11 +45,10 @@ class InventoryController extends Controller
     {
         $items = $this->stockManager->getLowStockItems(100);
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'count' => count($items),
-            'data' => $items,
-        ]);
+            'items' => $items,
+        ], 'Low stock items retrieved successfully');
     }
 
     /**
@@ -60,11 +58,10 @@ class InventoryController extends Controller
     {
         $items = $this->stockManager->getOutOfStockItems(100);
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'count' => count($items),
-            'data' => $items,
-        ]);
+            'items' => $items,
+        ], 'Low stock items retrieved successfully');
     }
 
     /**
@@ -92,10 +89,7 @@ class InventoryController extends Controller
 
         $movements = $query->latest()->paginate($request->input('per_page', 20));
 
-        return response()->json([
-            'success' => true,
-            'data' => $movements,
-        ]);
+        return $this->paginated($movements, 'Inventory movements retrieved successfully');
     }
 
     /**
@@ -108,15 +102,22 @@ class InventoryController extends Controller
             ->latest()
             ->paginate($request->input('per_page', 20));
 
-        return response()->json([
-            'success' => true,
+        return $this->success([
             'variant' => [
                 'id' => $variant->id,
                 'sku' => $variant->sku,
                 'product_name' => $variant->product->name,
             ],
-            'data' => $movements,
-        ]);
+            'movements' => $movements->items(),
+            'pagination' => [
+                'current_page' => $movements->currentPage(),
+                'last_page' => $movements->lastPage(),
+                'per_page' => $movements->perPage(),
+                'total' => $movements->total(),
+                'from' => $movements->firstItem(),
+                'to' => $movements->lastItem(),
+            ],
+        ], 'Variant stock history retrieved successfully');
     }
 
     /**
@@ -149,21 +150,14 @@ class InventoryController extends Controller
         }
 
         if (!$success) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update stock',
-            ], 500);
+            return $this->error('Failed to update stock', 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Stock updated successfully',
-            'data' => [
-                'variant_id' => $variant->id,
-                'new_stock' => $variant->fresh()->stock_quantity,
-                'stock_status' => $variant->fresh()->stock_status,
-            ],
-        ]);
+        return $this->success([
+            'variant_id' => $variant->id,
+            'new_stock' => $variant->fresh()->stock_quantity,
+            'stock_status' => $variant->fresh()->stock_status,
+        ], 'Stock updated successfully');
     }
 
     /**
@@ -172,30 +166,12 @@ class InventoryController extends Controller
     public function valuation(): JsonResponse
     {
         $valuation = $this->stockManager->getInventoryValuation();
+        $categoryBreakdown = $this->stockManager->getCategoryValuationDetailed();
 
-        // Breakdown by category
-        $categoryBreakdown = Product::with('category')
-            ->where('manage_stock', true)
-            ->where('stock_quantity', '>', 0)
-            ->get()
-            ->groupBy('category.name')
-            ->map(function ($products) {
-                return [
-                    'count' => $products->count(),
-                    'value' => $products->sum(function ($product) {
-                        $cost = $product->cost_price ?? $product->base_price * 0.6;
-                        return $cost * $product->stock_quantity;
-                    }),
-                ];
-            });
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'total_valuation' => $valuation,
-                'by_category' => $categoryBreakdown,
-            ],
-        ]);
+        return $this->success([
+            'total_valuation' => $valuation,
+            'by_category' => $categoryBreakdown,
+        ], 'Inventory valuation retrieved successfully');
     }
 
     /**
@@ -217,9 +193,6 @@ class InventoryController extends Controller
             $request->reason
         );
 
-        return response()->json([
-            'success' => true,
-            'data' => $results,
-        ]);
+        return $this->success($results, 'Bulk stock update completed successfully');
     }
 }

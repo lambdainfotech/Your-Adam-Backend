@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\OTPService;
+use App\Traits\ApiResponse;
 use App\Traits\JWTAuthTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class OTPAuthController extends Controller
 {
+    use ApiResponse;
     use JWTAuthTrait;
 
     protected OTPService $otpService;
@@ -26,17 +29,14 @@ class OTPAuthController extends Controller
      */
     public function sendOTP(Request $request): JsonResponse
     {
+        try {
         $validator = Validator::make($request->all(), [
             'mobile' => 'required|string|min:10|max:15',
             'purpose' => 'nullable|string|in:registration,login,password_reset',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->error('Validation failed', 422, $validator->errors());
         }
 
         $purpose = $request->input('purpose', 'registration');
@@ -45,21 +45,17 @@ class OTPAuthController extends Controller
         $result = $this->otpService->sendOTP($mobile, $purpose);
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => $result['message'],
-            ], 500);
+            return $this->error($result['message'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'OTP sent successfully',
-            'data' => [
-                'reference' => $result['reference'],
-                'expires_in' => $result['expires_in'],
-                'masked_mobile' => $result['masked_mobile'],
-            ],
-        ]);
+        return $this->success([
+            'reference' => $result['reference'],
+            'expires_in' => $result['expires_in'],
+            'masked_mobile' => $result['masked_mobile'],
+        ], 'OTP sent successfully');
+        } catch (\Exception $e) {
+            return $this->error('Failed to send OTP: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -67,6 +63,7 @@ class OTPAuthController extends Controller
      */
     public function verifyOTP(Request $request): JsonResponse
     {
+        try {
         $validator = Validator::make($request->all(), [
             'mobile' => 'required|string|min:10|max:15',
             'otp' => 'required|string|size:6',
@@ -78,11 +75,7 @@ class OTPAuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->error('Validation failed', 422, $validator->errors());
         }
 
         $mobile = $request->input('mobile');
@@ -91,11 +84,7 @@ class OTPAuthController extends Controller
         $isRegistration = $request->boolean('is_registration');
 
         if (!$this->otpService->verifyOTP($mobile, $otp, $reference)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or expired OTP',
-                'error_code' => 'INVALID_OTP',
-            ], 400);
+            return $this->error('Invalid or expired OTP', 400, ['error_code' => 'INVALID_OTP']);
         }
 
         if ($isRegistration) {
@@ -108,11 +97,7 @@ class OTPAuthController extends Controller
 
             $existingUser = User::where('mobile', $normalizedMobile)->first();
             if ($existingUser) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User already exists with this mobile number',
-                    'error_code' => 'USER_EXISTS',
-                ], 422);
+                return $this->error('User already exists with this mobile number', 422, ['error_code' => 'USER_EXISTS']);
             }
 
             $user = $this->otpService->registerUser([
@@ -127,11 +112,7 @@ class OTPAuthController extends Controller
             $user = $this->otpService->loginWithOTP($mobile);
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No account found with this mobile number',
-                    'error_code' => 'USER_NOT_FOUND',
-                ], 404);
+                return $this->error('No account found with this mobile number', 404, ['error_code' => 'USER_NOT_FOUND']);
             }
 
             $message = 'Login successful';
@@ -140,29 +121,28 @@ class OTPAuthController extends Controller
         // For OTP auth, generate token directly from user model
         $tokenData = $this->generateTokenForUser($user);
 
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'mobile' => $user->mobile,
-                    'role' => $user->role?->name,
-                    'status' => $user->status,
-                    'email_verified' => !is_null($user->email_verified_at),
-                    'mobile_verified' => !is_null($user->mobile_verified_at),
-                    'created_at' => $user->created_at,
-                ],
-                'tokens' => [
-                    'access_token' => $tokenData['access_token'],
-                    'refresh_token' => $tokenData['refresh_token'] ?? null,
-                    'token_type' => 'bearer',
-                    'expires_in' => $tokenData['expires_in'] ?? 3600,
-                ],
+        return $this->success([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'mobile' => $user->mobile,
+                'role' => $user->role?->name,
+                'status' => $user->status,
+                'email_verified' => !is_null($user->email_verified_at),
+                'mobile_verified' => !is_null($user->mobile_verified_at),
+                'created_at' => $user->created_at,
             ],
-        ]);
+            'tokens' => [
+                'access_token' => $tokenData['access_token'],
+                'refresh_token' => $tokenData['refresh_token'] ?? null,
+                'token_type' => 'bearer',
+                'expires_in' => $tokenData['expires_in'] ?? 3600,
+            ],
+        ], $message);
+        } catch (\Exception $e) {
+            return $this->error('Failed to verify OTP: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -170,13 +150,13 @@ class OTPAuthController extends Controller
      */
     protected function generateTokenForUser(User $user): array
     {
-        $token = auth('api')->login($user);
+        $token = JWTAuth::fromUser($user);
 
         return [
             'access_token' => $token,
             'refresh_token' => $this->generateRefreshToken(),
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ];
     }
 }

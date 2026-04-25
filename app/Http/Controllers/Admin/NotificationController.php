@@ -40,6 +40,7 @@ class NotificationController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'user_ids' => 'required_without:send_to_all|array',
             'user_ids.*' => 'exists:users,id',
@@ -80,6 +81,11 @@ class NotificationController extends Controller
         
         return redirect()->route('admin.notifications.index')
             ->with('success', 'Notifications sent successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to send notifications: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function show(Notification $notification)

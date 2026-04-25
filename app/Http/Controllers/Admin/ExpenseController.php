@@ -45,6 +45,7 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'category_id' => ['required', 'exists:expense_categories,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -67,6 +68,11 @@ class ExpenseController extends Controller
 
         return redirect()->route('admin.expenses.index')
             ->with('success', 'Expense added successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to add expense: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function edit(Expense $expense)
@@ -77,6 +83,7 @@ class ExpenseController extends Controller
 
     public function update(Request $request, Expense $expense)
     {
+        try {
         $validated = $request->validate([
             'category_id' => ['required', 'exists:expense_categories,id'],
             'title' => ['required', 'string', 'max:255'],
@@ -100,6 +107,11 @@ class ExpenseController extends Controller
 
         return redirect()->route('admin.expenses.index')
             ->with('success', 'Expense updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to update expense: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function destroy(Expense $expense)

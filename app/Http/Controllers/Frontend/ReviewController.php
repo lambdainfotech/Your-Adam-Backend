@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\ReviewService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
+    use ApiResponse;
     private ReviewService $reviewService;
 
     public function __construct(ReviewService $reviewService)
@@ -24,10 +26,7 @@ class ReviewController extends Controller
     {
         $reviews = $this->reviewService->getProductReviews($productId, $request);
 
-        return response()->json([
-            'success' => true,
-            'data' => $reviews,
-        ]);
+        return $this->success($reviews, 'Reviews retrieved successfully');
     }
 
     /**
@@ -38,10 +37,7 @@ class ReviewController extends Controller
         $user = Auth::user();
         
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication required',
-            ], 401);
+            return $this->error('Authentication required', 401);
         }
 
         $request->validate([
@@ -55,17 +51,10 @@ class ReviewController extends Controller
         $result = $this->reviewService->createReview($productId, $user->id, $request->all());
 
         if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => $result['message'],
-            ], 422);
+            return $this->error($result['message'], 422);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result['review'],
-            'message' => 'Review submitted successfully',
-        ]);
+        return $this->success($result['review'], 'Review submitted successfully');
     }
 
     /**
@@ -75,6 +64,10 @@ class ReviewController extends Controller
     {
         $result = $this->reviewService->markHelpful($reviewId);
 
-        return response()->json($result);
+        if (!$result['success']) {
+            return $this->error($result['message'], 404);
+        }
+
+        return $this->success(['helpfulCount' => $result['helpfulCount']], 'Review marked as helpful');
     }
 }

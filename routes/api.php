@@ -87,7 +87,7 @@ Route::get('/inventory/out-of-stock', [\App\Http\Controllers\Api\InventoryContro
 Route::get('/inventory/movements', [\App\Http\Controllers\Api\InventoryController::class, 'movements']);
 
 // Tracking (Public)
-Route::get('/tracking', [\App\Modules\Courier\src\Http\Controllers\TrackingController::class, 'track']);
+Route::get('/tracking', [\App\Modules\Courier\Http\Controllers\TrackingController::class, 'track']);
 
 // Auth Routes (Unified JWT)
 Route::group(['prefix' => 'auth'], function () {
@@ -109,40 +109,40 @@ Route::group(['prefix' => 'auth'], function () {
 Route::middleware('jwt.auth')->group(function () {
 
     // User Profile
-    Route::get('/users/profile', [\App\Modules\User\src\Http\Controllers\ProfileController::class, 'show']);
-    Route::put('/users/profile', [\App\Modules\User\src\Http\Controllers\ProfileController::class, 'update']);
+    Route::get('/users/profile', [\App\Modules\User\Http\Controllers\ProfileController::class, 'show']);
+    Route::put('/users/profile', [\App\Modules\User\Http\Controllers\ProfileController::class, 'update']);
 
     // Addresses
-    Route::get('/users/addresses', [\App\Modules\User\src\Http\Controllers\AddressController::class, 'index']);
-    Route::post('/users/addresses', [\App\Modules\User\src\Http\Controllers\AddressController::class, 'store']);
-    Route::put('/users/addresses/{id}', [\App\Modules\User\src\Http\Controllers\AddressController::class, 'update']);
-    Route::delete('/users/addresses/{id}', [\App\Modules\User\src\Http\Controllers\AddressController::class, 'destroy']);
-    Route::patch('/users/addresses/{id}/default', [\App\Modules\User\src\Http\Controllers\AddressController::class, 'setDefault']);
+    Route::get('/users/addresses', [\App\Modules\User\Http\Controllers\AddressController::class, 'index']);
+    Route::post('/users/addresses', [\App\Modules\User\Http\Controllers\AddressController::class, 'store']);
+    Route::put('/users/addresses/{id}', [\App\Modules\User\Http\Controllers\AddressController::class, 'update']);
+    Route::delete('/users/addresses/{id}', [\App\Modules\User\Http\Controllers\AddressController::class, 'destroy']);
+    Route::patch('/users/addresses/{id}/default', [\App\Modules\User\Http\Controllers\AddressController::class, 'setDefault']);
 
     // Cart
-    Route::get('/cart', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'index']);
-    Route::post('/cart/items', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'store']);
-    Route::put('/cart/items/{id}', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'update']);
-    Route::delete('/cart/items/{id}', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'destroy']);
-    Route::post('/cart/apply-coupon', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'applyCoupon']);
-    Route::delete('/cart/coupon', [\App\Modules\Sales\src\Http\Controllers\CartController::class, 'removeCoupon']);
+    Route::get('/cart', [\App\Modules\Sales\Http\Controllers\CartController::class, 'index']);
+    Route::post('/cart/items', [\App\Modules\Sales\Http\Controllers\CartController::class, 'store']);
+    Route::put('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'update']);
+    Route::delete('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'destroy']);
+    Route::post('/cart/apply-coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'applyCoupon']);
+    Route::delete('/cart/coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'removeCoupon']);
 
     // Orders
-    Route::get('/orders', [\App\Modules\Sales\src\Http\Controllers\OrderController::class, 'index']);
-    Route::post('/orders', [\App\Modules\Sales\src\Http\Controllers\OrderController::class, 'store']);
-    Route::get('/orders/{id}', [\App\Modules\Sales\src\Http\Controllers\OrderController::class, 'show']);
-    Route::get('/orders/{id}/track', [\App\Modules\Sales\src\Http\Controllers\OrderController::class, 'track']);
-    Route::post('/orders/{id}/cancel', [\App\Modules\Sales\src\Http\Controllers\OrderController::class, 'cancel']);
+    Route::get('/orders', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'index']);
+    Route::post('/orders', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'store']);
+    Route::get('/orders/{id}', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'show']);
+    Route::get('/orders/{id}/track', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'track']);
+    Route::post('/orders/{id}/cancel', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'cancel']);
 
     // Wishlist
-    Route::get('/wishlist', [\App\Modules\Sales\src\Http\Controllers\WishlistController::class, 'index']);
-    Route::post('/wishlist', [\App\Modules\Sales\src\Http\Controllers\WishlistController::class, 'store']);
-    Route::delete('/wishlist/{productId}', [\App\Modules\Sales\src\Http\Controllers\WishlistController::class, 'destroy']);
+    Route::get('/wishlist', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'index']);
+    Route::post('/wishlist', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'store']);
+    Route::delete('/wishlist/{productId}', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'destroy']);
 
     // Notifications
-    Route::get('/notifications', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'index']);
-    Route::patch('/notifications/{id}/read', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'markAsRead']);
-    Route::get('/notifications/unread-count', [\App\Modules\Notification\src\Http\Controllers\NotificationController::class, 'unreadCount']);
+    Route::get('/notifications', [\App\Modules\Notification\Http\Controllers\NotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/read', [\App\Modules\Notification\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::get('/notifications/unread-count', [\App\Modules\Notification\Http\Controllers\NotificationController::class, 'unreadCount']);
 
     // Product Reviews (Write - Auth Required)
     Route::post('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'store']);
@@ -157,14 +157,14 @@ Route::middleware('jwt.auth')->group(function () {
     // Admin Routes
     Route::group(['prefix' => 'admin', 'middleware' => 'role:admin'], function () {
         // Dashboard
-        Route::get('/dashboard', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'dashboard']);
+        Route::get('/dashboard', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'dashboard']);
 
         // Reports
-        Route::get('/reports/sales', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'sales']);
-        Route::get('/reports/inventory', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'inventory']);
-        Route::get('/reports/customers', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'customers']);
-        Route::get('/reports/coupons', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'coupons']);
-        Route::post('/reports/export', [\App\Modules\Report\src\Http\Controllers\Admin\ReportController::class, 'export']);
+        Route::get('/reports/sales', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'sales']);
+        Route::get('/reports/inventory', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'inventory']);
+        Route::get('/reports/customers', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'customers']);
+        Route::get('/reports/coupons', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'coupons']);
+        Route::post('/reports/export', [\App\Modules\Report\Http\Controllers\Admin\ReportController::class, 'export']);
         
         // Inventory Management API
         Route::get('/inventory/valuation', [\App\Http\Controllers\Api\InventoryController::class, 'valuation']);

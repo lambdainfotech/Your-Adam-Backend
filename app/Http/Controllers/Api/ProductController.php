@@ -7,11 +7,13 @@ use App\Models\Product;
 use App\Services\PricingService;
 use App\Services\ProductApiTransformer;
 use App\Services\StockManagerService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
+    use ApiResponse;
     protected PricingService $pricingService;
     protected StockManagerService $stockManager;
     protected ProductApiTransformer $transformer;
@@ -68,7 +70,7 @@ class ProductController extends Controller
             return $this->transformer->transform($product);
         });
 
-        return response()->json($products);
+        return $this->paginated($products, 'Products retrieved successfully');
     }
 
     /**
@@ -78,10 +80,7 @@ class ProductController extends Controller
     {
         $product->load(['category', 'images', 'variants.attributeValues.attribute', 'variants.images', 'sizeChart']);
 
-        return response()->json([
-            'success' => true,
-            'data' => $this->transformer->transform($product, true),
-        ]);
+        return $this->success($this->transformer->transform($product, true), 'Product retrieved successfully');
     }
 
     /**
@@ -105,10 +104,7 @@ class ProductController extends Controller
             ])
             ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'data' => $this->transformer->transform($product, true),
-        ]);
+        return $this->success($this->transformer->transform($product, true), 'Product retrieved successfully');
     }
 
     /**
@@ -154,10 +150,7 @@ class ProductController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $results,
-        ]);
+        return $this->success($results, 'Availability check completed');
     }
 
     /**
@@ -192,10 +185,7 @@ class ProductController extends Controller
             $priceData['price_range'] = $this->pricingService->getVariableProductPriceRange($product);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $priceData,
-        ]);
+        return $this->success($priceData, 'Price retrieved successfully');
     }
 
     /**
@@ -211,26 +201,20 @@ class ProductController extends Controller
         $variant = $product->hasVariantWithAttributes($request->attribute_values);
 
         if (!$variant) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Variant not found for given attribute combination',
-            ], 404);
+            return $this->error('Variant not found for given attribute combination', 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $variant->id,
-                'sku' => $variant->sku,
-                'price' => $variant->price,
-                'final_price' => $variant->final_price,
-                'stock_quantity' => $variant->stock_quantity,
-                'stock_status' => $variant->stock_status,
-                'is_in_stock' => $variant->is_in_stock,
-                'attribute_text' => $variant->attribute_text,
-                'image' => $variant->mainImage?->full_image_url,
-            ],
-        ]);
+        return $this->success([
+            'id' => $variant->id,
+            'sku' => $variant->sku,
+            'price' => $variant->price,
+            'final_price' => $variant->final_price,
+            'stock_quantity' => $variant->stock_quantity,
+            'stock_status' => $variant->stock_status,
+            'is_in_stock' => $variant->is_in_stock,
+            'attribute_text' => $variant->attribute_text,
+            'image' => $variant->mainImage?->full_image_url,
+        ], 'Variant retrieved successfully');
     }
 
 

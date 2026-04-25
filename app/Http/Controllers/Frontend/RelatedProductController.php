@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\RelatedProductService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RelatedProductController extends Controller
 {
+    use ApiResponse;
     private RelatedProductService $relatedProductService;
 
     public function __construct(RelatedProductService $relatedProductService)
@@ -24,10 +26,7 @@ class RelatedProductController extends Controller
         $limit = (int) $request->get('limit', 8);
         $products = $this->relatedProductService->getRelatedProducts($productId, $limit);
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return $this->success($products, 'Related products retrieved successfully');
     }
 
     /**
@@ -38,9 +37,6 @@ class RelatedProductController extends Controller
         $limit = (int) $request->get('limit', 3);
         $products = $this->relatedProductService->getFrequentlyBoughtTogether($productId, $limit);
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+        return $this->success($products, 'Frequently bought together products retrieved successfully');
     }
 }

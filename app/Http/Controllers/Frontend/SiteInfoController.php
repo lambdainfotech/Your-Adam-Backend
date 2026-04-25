@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\SiteInfoService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class SiteInfoController extends Controller
 {
+    use ApiResponse;
     private SiteInfoService $siteInfoService;
 
     public function __construct(SiteInfoService $siteInfoService)
@@ -22,9 +24,6 @@ class SiteInfoController extends Controller
     {
         $siteInfo = $this->siteInfoService->getSiteInfo();
 
-        return response()->json([
-            'success' => true,
-            'data' => $siteInfo,
-        ]);
+        return $this->success($siteInfo, 'Site info retrieved successfully');
     }
 }

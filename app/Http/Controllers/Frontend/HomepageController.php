@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Services\HomepageService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class HomepageController extends Controller
 {
+    use ApiResponse;
     private HomepageService $homepageService;
 
     public function __construct(HomepageService $homepageService)
@@ -22,9 +24,6 @@ class HomepageController extends Controller
     {
         $data = $this->homepageService->getHomepageData();
 
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
+        return $this->success($data, 'Homepage data retrieved successfully');
     }
 }

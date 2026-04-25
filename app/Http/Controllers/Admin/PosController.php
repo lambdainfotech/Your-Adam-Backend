@@ -5,18 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PosSession;
 use App\Models\PosOrder;
-use App\Models\PosOrderItem;
-use App\Models\PosPayment;
 use App\Models\PosHeldCart;
 use App\Models\Product;
-use App\Models\User;
 use App\Models\Variant;
+use App\Services\PosOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class PosController extends Controller
 {
+    protected PosOrderService $posOrderService;
+
+    public function __construct(PosOrderService $posOrderService)
+    {
+        $this->posOrderService = $posOrderService;
+    }
     /**
      * POS Main Interface
      */
@@ -110,13 +113,18 @@ class PosController extends Controller
      */
     public function searchProducts(Request $request)
     {
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'category_id' => 'nullable|integer|exists:categories,id',
+        ]);
+
         $query = Product::query()
             ->with(['variants', 'category', 'mainImage'])
             ->where('is_active', true);
 
         // If no search and no category, show featured/popular products
-        if ($request->filled('search')) {
-            $search = $request->search;
+        if (!empty($validated['search'])) {
+            $search = $validated['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('sku', 'like', "%{$search}%")
@@ -124,9 +132,9 @@ class PosController extends Controller
             });
         }
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        } else if (!$request->filled('search')) {
+        if (!empty($validated['category_id'])) {
+            $query->where('category_id', $validated['category_id']);
+        } else if (empty($validated['search'])) {
             // Show recent products when no filters applied
             $query->latest();
         }
@@ -324,87 +332,8 @@ class PosController extends Controller
             'note' => 'nullable|string|max:500',
         ]);
 
-        $session = PosSession::active()->byUser(Auth::id())->firstOrFail();
-
         try {
-            DB::beginTransaction();
-
-            // Create order
-            $order = PosOrder::create([
-                'pos_session_id' => $session->id,
-                'user_id' => Auth::id(),
-                'customer_id' => $validated['customer_id'] ?? null,
-                'customer_name' => $validated['customer_name'] ?? null,
-                'customer_phone' => $validated['customer_phone'] ?? null,
-                'subtotal' => $validated['subtotal'],
-                'discount_amount' => $validated['discount_amount'] ?? 0,
-                'tax_amount' => $validated['tax_amount'] ?? 0,
-                'total_amount' => $validated['total_amount'],
-                'note' => $validated['note'] ?? null,
-                'status' => 'completed',
-                'is_wholesale' => $request->boolean('is_wholesale', false),
-            ]);
-
-            // Create order items and deduct stock
-            foreach ($validated['items'] as $item) {
-                $product = Product::find($item['product_id']);
-                $variant = null;
-                $variantInfo = null;
-
-                if (!empty($item['variant_id'])) {
-                    $variant = Variant::find($item['variant_id']);
-                    $variantInfo = $variant->variant_name ?? null;
-                }
-
-                PosOrderItem::create([
-                    'pos_order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'product_variant_id' => $item['variant_id'] ?? null,
-                    'product_name' => $product->name,
-                    'sku' => $variant ? ($variant->sku ?? 'N/A') : ($product->sku ?? 'N/A'),
-                    'variant_info' => $variantInfo,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['price'],
-                    'total_price' => $item['price'] * $item['quantity'],
-                ]);
-
-                // Deduct stock
-                if ($variant) {
-                    $variant->decrement('stock_quantity', $item['quantity']);
-                } else {
-                    $product->decrement('stock_quantity', $item['quantity']);
-                }
-            }
-
-            // Create payments
-            foreach ($validated['payments'] as $payment) {
-                PosPayment::create([
-                    'pos_order_id' => $order->id,
-                    'payment_method' => $payment['method'],
-                    'amount' => $payment['amount'],
-                    'reference_number' => $payment['reference'] ?? null,
-                    'received_amount' => $payment['received_amount'] ?? null,
-                    'change_amount' => $payment['change_amount'] ?? null,
-                ]);
-
-                // Update session sales totals
-                switch ($payment['method']) {
-                    case 'cash':
-                        $session->increment('cash_sales', $payment['amount']);
-                        break;
-                    case 'card':
-                        $session->increment('card_sales', $payment['amount']);
-                        break;
-                    case 'bkash':
-                    case 'nagad':
-                        $session->increment('mobile_sales', $payment['amount']);
-                        break;
-                    default:
-                        $session->increment('other_sales', $payment['amount']);
-                }
-            }
-
-            DB::commit();
+            $order = $this->posOrderService->createOrder($validated);
 
             return response()->json([
                 'success' => true,
@@ -415,8 +344,6 @@ class PosController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create order: ' . $e->getMessage(),
@@ -455,11 +382,45 @@ class PosController extends Controller
     }
 
     /**
+     * Search customers for POS
+     */
+    public function searchCustomers(Request $request)
+    {
+        $validated = $request->validate([
+            'query' => 'nullable|string|max:255',
+        ]);
+
+        $query = User::query();
+
+        if (!empty($validated['query'])) {
+            $search = $validated['query'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('mobile', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->select('id', 'name', 'mobile as phone', 'email')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $customers,
+        ]);
+    }
+
+    /**
      * Daily report
      */
     public function dailyReport(Request $request)
     {
-        $date = $request->date ?? now()->format('Y-m-d');
+        $validated = $request->validate([
+            'date' => 'nullable|date',
+        ]);
+
+        $date = $validated['date'] ?? now()->format('Y-m-d');
         
         $orders = PosOrder::completed()
             ->whereDate('created_at', $date)

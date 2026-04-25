@@ -243,6 +243,7 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
         // Product Search
         Route::get('/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
         Route::get('/products/barcode/{barcode}', [PosController::class, 'findByBarcode'])->name('admin.pos.products.barcode');
+        Route::get('/customers/search', [PosController::class, 'searchCustomers'])->name('admin.pos.customers.search');
         
         // Cart Operations
         Route::post('/cart/hold', [PosController::class, 'holdCart'])->name('admin.pos.cart.hold');

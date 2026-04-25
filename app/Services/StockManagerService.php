@@ -349,6 +349,47 @@ class StockManagerService
     }
 
     /**
+     * Get inventory valuation breakdown by category.
+     */
+    public function getCategoryValuation(): array
+    {
+        return Product::with('category')
+            ->where('manage_stock', true)
+            ->where('stock_quantity', '>', 0)
+            ->get()
+            ->groupBy('category.name')
+            ->map(function ($products) {
+                return $products->sum(function ($product) {
+                    $cost = $product->cost_price ?? $product->base_price * 0.6;
+                    return $cost * $product->stock_quantity;
+                });
+            })
+            ->toArray();
+    }
+
+    /**
+     * Get detailed category valuation with count and value.
+     */
+    public function getCategoryValuationDetailed(): array
+    {
+        return Product::with('category')
+            ->where('manage_stock', true)
+            ->where('stock_quantity', '>', 0)
+            ->get()
+            ->groupBy('category.name')
+            ->map(function ($products) {
+                return [
+                    'count' => $products->count(),
+                    'value' => $products->sum(function ($product) {
+                        $cost = $product->cost_price ?? $product->base_price * 0.6;
+                        return $cost * $product->stock_quantity;
+                    }),
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
      * Get stock valuation (inventory value)
      */
     public function getInventoryValuation(): array

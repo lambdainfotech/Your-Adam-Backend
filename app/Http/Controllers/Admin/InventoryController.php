@@ -222,19 +222,7 @@ class InventoryController extends Controller
     public function valuation()
     {
         $valuation = $this->stockManager->getInventoryValuation();
-        
-        // Detailed breakdown by category
-        $categoryValuation = Product::with('category')
-            ->where('manage_stock', true)
-            ->where('stock_quantity', '>', 0)
-            ->get()
-            ->groupBy('category.name')
-            ->map(function ($products) {
-                return $products->sum(function ($product) {
-                    $cost = $product->cost_price ?? $product->base_price * 0.6;
-                    return $cost * $product->stock_quantity;
-                });
-            });
+        $categoryValuation = $this->stockManager->getCategoryValuation();
 
         return view('admin.inventory.valuation', compact('valuation', 'categoryValuation'));
     }

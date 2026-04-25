@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\AamarPayService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    use ApiResponse;
     private AamarPayService $aamarPayService;
 
     public function __construct(AamarPayService $aamarPayService)
@@ -24,56 +26,47 @@ class PaymentController extends Controller
      */
     public function initiate(int $orderId, Request $request): JsonResponse
     {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication required',
-            ], 401);
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return $this->error('Authentication required', 401);
+            }
+
+            $order = Order::where('id', $orderId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$order) {
+                return $this->error('Order not found', 404);
+            }
+
+            if ($order->payment_status === 'paid') {
+                return $this->error('Order already paid', 422);
+            }
+
+            $customerInfo = [
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $request->get('phone', $user->phone ?? '01700000000'),
+                'address' => $request->get('address'),
+                'city' => $request->get('city', 'Dhaka'),
+                'postcode' => $request->get('postcode', '1200'),
+                'country' => 'Bangladesh',
+            ];
+
+            $result = $this->aamarPayService->initiatePayment($order, $customerInfo);
+
+            if (!$result['success']) {
+                return $this->error($result['message'], 500);
+            }
+
+            return $this->success($result, 'Payment initiated successfully');
+        } catch (\Exception $e) {
+            Log::error('Payment initiation failed: ' . $e->getMessage(), ['order_id' => $orderId]);
+
+            return $this->error('Payment initiation failed: ' . $e->getMessage(), 500);
         }
-
-        $order = Order::where('id', $orderId)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found',
-            ], 404);
-        }
-
-        if ($order->payment_status === 'paid') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order already paid',
-            ], 422);
-        }
-
-        $customerInfo = [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $request->get('phone', $user->phone ?? '01700000000'),
-            'address' => $request->get('address'),
-            'city' => $request->get('city', 'Dhaka'),
-            'postcode' => $request->get('postcode', '1200'),
-            'country' => 'Bangladesh',
-        ];
-
-        $result = $this->aamarPayService->initiatePayment($order, $customerInfo);
-
-        if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => $result['message'],
-            ], 500);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $result,
-        ]);
     }
 
     /**
@@ -86,17 +79,10 @@ class PaymentController extends Controller
         $result = $this->aamarPayService->handleSuccess($request->all());
 
         if ($result['success']) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment successful',
-                'order' => $result['order'],
-            ]);
+            return $this->success($result['order'], 'Payment successful');
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => $result['message'],
-        ], 400);
+        return $this->error($result['message'], 400);
     }
 
     /**
@@ -108,11 +94,7 @@ class PaymentController extends Controller
 
         $result = $this->aamarPayService->handleFailure($request->all());
 
-        return response()->json([
-            'success' => false,
-            'message' => $result['message'],
-            'order' => $result['order'] ?? null,
-        ]);
+        return $this->error($result['message'], 400, $result['order'] ?? null);
     }
 
     /**
@@ -134,10 +116,7 @@ class PaymentController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Payment cancelled by user',
-        ]);
+        return $this->error('Payment cancelled by user', 400);
     }
 
     /**
@@ -146,23 +125,21 @@ class PaymentController extends Controller
     public function status(int $orderId): JsonResponse
     {
         $user = Auth::user();
-        
+
+        if (!$user) {
+            return $this->error('Unauthorized. Please login to view payment status.', 401);
+        }
+
         $order = Order::where('id', $orderId)
-            ->where('user_id', $user?->id)
+            ->where('user_id', $user->id)
             ->first();
 
         if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found',
-            ], 404);
+            return $this->error('Order not found', 404);
         }
 
         $status = $this->aamarPayService->getPaymentStatus($order);
 
-        return response()->json([
-            'success' => true,
-            'data' => $status,
-        ]);
+        return $this->success($status, 'Payment status retrieved successfully');
     }
 }

@@ -240,6 +240,9 @@ class Product extends Model
         if ($this->product_type === 'simple') {
             return $this->stock_quantity;
         }
+        if (!$this->relationLoaded('variants')) {
+            return 0;
+        }
         return $this->variants->sum('stock_quantity');
     }
 
@@ -247,6 +250,9 @@ class Product extends Model
     {
         if ($this->product_type === 'simple') {
             return $this->stock_status === 'in_stock';
+        }
+        if (!$this->relationLoaded('variants')) {
+            return false;
         }
         return $this->variants->contains(fn($v) => $v->is_in_stock);
     }
@@ -395,6 +401,9 @@ class Product extends Model
             return $this->manage_stock && 
                    $this->stock_quantity > 0 && 
                    $this->stock_quantity <= $this->low_stock_threshold;
+        }
+        if (!$this->relationLoaded('variants')) {
+            return false;
         }
         return $this->variants->contains(fn($v) => $v->is_low_stock);
     }
