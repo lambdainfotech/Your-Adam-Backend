@@ -48,7 +48,7 @@ Route::middleware(['web'])->group(function () {
 });
 
 // Protected routes (JWT auth + admin role required)
-Route::middleware(['web', 'jwt.auth', 'role:admin'])->group(function () {
+Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function () {
     Route::post('/logout', [JWTAuthController::class, 'logout'])->name('admin.logout');
     
     // Dashboard
