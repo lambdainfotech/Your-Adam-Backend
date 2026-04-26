@@ -79,6 +79,13 @@ class OrderFulfillmentController extends Controller
                 'status' => 'delivered',
                 'delivered_at' => now(),
             ]);
+            
+            // Auto-update payment status for COD orders
+            if ($assignment->order->payment_method === 'cod') {
+                $assignment->order->payment_status = 'paid';
+                $assignment->order->save();
+            }
+            
             $assignment->update(['delivered_at' => now()]);
             $assignment->order->addStatusHistory('delivered', 'Package delivered');
         }
@@ -110,6 +117,12 @@ class OrderFulfillmentController extends Controller
             'status' => 'delivered',
             'delivered_at' => now(),
         ]);
+        
+        // Auto-update payment status for COD orders
+        if ($order->payment_method === 'cod') {
+            $order->payment_status = 'paid';
+            $order->save();
+        }
         
         $order->addStatusHistory('delivered', $validated['notes'] ?? 'Order delivered');
         

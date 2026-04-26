@@ -111,6 +111,7 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('admin.orders.invoice');
     Route::get('orders/{order}/print', [OrderController::class, 'print'])->name('admin.orders.print');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+    Route::post('orders/{order}/update-payment-status', [OrderController::class, 'updatePaymentStatus'])->name('admin.orders.update-payment-status');
     
     // Order Fulfillment
     Route::post('orders/{order}/assign-courier', [OrderFulfillmentController::class, 'assignCourier'])->name('admin.orders.assign-courier');
