@@ -40,6 +40,7 @@ class PermissionController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:permissions',
             'module' => 'required|string|max:50',
@@ -65,6 +66,7 @@ class PermissionController extends Controller
 
     public function update(Request $request, Permission $permission)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:permissions,name,' . $permission->id,
             'module' => 'required|string|max:50',
@@ -82,6 +84,7 @@ class PermissionController extends Controller
 
     public function destroy(Permission $permission)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($permission->roles()->count() > 0) {
             return redirect()->route('admin.permissions.index')
                 ->with('error', 'Cannot delete permission assigned to roles.');

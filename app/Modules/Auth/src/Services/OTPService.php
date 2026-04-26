@@ -24,11 +24,14 @@ class OTPService extends BaseService implements OTPServiceInterface
         // Revoke existing OTPs for this mobile+purpose
         $this->otpRepository->revokeExistingOTPs($dto->mobile, $dto->purpose);
 
-        // Create new OTP
-        $otp = $this->otpRepository->createOTP($dto->mobile, $dto->purpose);
+        // Generate raw code for SMS
+        $rawCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Send SMS (dispatch job)
-        SendOTPJob::dispatch($otp->mobile, $otp->code);
+        // Create new OTP with hashed code
+        $otp = $this->otpRepository->createOTP($dto->mobile, $dto->purpose, $rawCode);
+
+        // Send SMS (dispatch job) with raw code
+        SendOTPJob::dispatch($otp->mobile, $rawCode);
 
         return $otp->reference;
     }
@@ -45,7 +48,7 @@ class OTPService extends BaseService implements OTPServiceInterface
             return false;
         }
 
-        if ($otp->code !== $dto->otp) {
+        if (!\Hash::check($dto->otp, $otp->code)) {
             $otp->incrementAttempts();
             return false;
         }
@@ -66,11 +69,14 @@ class OTPService extends BaseService implements OTPServiceInterface
         // Revoke the existing OTP
         $this->otpRepository->revokeExistingOTPs($existingOtp->mobile, $existingOtp->purpose);
 
-        // Create new OTP with same details
-        $newOtp = $this->otpRepository->createOTP($existingOtp->mobile, $existingOtp->purpose);
+        // Generate raw code for SMS
+        $rawCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Send SMS
-        SendOTPJob::dispatch($newOtp->mobile, $newOtp->code);
+        // Create new OTP with same details
+        $newOtp = $this->otpRepository->createOTP($existingOtp->mobile, $existingOtp->purpose, $rawCode);
+
+        // Send SMS with raw code
+        SendOTPJob::dispatch($newOtp->mobile, $rawCode);
 
         return $newOtp->reference;
     }

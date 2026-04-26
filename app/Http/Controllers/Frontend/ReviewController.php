@@ -62,7 +62,13 @@ class ReviewController extends Controller
      */
     public function helpful(int $reviewId): JsonResponse
     {
-        $result = $this->reviewService->markHelpful($reviewId);
+        $user = Auth::user();
+        
+        if (!$user) {
+            return $this->error('Authentication required', 401);
+        }
+
+        $result = $this->reviewService->markHelpful($reviewId, $user->id);
 
         if (!$result['success']) {
             return $this->error($result['message'], 404);

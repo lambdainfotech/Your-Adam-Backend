@@ -30,8 +30,7 @@ class OrderFulfillmentController extends Controller
                 'courier_id' => $validated['courier_id'],
                 'tracking_number' => $validated['tracking_number'],
                 'shipping_cost' => $validated['shipping_cost'],
-                'estimated_delivery_date' => $validated['estimated_delivery_date'],
-                'status' => 'assigned',
+                'assigned_at' => now(),
                 'notes' => $validated['notes'],
             ]
         );
@@ -44,7 +43,7 @@ class OrderFulfillmentController extends Controller
         
         // Add initial tracking history
         TrackingHistory::create([
-            'courier_assignment_id' => $assignment->id,
+            'order_id' => $order->id,
             'status' => 'assigned',
             'description' => 'Order assigned to ' . $courier->name,
             'location' => 'Warehouse',
@@ -66,12 +65,12 @@ class OrderFulfillmentController extends Controller
         $validated['tracked_at'] = now();
         
         TrackingHistory::create([
-            'courier_assignment_id' => $assignment->id,
-            ...$validated,
+            'order_id' => $assignment->order_id,
+            'status' => $validated['status'],
+            'location' => $validated['location'] ?? null,
+            'description' => $validated['description'],
+            'tracked_at' => $validated['tracked_at'],
         ]);
-        
-        // Update assignment status
-        $assignment->update(['status' => $validated['status']]);
         
         // Update order status if delivered
         if ($validated['status'] === 'delivered') {

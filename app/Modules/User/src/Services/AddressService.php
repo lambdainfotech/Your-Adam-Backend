@@ -41,6 +41,12 @@ class AddressService extends BaseService implements AddressServiceInterface
     public function updateAddress(int $userId, int $addressId, AddressDTO $dto): Address
     {
         return $this->transaction(function () use ($userId, $addressId, $dto) {
+            $address = $this->repository->findById($addressId);
+            
+            if (!$address || $address->user_id !== $userId) {
+                throw new \Illuminate\Auth\Access\AuthorizationException('Address not found.');
+            }
+            
             $address = $this->repository->update($addressId, $dto->toArray());
 
             if ($dto->isDefault) {
@@ -53,6 +59,12 @@ class AddressService extends BaseService implements AddressServiceInterface
 
     public function deleteAddress(int $userId, int $addressId): void
     {
+        $address = $this->repository->findById($addressId);
+        
+        if (!$address || $address->user_id !== $userId) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Address not found.');
+        }
+        
         $this->repository->delete($addressId);
     }
 

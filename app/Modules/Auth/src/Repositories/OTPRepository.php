@@ -34,11 +34,13 @@ class OTPRepository extends BaseRepository
             ->first();
     }
 
-    public function createOTP(string $mobile, string $purpose): OTP
+    public function createOTP(string $mobile, string $purpose, ?string $code = null): OTP
     {
+        $code = $code ?? $this->generateCode();
+        
         return $this->create([
             'mobile' => $mobile,
-            'code' => $this->generateCode(),
+            'code' => \Hash::make($code),
             'reference' => $this->generateReference(),
             'purpose' => $purpose,
             'attempts' => 0,

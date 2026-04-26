@@ -124,6 +124,7 @@ class OrderController extends Controller
             'notes' => 'nullable|string',
         ]);
         
+        $previousStatus = $order->status;
         $order->status = $validated['status'];
         
         // Auto-update payment status for COD orders when delivered/completed
@@ -131,7 +132,21 @@ class OrderController extends Controller
             $order->payment_status = 'paid';
         }
         
+        // Restore stock on cancellation
+        if ($validated['status'] === 'cancelled' && $previousStatus !== 'cancelled') {
+            foreach ($order->items as $item) {
+                if ($item->variant_id) {
+                    $item->variant->increment('stock_quantity', $item->quantity);
+                } elseif ($item->product_id) {
+                    $item->product->increment('stock_quantity', $item->quantity);
+                }
+            }
+        }
+        
         $order->save();
+        
+        // Log status history
+        $order->addStatusHistory($validated['status'], $validated['notes'] ?? null);
         
         return redirect()->back()->with('success', 'Order status updated successfully.');
     }

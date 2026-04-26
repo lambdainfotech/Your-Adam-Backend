@@ -487,7 +487,6 @@ class ProductApiTransformer
             ])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $productId)
-            ->where('status', 1)
             ->where('is_active', true)
             ->take($limit)
             ->get();

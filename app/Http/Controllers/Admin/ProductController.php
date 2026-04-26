@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CategoryService;
+use App\Services\PricingService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 
@@ -14,12 +15,16 @@ class ProductController extends Controller
     protected ProductService $productService;
     protected CategoryService $categoryService;
 
+    protected PricingService $pricingService;
+
     public function __construct(
         ProductService $productService,
         CategoryService $categoryService,
+        PricingService $pricingService,
     ) {
         $this->productService = $productService;
         $this->categoryService = $categoryService;
+        $this->pricingService = $pricingService;
     }
 
     public function index(Request $request)
@@ -91,12 +96,14 @@ class ProductController extends Controller
                     $query->where(function($q) {
                         $q->where('product_type', 'simple')
                           ->where('manage_stock', true)
-                          ->whereColumn('stock_quantity', '<=', 'low_stock_threshold');
+                          ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                          ->where('stock_quantity', '>', 0);
                     })->orWhere(function($q) {
                         $q->where('product_type', 'variable')
                           ->whereHas('variants', function($qv) {
                               $qv->where('manage_stock', true)
-                                 ->whereColumn('stock_quantity', '<=', 'low_stock_threshold');
+                                 ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                                 ->where('stock_quantity', '>', 0);
                           });
                     });
                     break;

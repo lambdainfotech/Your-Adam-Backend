@@ -95,7 +95,7 @@ class OrderService implements OrderServiceInterface
                     'variant_attributes' => $variant->attribute_values->pluck('value', 'attribute.name')->toArray(),
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
-                    'original_price' => $variant->original_price ?? $item->unit_price,
+                    'original_price' => $variant->compare_price ?? $item->unit_price,
                     'discount_amount' => 0,
                     'total_price' => $item->quantity * $item->unit_price,
                 ]);
@@ -212,6 +212,22 @@ class OrderService implements OrderServiceInterface
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Order not found.');
         }
 
+        return $this->formatTracking($order);
+    }
+
+    public function getTrackingForUser(int $userId, int $orderId): array
+    {
+        $order = $this->orderRepository->findByIdAndUser($orderId, $userId);
+
+        if ($order === null) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Order not found.');
+        }
+
+        return $this->formatTracking($order);
+    }
+
+    private function formatTracking(Order $order): array
+    {
         return [
             'order_number' => $order->order_number,
             'status' => $order->status->value,

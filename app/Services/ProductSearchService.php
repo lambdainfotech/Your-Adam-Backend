@@ -31,7 +31,6 @@ class ProductSearchService
 
         // Build search query
         $searchQuery = Product::with(['category', 'images', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
-            ->where('status', 1)
             ->where('is_active', true);
 
         // Prepare subcategories metadata if parent category is requested

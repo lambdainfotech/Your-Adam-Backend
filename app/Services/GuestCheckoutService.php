@@ -157,6 +157,12 @@ class GuestCheckoutService
      */
     protected function createUser(array $guest): User
     {
+        // Check for existing user by email
+        $existingUser = User::where('email', $guest['email'])->first();
+        if ($existingUser) {
+            return $existingUser;
+        }
+
         // Get customer role (default to 3 if not found)
         $customerRoleId = \App\Models\Role::where('slug', 'customer')->value('id') ?? 3;
 

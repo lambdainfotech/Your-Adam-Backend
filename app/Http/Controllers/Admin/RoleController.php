@@ -36,6 +36,7 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:roles',
             'description' => 'nullable|string|max:255',
@@ -80,6 +81,7 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($role->is_system) {
             return redirect()->route('admin.roles.index')
                 ->with('error', 'System roles cannot be edited.');
@@ -108,6 +110,7 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($role->is_system) {
             return redirect()->route('admin.roles.index')
                 ->with('error', 'System roles cannot be deleted.');

@@ -25,7 +25,15 @@ class SendOTPJob implements ShouldQueue
 
     public function handle(): void
     {
-        // OTP sending logic will be implemented here
-        // This is a placeholder for the actual SMS service integration
+        // TODO: Replace with actual SMS gateway integration (e.g., Twilio, MessageBird, local provider)
+        // Example:
+        // $smsService = app(SMSService::class);
+        // $smsService->send($this->mobile, "Your verification code is: {$this->code}");
+        
+        // For now, log the OTP so it can be retrieved during development
+        \Log::info("OTP dispatched", [
+            'mobile' => $this->mobile,
+            'code' => $this->code,
+        ]);
     }
 }

@@ -12,6 +12,7 @@ enum OrderStatus: string
     case SHIPPED = 'shipped';
     case IN_TRANSIT = 'in_transit';
     case DELIVERED = 'delivered';
+    case COMPLETED = 'completed';
     case CANCELLED = 'cancelled';
 
     public function label(): string
@@ -23,6 +24,7 @@ enum OrderStatus: string
             self::SHIPPED => 'Shipped',
             self::IN_TRANSIT => 'In Transit',
             self::DELIVERED => 'Delivered',
+            self::COMPLETED => 'Completed',
             self::CANCELLED => 'Cancelled',
         };
     }

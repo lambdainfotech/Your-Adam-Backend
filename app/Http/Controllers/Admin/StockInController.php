@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\InventoryMovement;
 use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Http\Request;
@@ -67,14 +68,41 @@ class StockInController extends Controller
                     $oldStock = $variant->stock_quantity;
                     $variant->stock_quantity += $item['quantity'];
                     $variant->save();
+                    
+                    // Log inventory movement
+                    InventoryMovement::create([
+                        'product_id' => $product->id,
+                        'variant_id' => $variant->id,
+                        'movement_type' => InventoryMovement::TYPE_IN,
+                        'quantity' => $item['quantity'],
+                        'reason' => 'Stock In: ' . ($validated['reference_no'] ?? 'Bulk'),
+                        'stock_before' => $oldStock,
+                        'stock_after' => $variant->stock_quantity,
+                        'created_by' => auth()->id(),
+                    ]);
+                    
                     $successCount++;
                 } else {
                     $errorMessages[] = "Variant not found for: {$product->name}";
                 }
             } else {
                 // Simple product - update product stock directly
+                $oldStock = $product->stock_quantity;
                 $product->stock_quantity += $item['quantity'];
                 $product->save();
+                
+                // Log inventory movement
+                InventoryMovement::create([
+                    'product_id' => $product->id,
+                    'variant_id' => null,
+                    'movement_type' => InventoryMovement::TYPE_IN,
+                    'quantity' => $item['quantity'],
+                    'reason' => 'Stock In: ' . ($validated['reference_no'] ?? 'Bulk'),
+                    'stock_before' => $oldStock,
+                    'stock_after' => $product->stock_quantity,
+                    'created_by' => auth()->id(),
+                ]);
+                
                 $successCount++;
             }
         }

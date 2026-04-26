@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Services\CategoryService;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {

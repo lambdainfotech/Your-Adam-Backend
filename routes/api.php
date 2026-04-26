@@ -91,11 +91,11 @@ Route::get('/tracking', [\App\Modules\Courier\Http\Controllers\TrackingControlle
 
 // Auth Routes (Unified JWT)
 Route::group(['prefix' => 'auth'], function () {
-    // Public auth routes
-    Route::post('/mobile/send-otp', [OTPAuthController::class, 'sendOTP']);
-    Route::post('/mobile/verify', [OTPAuthController::class, 'verifyOTP']);
-    Route::post('/login', [JWTAuthController::class, 'login']);
-    Route::post('/refresh', [JWTAuthController::class, 'refresh']);
+    // Public auth routes with rate limiting
+    Route::post('/mobile/send-otp', [OTPAuthController::class, 'sendOTP'])->middleware('throttle:3,1');
+    Route::post('/mobile/verify', [OTPAuthController::class, 'verifyOTP'])->middleware('throttle:5,1');
+    Route::post('/login', [JWTAuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/refresh', [JWTAuthController::class, 'refresh'])->middleware('throttle:10,1');
 
     // Protected auth routes
     Route::middleware('jwt.auth')->group(function () {
@@ -126,6 +126,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::delete('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'destroy']);
     Route::post('/cart/apply-coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'applyCoupon']);
     Route::delete('/cart/coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'removeCoupon']);
+    Route::get('/cart/summary', [\App\Modules\Sales\Http\Controllers\CartController::class, 'summary']);
+    Route::delete('/cart/clear', [\App\Modules\Sales\Http\Controllers\CartController::class, 'clear']);
 
     // Orders
     Route::get('/orders', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'index']);

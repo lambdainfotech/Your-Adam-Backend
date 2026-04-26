@@ -172,7 +172,7 @@ trait JWTAuthTrait
             minutes: $ttl,
             path: '/',
             domain: null,
-            secure: false,
+            secure: config('jwt.cookie_secure', false),
             httpOnly: true,
             sameSite: 'lax'
         );

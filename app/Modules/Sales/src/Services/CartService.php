@@ -41,14 +41,17 @@ class CartService implements CartServiceInterface
                 throw new \InvalidArgumentException('Variant not found.');
             }
 
-            if ($variant->stock_quantity < $dto->quantity) {
+            $existingItem = $cart->items()->where('variant_id', $dto->variantId)->first();
+            $newQuantity = $existingItem ? $existingItem->quantity + $dto->quantity : $dto->quantity;
+
+            if ($variant->stock_quantity < $newQuantity) {
                 throw new InsufficientStockException();
             }
 
             return $cart->items()->updateOrCreate(
                 ['variant_id' => $dto->variantId],
                 [
-                    'quantity' => $dto->quantity,
+                    'quantity' => $newQuantity,
                     'unit_price' => $variant->price,
                 ]
             );

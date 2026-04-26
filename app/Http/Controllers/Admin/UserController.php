@@ -46,6 +46,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -69,13 +70,8 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        $message = 'Customer created successfully.';
-        if (empty($validated['password'])) {
-            $message .= " Auto-generated password: {$password}";
-        }
-
         return redirect()->route('admin.users.index')
-            ->with('success', $message);
+            ->with('success', 'Customer created successfully.');
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Failed to create user: ' . $e->getMessage())
@@ -102,6 +98,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
@@ -131,6 +128,7 @@ class UserController extends Controller
     
     public function toggleStatus(User $user)
     {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $user->status = $user->status === 1 ? 0 : 1;
         $user->save();
         

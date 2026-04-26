@@ -67,10 +67,13 @@ class Category extends Model
     public function allProducts(): HasMany
     {
         return $this->hasMany(Product::class)
-            ->orWhereIn('category_id', function ($query) {
-                $query->select('id')
-                    ->from('categories')
-                    ->where('parent_id', $this->id);
+            ->where(function ($q) {
+                $q->whereColumn('categories.id', 'products.category_id')
+                  ->orWhereIn('products.category_id', function ($query) {
+                      $query->select('id')
+                          ->from('categories')
+                          ->where('parent_id', $this->id);
+                  });
             });
     }
 

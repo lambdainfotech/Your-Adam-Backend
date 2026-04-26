@@ -49,7 +49,7 @@ class OrderController extends Controller
 
     public function track(Request $request, string $id): JsonResponse
     {
-        $tracking = $this->service->getTracking($id);
+        $tracking = $this->service->getTrackingForUser($request->user()->id, (int) $id);
 
         return $this->successResponse($tracking);
     }

@@ -154,6 +154,7 @@ class InventoryMovement extends Model
     ): self {
         $variant = $variantId ? Variant::find($variantId) : null;
         $stockBefore = $variant ? $variant->stock_quantity : 0;
+        $stockAfter = $stockBefore + $quantity;
         
         return self::create([
             'product_id' => $productId,
@@ -164,7 +165,7 @@ class InventoryMovement extends Model
             'reference_id' => $referenceId,
             'reference_type' => $referenceType,
             'stock_before' => $stockBefore,
-            'stock_after' => $variant ? $variant->stock_quantity : 0,
+            'stock_after' => $stockAfter,
             'created_by' => auth()->id(),
         ]);
     }
