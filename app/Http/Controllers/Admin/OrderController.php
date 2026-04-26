@@ -85,7 +85,7 @@ class OrderController extends Controller
         });
 
         // Merge only current page results, sort, and take perPage
-        $merged = $mappedRegular->merge($mappedPos)
+        $merged = collect($mappedRegular)->merge(collect($mappedPos))
             ->sortByDesc('created_at')
             ->values()
             ->take($perPage);

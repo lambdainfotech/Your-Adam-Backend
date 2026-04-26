@@ -103,27 +103,29 @@
                     
                     <div id="valuesContainer" class="space-y-2">
                         @forelse($values as $value)
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2 value-row">
                             <input type="hidden" name="value_ids[]" value="{{ $value->id }}">
                             <input type="text" name="values[]" value="{{ $value->value }}"
                                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Value (e.g., Red)">
-                            <input type="text" name="value_codes[]" value="{{ $value->code ?? '' }}"
-                                class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="Code">
+                            <input type="color" name="color_codes[]" value="{{ $value->color_code ?? '#000000' }}"
+                                class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer color-picker"
+                                title="Pick color"
+                                style="display: {{ $attribute->type == 'color' ? 'block' : 'none' }}">
                             <button type="button" onclick="removeValue(this)" class="text-red-600 hover:text-red-800 px-2">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         @empty
-                        <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2 value-row">
                             <input type="hidden" name="value_ids[]" value="">
                             <input type="text" name="values[]" 
                                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 placeholder="Value (e.g., Red)">
-                            <input type="text" name="value_codes[]" 
-                                class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                placeholder="Code">
+                            <input type="color" name="color_codes[]" value="#000000"
+                                class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer color-picker"
+                                title="Pick color"
+                                style="display: {{ $attribute->type == 'color' ? 'block' : 'none' }}">
                             <button type="button" onclick="removeValue(this)" class="text-red-600 hover:text-red-800 px-2">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -155,18 +157,34 @@
 
 @push('scripts')
 <script>
+    const typeSelect = document.getElementById('type');
+    const valuesContainer = document.getElementById('valuesContainer');
+
+    function isColorType() {
+        return typeSelect.value === 'color';
+    }
+
+    function toggleColorPickers() {
+        const colorPickers = document.querySelectorAll('.color-picker');
+        colorPickers.forEach(picker => {
+            picker.style.display = isColorType() ? 'block' : 'none';
+        });
+    }
+
     function addValue() {
         const container = document.getElementById('valuesContainer');
         const div = document.createElement('div');
-        div.className = 'flex items-center space-x-2';
+        div.className = 'flex items-center space-x-2 value-row';
+        const showColor = isColorType();
         div.innerHTML = `
             <input type="hidden" name="value_ids[]" value="">
-            <input type="text" name="values[]" 
+            <input type="text" name="values[]"
                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 placeholder="Value (e.g., Red)">
-            <input type="text" name="value_codes[]" 
-                class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Code">
+            <input type="color" name="color_codes[]" value="#000000"
+                class="w-12 h-10 px-1 py-1 border border-gray-300 rounded-lg cursor-pointer color-picker"
+                title="Pick color"
+                style="display: ${showColor ? 'block' : 'none'}">
             <button type="button" onclick="removeValue(this)" class="text-red-600 hover:text-red-800 px-2">
                 <i class="fas fa-times"></i>
             </button>
@@ -180,9 +198,19 @@
             button.parentElement.remove();
         } else {
             // Clear the inputs instead of removing
-            button.parentElement.querySelector('input[name="values[]"]').value = '';
-            button.parentElement.querySelector('input[name="value_codes[]"]').value = '';
+            const inputs = button.parentElement.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (input.type !== 'hidden') {
+                    input.value = input.type === 'color' ? '#000000' : '';
+                }
+            });
         }
     }
+
+    // Show/hide color pickers when type changes
+    typeSelect.addEventListener('change', toggleColorPickers);
+
+    // Initialize on page load
+    toggleColorPickers();
 </script>
 @endpush

@@ -151,6 +151,10 @@ class AttributeController extends Controller
             'is_filterable' => 'boolean',
             'is_variation' => 'boolean',
             'sort_order' => 'integer|min:0',
+            'values' => 'nullable|array',
+            'values.*' => 'nullable|string|max:255',
+            'value_ids' => 'nullable|array',
+            'color_codes' => 'nullable|array',
         ]);
 
         DB::table('attributes')
@@ -164,6 +168,57 @@ class AttributeController extends Controller
                 'sort_order' => $validated['sort_order'] ?? 0,
                 'updated_at' => now(),
             ]);
+
+        // Update attribute values
+        $values = $request->input('values', []);
+        $valueIds = $request->input('value_ids', []);
+        $colorCodes = $request->input('color_codes', []);
+
+        $existingValueIds = [];
+
+        foreach ($values as $index => $value) {
+            if (!empty($value)) {
+                $valueId = $valueIds[$index] ?? null;
+                $colorCode = $colorCodes[$index] ?? null;
+
+                if ($valueId) {
+                    // Update existing value
+                    DB::table('attribute_values')
+                        ->where('id', $valueId)
+                        ->update([
+                            'value' => $value,
+                            'color_code' => $colorCode,
+                            'sort_order' => $index,
+                            'updated_at' => now(),
+                        ]);
+                    $existingValueIds[] = (int) $valueId;
+                } else {
+                    // Insert new value
+                    $newId = DB::table('attribute_values')->insertGetId([
+                        'attribute_id' => $id,
+                        'value' => $value,
+                        'color_code' => $colorCode,
+                        'sort_order' => $index,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $existingValueIds[] = (int) $newId;
+                }
+            }
+        }
+
+        // Delete values that were removed
+        if (!empty($existingValueIds)) {
+            DB::table('attribute_values')
+                ->where('attribute_id', $id)
+                ->whereNotIn('id', $existingValueIds)
+                ->delete();
+        } else {
+            // All values were removed, delete all
+            DB::table('attribute_values')
+                ->where('attribute_id', $id)
+                ->delete();
+        }
 
         return redirect()->route('admin.attributes.index')
             ->with('success', 'Attribute updated successfully.');
