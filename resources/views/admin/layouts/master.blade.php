@@ -21,15 +21,53 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .sidebar { transition: all 0.3s; }
-        .sidebar-collapsed { width: 64px; }
-        .sidebar-expanded { width: 260px; }
-        .nav-item:hover { background-color: rgba(255,255,255,0.1); }
-        .nav-item.active { background-color: rgba(255,255,255,0.15); border-left: 4px solid #3b82f6; }
+
+        /* Sidebar Transitions */
+        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-collapsed { width: 72px; }
+        .sidebar-expanded { width: 264px; }
+
+        /* Sidebar Scrollbar */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Nav Item */
+        .nav-item {
+            position: relative;
+            transition: all 0.2s ease;
+            border-radius: 10px;
+            margin: 2px 12px;
+            padding: 10px 14px;
+        }
+        .nav-item:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: #c7d2fe;
+        }
+        .nav-item:hover .nav-icon { color: #818cf8; }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
+            color: #fff;
+            box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+        }
+        .nav-item.active .nav-icon { color: #a5b4fc; }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(180deg, #818cf8, #c084fc);
+            border-radius: 0 3px 3px 0;
+        }
+
         .submenu { display: none; }
         .submenu.show { display: block; }
         .has-submenu.active .submenu { display: block; }
-        
+
         /* Toast Notifications */
         .toast-container {
             position: fixed;
@@ -39,17 +77,17 @@
         }
         .toast {
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             color: white;
             font-weight: 500;
             margin-bottom: 10px;
             animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
-        .toast.success { background-color: #10b981; }
-        .toast.error { background-color: #ef4444; }
-        .toast.warning { background-color: #f59e0b; }
-        .toast.info { background-color: #3b82f6; }
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toast.info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -71,186 +109,183 @@
     
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar sidebar-expanded bg-gray-900 text-white flex-shrink-0 overflow-y-auto">
-            <div class="p-4 flex items-center justify-between border-b border-gray-800">
-                <div class="flex items-center space-x-3 sidebar-logo">
-                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-shopping-bag text-xl"></i>
+        <aside id="sidebar" class="sidebar sidebar-expanded bg-slate-900 text-slate-300 flex-shrink-0 overflow-y-auto flex flex-col">
+            <!-- Logo Header -->
+            <div class="p-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3 sidebar-logo overflow-hidden">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                        <i class="fas fa-shopping-bag text-white text-lg"></i>
                     </div>
-                    <span class="font-bold text-xl sidebar-text">Admin Panel</span>
+                    <div class="sidebar-text whitespace-nowrap">
+                        <span class="font-bold text-white text-lg tracking-tight">Admin Panel</span>
+                    </div>
                 </div>
-                <button id="toggleSidebar" class="text-gray-400 hover:text-white focus:outline-none">
-                    <i class="fas fa-bars"></i>
+                <button id="toggleSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0">
+                    <i class="fas fa-bars-staggered text-sm"></i>
                 </button>
             </div>
-            
-            <nav class="mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-tachometer-alt w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Dashboard</span>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 pb-4">
+                <!-- Dashboard -->
+                <a href="{{ route('admin.dashboard') }}" title="Dashboard" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-house text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Dashboard</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Catalog</div>
-                
-                <a href="{{ route('admin.products.index') }}" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-box w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Products</span>
+
+                <!-- Catalog Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Catalog</span>
+                </div>
+                <a href="{{ route('admin.products.index') }}" title=">Products" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-box text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Products</span>
                 </a>
-                
-                <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-tags w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Categories</span>
+                <a href="{{ route('admin.categories.index') }}" title=">Categories" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-tags text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Categories</span>
                 </a>
-                
-                <a href="{{ route('admin.attributes.index') }}" class="nav-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-sliders-h w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Attributes</span>
+                <a href="{{ route('admin.attributes.index') }}" title=">Attributes" class="nav-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-sliders-h text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Attributes</span>
                 </a>
-                
-                <a href="{{ route('admin.size-charts.index') }}" class="nav-item {{ request()->routeIs('admin.size-charts.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-ruler w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Size Charts</span>
+                <a href="{{ route('admin.size-charts.index') }}" title=">Size Charts" class="nav-item {{ request()->routeIs('admin.size-charts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-ruler text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Size Charts</span>
                 </a>
-                <a href="{{ route('admin.predefined-descriptions.index') }}" class="nav-item {{ request()->routeIs('admin.predefined-descriptions.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-align-left w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Descriptions</span>
+                <a href="{{ route('admin.predefined-descriptions.index') }}" title=">Descriptions" class="nav-item {{ request()->routeIs('admin.predefined-descriptions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-align-left text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Descriptions</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Sales</div>
-                
-                <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-shopping-cart w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Orders</span>
+
+                <!-- Sales Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sales</span>
+                </div>
+                <a href="{{ route('admin.orders.index') }}" title=">Orders" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-shopping-cart text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Orders</span>
                 </a>
-                
-                <a href="{{ route('admin.coupons.index') }}" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-ticket-alt w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Coupons</span>
+                <a href="{{ route('admin.coupons.index') }}" title=">Coupons" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-ticket-alt text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Coupons</span>
                 </a>
-                
-                <a href="{{ route('admin.campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-bullhorn w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Campaigns</span>
+                <a href="{{ route('admin.campaigns.index') }}" title=">Campaigns" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-bullhorn text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Campaigns</span>
                 </a>
-                
-                <a href="{{ route('admin.pos.index') }}" class="nav-item {{ request()->routeIs('admin.pos.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-cash-register w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">POS</span>
+                <a href="{{ route('admin.pos.index') }}" title=">POS" class="nav-item {{ request()->routeIs('admin.pos.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-cash-register text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">POS</span>
                 </a>
-                
-                <a href="{{ route('admin.sliders.index') }}" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-images w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Hero Sliders</span>
+                <a href="{{ route('admin.sliders.index') }}" title=">Hero Sliders" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-images text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Hero Sliders</span>
                 </a>
-                
-                <a href="{{ route('admin.testimonials.index') }}" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-comments w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Testimonials</span>
+                <a href="{{ route('admin.testimonials.index') }}" title=">Testimonials" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-comments text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Testimonials</span>
                 </a>
-                
-                <a href="{{ route('admin.brand-values.index') }}" class="nav-item {{ request()->routeIs('admin.brand-values.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-gem w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Brand Values</span>
+                <a href="{{ route('admin.brand-values.index') }}" title=">Brand Values" class="nav-item {{ request()->routeIs('admin.brand-values.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-gem text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Brand Values</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Inventory</div>
-                
-                <a href="{{ route('admin.stock-in.bulk') }}" class="nav-item {{ request()->routeIs('admin.stock-in.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-plus-circle w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Stock In</span>
+
+                <!-- Inventory Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Inventory</span>
+                </div>
+                <a href="{{ route('admin.stock-in.bulk') }}" title=">Stock In" class="nav-item {{ request()->routeIs('admin.stock-in.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-plus-circle text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Stock In</span>
                 </a>
-                
-                <a href="{{ route('admin.inventory.index') }}" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-warehouse w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Stock View</span>
+                <a href="{{ route('admin.inventory.index') }}" title=">Stock View" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-warehouse text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Stock View</span>
                 </a>
-                
-                <a href="{{ route('admin.couriers.index') }}" class="nav-item {{ request()->routeIs('admin.couriers.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-shipping-fast w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Couriers</span>
+                <a href="{{ route('admin.couriers.index') }}" title=">Couriers" class="nav-item {{ request()->routeIs('admin.couriers.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-shipping-fast text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Couriers</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Users</div>
-                
-                <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-users w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Customers</span>
+
+                <!-- Users Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Users</span>
+                </div>
+                <a href="{{ route('admin.users.index') }}" title=">Customers" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-users text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Customers</span>
                 </a>
-                
-                <a href="{{ route('admin.roles.index') }}" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-user-shield w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Roles</span>
+                <a href="{{ route('admin.roles.index') }}" title=">Roles" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-user-shield text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Roles</span>
                 </a>
-                
-                <a href="{{ route('admin.permissions.index') }}" class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-key w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Permissions</span>
+                <a href="{{ route('admin.permissions.index') }}" title=">Permissions" class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-key text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Permissions</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">System</div>
-                
-                <a href="{{ route('admin.notifications.index') }}" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-bell w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Notifications</span>
+
+                <!-- System Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System</span>
+                </div>
+                <a href="{{ route('admin.notifications.index') }}" title=">Notifications" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-bell text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Notifications</span>
                 </a>
-                
-                <a href="{{ route('admin.activity-logs.index') }}" class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-history w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Activity Logs</span>
+                <a href="{{ route('admin.activity-logs.index') }}" title=">Activity Logs" class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-history text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Activity Logs</span>
                 </a>
-                
-                <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-cog w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Settings</span>
+                <a href="{{ route('admin.settings.index') }}" title=">Settings" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-cog text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Settings</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Reports</div>
-                
-                <a href="{{ route('admin.reports.sales') }}" class="nav-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-chart-line w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Sales Report</span>
+
+                <!-- Reports Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reports</span>
+                </div>
+                <a href="{{ route('admin.reports.sales') }}" title=">Sales Report" class="nav-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-chart-line text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Sales Report</span>
                 </a>
-                
-                <a href="{{ route('admin.reports.products') }}" class="nav-item {{ request()->routeIs('admin.reports.products') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-chart-bar w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Products Report</span>
+                <a href="{{ route('admin.reports.products') }}" title=">Products Report" class="nav-item {{ request()->routeIs('admin.reports.products') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-chart-bar text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Products Report</span>
                 </a>
-                
-                <a href="{{ route('admin.reports.customers') }}" class="nav-item {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-chart-pie w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Customers Report</span>
+                <a href="{{ route('admin.reports.customers') }}" title=">Customers Report" class="nav-item {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-chart-pie text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Customers Report</span>
                 </a>
-                
-                <a href="{{ route('admin.reports.inventory') }}" class="nav-item {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-warehouse w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Inventory Report</span>
+                <a href="{{ route('admin.reports.inventory') }}" title=">Inventory Report" class="nav-item {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-warehouse text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Inventory Report</span>
                 </a>
-                
-                <a href="{{ route('admin.reports.profit') }}" class="nav-item {{ request()->routeIs('admin.reports.profit') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-coins w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Profit Report</span>
+                <a href="{{ route('admin.reports.profit') }}" title=">Profit Report" class="nav-item {{ request()->routeIs('admin.reports.profit') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-coins text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Profit Report</span>
                 </a>
-                
-                <a href="{{ route('admin.reports.expenses') }}" class="nav-item {{ request()->routeIs('admin.reports.expenses') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-chart-pie w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Expense Report</span>
+                <a href="{{ route('admin.reports.expenses') }}" title=">Expense Report" class="nav-item {{ request()->routeIs('admin.reports.expenses') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-chart-pie text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Expense Report</span>
                 </a>
-                
-                <div class="mt-4 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Expenses</div>
-                
-                <a href="{{ route('admin.expenses.index') }}" class="nav-item {{ request()->routeIs('admin.expenses.*') && !request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-list w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">All Expenses</span>
+
+                <!-- Expenses Section -->
+                <div class="mt-5 mb-2 px-3 sidebar-text">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Expenses</span>
+                </div>
+                <a href="{{ route('admin.expenses.index') }}" title=">All Expenses" class="nav-item {{ request()->routeIs('admin.expenses.*') && !request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-list text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">All Expenses</span>
                 </a>
-                
-                <a href="{{ route('admin.expenses.create') }}" class="nav-item {{ request()->routeIs('admin.expenses.create') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-plus-circle w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Add Expense</span>
+                <a href="{{ route('admin.expenses.create') }}" title=">Add Expense" class="nav-item {{ request()->routeIs('admin.expenses.create') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-plus-circle text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Add Expense</span>
                 </a>
-                
-                <a href="{{ route('admin.expenses.categories') }}" class="nav-item {{ request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center px-4 py-3 text-gray-300 hover:text-white">
-                    <i class="fas fa-tags w-6 text-center"></i>
-                    <span class="ml-3 sidebar-text">Categories</span>
+                <a href="{{ route('admin.expenses.categories') }}" title=">Categories" class="nav-item {{ request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-tags text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Categories</span>
                 </a>
             </nav>
         </aside>
@@ -320,16 +355,20 @@
         document.getElementById('toggleSidebar').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarTexts = document.querySelectorAll('.sidebar-text');
-            const sidebarLogo = document.querySelector('.sidebar-logo');
-            
+            const icon = this.querySelector('i');
+
             if (sidebar.classList.contains('sidebar-expanded')) {
                 sidebar.classList.remove('sidebar-expanded');
                 sidebar.classList.add('sidebar-collapsed');
                 sidebarTexts.forEach(text => text.style.display = 'none');
+                icon.classList.remove('fa-bars-staggered');
+                icon.classList.add('fa-bars');
             } else {
                 sidebar.classList.remove('sidebar-collapsed');
                 sidebar.classList.add('sidebar-expanded');
-                sidebarTexts.forEach(text => text.style.display = 'block');
+                sidebarTexts.forEach(text => text.style.display = '');
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-bars-staggered');
             }
         });
         
