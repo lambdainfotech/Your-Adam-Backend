@@ -125,9 +125,28 @@ class OrderController extends Controller
         ]);
         
         $order->status = $validated['status'];
+        
+        // Auto-update payment status for COD orders when delivered/completed
+        if ($order->payment_method === 'cod' && in_array($validated['status'], ['delivered', 'completed'])) {
+            $order->payment_status = 'paid';
+        }
+        
         $order->save();
         
         return redirect()->back()->with('success', 'Order status updated successfully.');
+    }
+
+    public function updatePaymentStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'payment_status' => 'required|in:pending,paid,failed,refunded',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $order->payment_status = $validated['payment_status'];
+        $order->save();
+        
+        return redirect()->back()->with('success', 'Payment status updated successfully.');
     }
     
     public function invoice(Order $order)

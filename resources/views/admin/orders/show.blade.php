@@ -31,14 +31,22 @@
                     <h2 class="text-2xl font-bold text-gray-800">Order #{{ $order->order_number }}</h2>
                     <p class="text-gray-500 mt-1">Placed on {{ $order->created_at->format('M d, Y H:i') }}</p>
                 </div>
-                <span class="px-4 py-2 text-sm rounded-full
-                    {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                    {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                    {{ $order->status === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
-                    {{ $order->status === 'shipped' ? 'bg-purple-100 text-purple-800' : '' }}
-                    {{ $order->status === 'delivered' ? 'bg-teal-100 text-teal-800' : '' }}
-                    {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
-                ">{{ ucfirst($order->status) }}</span>
+                <div class="flex items-center space-x-2">
+                    <span class="px-3 py-1.5 text-sm rounded-full
+                        {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : '' }}
+                        {{ $order->payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                        {{ $order->payment_status === 'failed' ? 'bg-red-100 text-red-800' : '' }}
+                        {{ $order->payment_status === 'refunded' ? 'bg-gray-100 text-gray-800' : '' }}
+                    ">{{ ucfirst($order->payment_status) }}</span>
+                    <span class="px-3 py-1.5 text-sm rounded-full
+                        {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                        {{ $order->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                        {{ $order->status === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $order->status === 'shipped' ? 'bg-purple-100 text-purple-800' : '' }}
+                        {{ $order->status === 'delivered' ? 'bg-teal-100 text-teal-800' : '' }}
+                        {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
+                    ">{{ ucfirst($order->status) }}</span>
+                </div>
             </div>
             
             <!-- Order Items -->
@@ -133,9 +141,35 @@
                 </div>
             @endif
             
+            <!-- Payment Info -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h3 class="font-semibold text-gray-800 mb-4">Payment Information</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500">Method</span>
+                        <span class="font-medium uppercase">{{ $order->payment_method }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-500">Status</span>
+                        <span class="px-2 py-1 text-xs rounded-full
+                            {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : '' }}
+                            {{ $order->payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                            {{ $order->payment_status === 'failed' ? 'bg-red-100 text-red-800' : '' }}
+                            {{ $order->payment_status === 'refunded' ? 'bg-gray-100 text-gray-800' : '' }}
+                        ">{{ ucfirst($order->payment_status) }}</span>
+                    </div>
+                    @if($order->transaction_id)
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Transaction ID</span>
+                            <span class="font-medium text-xs">{{ $order->transaction_id }}</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Update Status -->
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h3 class="font-semibold text-gray-800 mb-4">Update Status</h3>
+                <h3 class="font-semibold text-gray-800 mb-4">Update Delivery Status</h3>
                 <form method="POST" action="{{ route('admin.orders.update-status', $order) }}">
                     @csrf
                     <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3">
@@ -149,6 +183,24 @@
                     <textarea name="notes" placeholder="Add notes (optional)" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3" rows="2"></textarea>
                     <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                         Update Status
+                    </button>
+                </form>
+            </div>
+
+            <!-- Update Payment Status -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h3 class="font-semibold text-gray-800 mb-4">Update Payment Status</h3>
+                <form method="POST" action="{{ route('admin.orders.update-payment-status', $order) }}">
+                    @csrf
+                    <select name="payment_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3">
+                        <option value="pending" {{ $order->payment_status === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="paid" {{ $order->payment_status === 'paid' ? 'selected' : '' }}>Paid</option>
+                        <option value="failed" {{ $order->payment_status === 'failed' ? 'selected' : '' }}>Failed</option>
+                        <option value="refunded" {{ $order->payment_status === 'refunded' ? 'selected' : '' }}>Refunded</option>
+                    </select>
+                    <textarea name="notes" placeholder="Add notes (optional)" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3" rows="2"></textarea>
+                    <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        Update Payment Status
                     </button>
                 </form>
             </div>
