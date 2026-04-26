@@ -279,46 +279,12 @@
         </div>
     </div>
 
-    <!-- Held Carts Modal -->
-    <div x-show="showHeldCartsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" x-cloak>
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-            <h2 class="text-xl font-bold mb-4">Held Carts</h2>
-            <div class="space-y-2 max-h-64 overflow-y-auto">
-                <template x-for="cart in heldCarts" :key="cart.id">
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-medium" x-text="cart.customer_name || 'No Name'"></p>
-                            <p class="text-sm text-gray-500">
-                                <span x-text="cart.item_count"></span> items - ৳<span x-text="formatPrice(cart.total)"></span>
-                            </p>
-                            <p class="text-xs text-gray-400" x-text="cart.created_at"></p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button @click="retrieveCart(cart.id)" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
-                                Retrieve
-                            </button>
-                            <button @click="deleteHeldCart(cart.id)" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </template>
-                <div x-show="heldCarts.length === 0" class="text-center text-gray-400 py-6">
-                    No held carts
-                </div>
-            </div>
-            <button @click="showHeldCartsModal = false" class="w-full mt-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                Close
-            </button>
-        </div>
-    </div>
-
     <!-- Customer Modal -->
     <div x-show="showCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" x-cloak>
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <h2 class="text-xl font-bold mb-4">Select Customer</h2>
             <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomers()" placeholder="Search by name or phone"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4">
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4" id="customerSearchInput">
             <div class="max-h-48 overflow-y-auto space-y-2 mb-4">
                 <div @click="selectCustomer(null)" class="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-blue-50">
                     <p class="font-medium">Walk-in Customer</p>
@@ -326,9 +292,12 @@
                 <template x-for="cust in customers" :key="cust.id">
                     <div @click="selectCustomer(cust)" class="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-blue-50">
                         <p class="font-medium" x-text="cust.name"></p>
-                        <p class="text-sm text-gray-500" x-text="cust.phone"></p>
+                        <p class="text-sm text-gray-500" x-text="cust.mobile"></p>
                     </div>
                 </template>
+                <div x-show="customers.length === 0" class="text-center text-gray-400 py-4">
+                    No customers found
+                </div>
             </div>
             <button @click="showCustomerModal = false" class="w-full px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
                 Cancel
@@ -358,6 +327,20 @@ function posSystem() {
         // Modals
         showPaymentModal: false,
         showCustomerModal: false,
+        
+        initCustomerModal() {
+            this.$watch('showCustomerModal', (value) => {
+                if (value) {
+                    this.customerSearch = '';
+                    this.customers = [];
+                    this.$nextTick(() => {
+                        this.searchCustomers();
+                        const input = document.getElementById('customerSearchInput');
+                        if (input) input.focus();
+                    });
+                }
+            });
+        },
         
         // Payment
         payment: {
@@ -398,6 +381,7 @@ function posSystem() {
         // Methods
         async init() {
             console.log('POS System initializing...');
+            this.initCustomerModal();
             
             // Load initial products immediately
             this.loading = true;
@@ -433,8 +417,7 @@ function posSystem() {
                 this.currentTime = new Date().toLocaleTimeString();
             }, 1000);
             
-            // Load held carts count
-            this.getHeldCarts();
+            // Customer search ready
         },
         
         formatPrice(price) {
@@ -651,14 +634,14 @@ function posSystem() {
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to search customers');
-
                 const data = await response.json();
                 if (data.success) {
                     this.customers = data.data;
+                } else {
+                    this.customers = [];
                 }
             } catch (error) {
-                console.error('Error searching customers:', error);
+                console.error('Customer search error:', error);
                 this.customers = [];
             }
         },
@@ -685,7 +668,7 @@ function posSystem() {
 
         selectCustomer(cust) {
             if (cust) {
-                this.customer = { name: cust.name, phone: cust.phone, id: cust.id };
+                this.customer = { name: cust.name, phone: cust.mobile, id: cust.id };
             } else {
                 this.customer = { name: '', phone: '', id: null };
             }

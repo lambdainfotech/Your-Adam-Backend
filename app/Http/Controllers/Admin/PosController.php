@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PosOrder;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\Variant;
 use App\Services\PosOrderService;
 use Illuminate\Http\Request;
@@ -242,7 +243,7 @@ class PosController extends Controller
             });
         }
 
-        $customers = $query->select('id', 'name', 'mobile as phone', 'email')
+        $customers = $query->select('id', 'name', 'mobile', 'email')
             ->limit(20)
             ->get();
 
