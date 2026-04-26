@@ -236,11 +236,6 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
     Route::prefix('pos')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('admin.pos.index');
         
-        // Session Management
-        Route::get('/session/open', [PosController::class, 'createSession'])->name('admin.pos.session.create');
-        Route::post('/session/open', [PosController::class, 'openSession'])->name('admin.pos.session.store');
-        Route::post('/session/close', [PosController::class, 'closeSession'])->name('admin.pos.session.close');
-        
         // Product Search
         Route::get('/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
         Route::get('/products/barcode/{barcode}', [PosController::class, 'findByBarcode'])->name('admin.pos.products.barcode');

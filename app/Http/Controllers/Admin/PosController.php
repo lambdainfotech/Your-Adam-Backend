@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\PosSession;
 use App\Models\PosOrder;
 use App\Models\PosHeldCart;
 use App\Models\Product;
@@ -25,87 +24,13 @@ class PosController extends Controller
      */
     public function index()
     {
-        // Check for active session
-        $activeSession = PosSession::active()
-            ->byUser(Auth::id())
-            ->first();
-
-        if (!$activeSession) {
-            return redirect()->route('admin.pos.session.create');
-        }
-
         // Get categories for filtering
         $categories = \App\Models\Category::active()->select('id', 'name')->get();
         
         // Get held carts count
         $heldCartsCount = PosHeldCart::byUser(Auth::id())->count();
 
-        return view('admin.pos.index', compact('activeSession', 'categories', 'heldCartsCount'));
-    }
-
-    /**
-     * Show session opening form
-     */
-    public function createSession()
-    {
-        $activeSession = PosSession::active()->byUser(Auth::id())->first();
-        
-        if ($activeSession) {
-            return redirect()->route('admin.pos.index');
-        }
-
-        return view('admin.pos.session.create');
-    }
-
-    /**
-     * Open a new POS session
-     */
-    public function openSession(Request $request)
-    {
-        $validated = $request->validate([
-            'opening_amount' => 'required|numeric|min:0',
-            'opening_note' => 'nullable|string|max:500',
-        ]);
-
-        // Check if user already has an active session
-        if (PosSession::active()->byUser(Auth::id())->exists()) {
-            return redirect()->route('admin.pos.index')
-                ->with('error', 'You already have an active session.');
-        }
-
-        $session = PosSession::create([
-            'user_id' => Auth::id(),
-            'opening_amount' => $validated['opening_amount'],
-            'opening_note' => $validated['opening_note'],
-            'status' => 'active',
-            'opened_at' => now(),
-        ]);
-
-        return redirect()->route('admin.pos.index')
-            ->with('success', 'POS session opened successfully.');
-    }
-
-    /**
-     * Close POS session
-     */
-    public function closeSession(Request $request)
-    {
-        $validated = $request->validate([
-            'closing_amount' => 'required|numeric|min:0',
-            'closing_note' => 'nullable|string|max:500',
-        ]);
-
-        $session = PosSession::active()->byUser(Auth::id())->firstOrFail();
-
-        $session->update([
-            'closing_amount' => $validated['closing_amount'],
-            'closing_note' => $validated['closing_note'],
-            'status' => 'closed',
-            'closed_at' => now(),
-        ]);
-
-        return redirect()->route('admin.dashboard')
-            ->with('success', 'POS session closed successfully.');
+        return view('admin.pos.index', compact('categories', 'heldCartsCount'));
     }
 
     /**
@@ -356,7 +281,7 @@ class PosController extends Controller
      */
     public function showOrder($id)
     {
-        $order = PosOrder::with(['items', 'payments', 'user', 'session', 'courier', 'statusHistory.changedBy'])->findOrFail($id);
+        $order = PosOrder::with(['items', 'payments', 'user', 'courier', 'statusHistory.changedBy'])->findOrFail($id);
         
         return view('admin.pos.show', compact('order'));
     }

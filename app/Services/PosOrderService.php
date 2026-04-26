@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\PosSession;
 use App\Models\PosOrder;
 use App\Models\PosOrderItem;
 use App\Models\PosPayment;
@@ -24,11 +23,8 @@ class PosOrderService
      */
     public function createOrder(array $validated): PosOrder
     {
-        $session = PosSession::active()->byUser(Auth::id())->firstOrFail();
-
-        return DB::transaction(function () use ($validated, $session) {
+        return DB::transaction(function () use ($validated) {
             $order = PosOrder::create([
-                'pos_session_id' => $session->id,
                 'user_id' => Auth::id(),
                 'customer_id' => $validated['customer_id'] ?? null,
                 'customer_name' => $validated['customer_name'] ?? null,
@@ -43,7 +39,7 @@ class PosOrderService
             ]);
 
             $this->createOrderItems($order, $validated['items']);
-            $this->processPayments($order, $validated['payments'], $session);
+            $this->processPayments($order, $validated['payments']);
 
             return $order;
         });
@@ -86,9 +82,9 @@ class PosOrderService
     }
 
     /**
-     * Process payments and update session sales totals.
+     * Process payments.
      */
-    protected function processPayments(PosOrder $order, array $payments, PosSession $session): void
+    protected function processPayments(PosOrder $order, array $payments): void
     {
         foreach ($payments as $payment) {
             PosPayment::create([
@@ -99,29 +95,6 @@ class PosOrderService
                 'received_amount' => $payment['received_amount'] ?? null,
                 'change_amount' => $payment['change_amount'] ?? null,
             ]);
-
-            $this->updateSessionSales($session, $payment['method'], $payment['amount']);
-        }
-    }
-
-    /**
-     * Update session sales totals based on payment method.
-     */
-    protected function updateSessionSales(PosSession $session, string $method, float $amount): void
-    {
-        switch ($method) {
-            case 'cash':
-                $session->increment('cash_sales', $amount);
-                break;
-            case 'card':
-                $session->increment('card_sales', $amount);
-                break;
-            case 'bkash':
-            case 'nagad':
-                $session->increment('mobile_sales', $amount);
-                break;
-            default:
-                $session->increment('other_sales', $amount);
         }
     }
 }

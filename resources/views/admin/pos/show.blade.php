@@ -55,10 +55,7 @@
                     </span>
                 </div>
                 @endif
-                <div class="flex justify-between">
-                    <span class="text-gray-500">Session ID</span>
-                    <span class="font-semibold text-gray-800">#{{ $order->pos_session_id }}</span>
-                </div>
+                <!-- Session ID removed with POS session -->
             </div>
         </div>
 

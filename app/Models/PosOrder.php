@@ -14,7 +14,7 @@ class PosOrder extends Model
 
     protected $fillable = [
         'order_number',
-        'pos_session_id',
+        // 'pos_session_id', // removed with POS session
         'user_id',
         'customer_id',
         'customer_name',
@@ -57,10 +57,7 @@ class PosOrder extends Model
         });
     }
 
-    public function session(): BelongsTo
-    {
-        return $this->belongsTo(PosSession::class, 'pos_session_id');
-    }
+    // Session relationship removed with POS session
 
     public function user(): BelongsTo
     {
@@ -95,11 +92,6 @@ class PosOrder extends Model
     public function scopeCompleted(Builder $query): Builder
     {
         return $query->where('status', 'completed');
-    }
-
-    public function scopeBySession(Builder $query, int $sessionId): Builder
-    {
-        return $query->where('pos_session_id', $sessionId);
     }
 
     public function getPaymentMethodSummaryAttribute(): array

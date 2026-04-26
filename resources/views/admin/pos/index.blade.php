@@ -10,8 +10,6 @@
         <div class="flex items-center gap-4">
             <h1 class="text-lg font-bold"><i class="fas fa-cash-register mr-2"></i>POS System</h1>
             <span class="text-gray-400">|</span>
-            <span class="text-sm text-gray-300">Session: #{{ $activeSession->id }}</span>
-            <span class="text-gray-400">|</span>
             <span class="text-sm text-gray-300" x-text="currentTime"></span>
         </div>
         <div class="flex items-center gap-3">
@@ -24,12 +22,6 @@
             <button @click="showHeldCartsModal = true" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">
                 <i class="fas fa-pause mr-1"></i>Hold (<span x-text="heldCartsCount"></span>)
             </button>
-            <form action="{{ route('admin.pos.session.close') }}" method="POST" class="inline" onsubmit="return confirm('Close this POS session?')">
-                @csrf
-                <button type="submit" class="px-3 py-1 bg-red-600 rounded hover:bg-red-700 text-sm">
-                    <i class="fas fa-times mr-1"></i>Close Session
-                </button>
-            </form>
         </div>
     </div>
 

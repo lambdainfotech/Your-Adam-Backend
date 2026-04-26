@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('pos_orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_number', 50)->unique();
-            $table->foreignId('pos_session_id')->constrained()->onDelete('cascade');
+            // pos_session_id removed - POS session feature deleted
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('customer_name', 255)->nullable();
@@ -25,7 +25,6 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->timestamps();
 
-            $table->index(['pos_session_id', 'status']);
             $table->index('order_number');
             $table->index('created_at');
         });
