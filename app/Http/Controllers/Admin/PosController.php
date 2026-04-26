@@ -258,8 +258,10 @@ class PosController extends Controller
 
         $query = User::query()
             ->where('status', true)
-            ->whereHas('role', function ($q) {
-                $q->where('slug', 'customer');
+            ->where(function ($q) {
+                $q->whereHas('role', function ($rq) {
+                    $rq->where('slug', 'customer');
+                })->orWhereDoesntHave('role');
             });
 
         if (!empty($validated['query'])) {

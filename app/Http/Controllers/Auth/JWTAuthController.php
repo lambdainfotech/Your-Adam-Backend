@@ -56,7 +56,7 @@ class JWTAuthController extends Controller
         // Validate request
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/',
+            'password' => 'required|string|min:8',
         ]);
 
         if ($validator->fails()) {
