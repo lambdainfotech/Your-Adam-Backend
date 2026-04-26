@@ -23,9 +23,28 @@
         body { font-family: 'Inter', sans-serif; }
 
         /* Sidebar Transitions */
-        .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-collapsed { width: 72px; }
         .sidebar-expanded { width: 264px; }
+
+        /* Mobile Sidebar */
+        @media (max-width: 767px) {
+            .sidebar {
+                position: fixed !important;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 50;
+                transform: translateX(-100%);
+                width: 264px !important;
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .sidebar.mobile-open .sidebar-text {
+                display: block !important;
+            }
+        }
 
         /* Sidebar Scrollbar */
         .sidebar::-webkit-scrollbar { width: 4px; }
@@ -290,14 +309,23 @@
             </nav>
         </aside>
         
+        <!-- Mobile Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="closeMobileSidebar()"></div>
+
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-hidden min-w-0">
             <!-- Top Header -->
             <header class="bg-white shadow-sm border-b border-gray-200 z-10">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <h1 class="text-2xl font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+                <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <!-- Mobile Hamburger -->
+                        <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600 transition-colors" onclick="toggleMobileSidebar()">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <h1 class="text-lg md:text-2xl font-semibold text-gray-800 truncate">@yield('page-title', 'Dashboard')</h1>
+                    </div>
                     
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center gap-2 md:gap-4">
                         <!-- Notifications -->
                         <button class="relative p-2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-bell text-xl"></i>
@@ -306,12 +334,12 @@
                         
                         <!-- User Dropdown -->
                         <div class="relative">
-                            <button id="userMenuButton" class="flex items-center space-x-3 focus:outline-none">
-                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            <button id="userMenuButton" class="flex items-center gap-2 md:gap-3 focus:outline-none">
+                                <div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm md:text-base font-semibold">
                                     {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                                 </div>
-                                <span class="text-gray-700 font-medium">{{ auth()->user()->name ?? 'Admin' }}</span>
-                                <i class="fas fa-chevron-down text-gray-400"></i>
+                                <span class="text-gray-700 font-medium hidden sm:block">{{ auth()->user()->name ?? 'Admin' }}</span>
+                                <i class="fas fa-chevron-down text-gray-400 text-xs hidden sm:block"></i>
                             </button>
                             
                             <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
@@ -351,7 +379,7 @@
     </div>
     
     <script>
-        // Sidebar Toggle
+        // Desktop Sidebar Toggle
         document.getElementById('toggleSidebar').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarTexts = document.querySelectorAll('.sidebar-text');
@@ -371,6 +399,22 @@
                 icon.classList.add('fa-bars-staggered');
             }
         });
+
+        // Mobile Sidebar
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('hidden');
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+        function closeMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
         
         // User Dropdown Toggle
         document.getElementById('userMenuButton').addEventListener('click', function(e) {
