@@ -69,30 +69,35 @@
                             </td>
                             <td class="px-6 py-4 font-medium">৳{{ number_format($order['total'], 2) }}</td>
                             <td class="px-6 py-4">
+                                @php
+                                    $paymentStatus = $order['payment_status'] ?? 'pending';
+                                    $paymentMethod = $order['payment_method'] ?? '';
+                                @endphp
                                 <span class="px-2 py-1 text-xs rounded-full
-                                    {{ $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                    {{ $order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                    {{ $order['status'] === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
-                                    {{ $order['status'] === 'shipped' ? 'bg-purple-100 text-purple-800' : '' }}
-                                    {{ $order['status'] === 'delivered' ? 'bg-teal-100 text-teal-800' : '' }}
-                                    {{ $order['status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
-                                ">{{ ucfirst($order['status']) }}</span>
+                                    {{ $paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $paymentStatus === 'failed' ? 'bg-red-100 text-red-800' : '' }}
+                                    {{ $paymentStatus === 'refunded' ? 'bg-gray-100 text-gray-800' : '' }}
+                                ">{{ ucfirst($paymentStatus) }}</span>
+                                @if($paymentMethod)
+                                    <div class="text-xs text-gray-500 mt-1">{{ strtoupper($paymentMethod) }}</div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
-                                @if($order['type'] === 'pos')
-                                    <span class="px-2 py-1 text-xs rounded-full
-                                        {{ $order['delivery_status'] === 'delivered' ? 'bg-green-100 text-green-800' : '' }}
-                                        {{ $order['delivery_status'] === 'shipped' ? 'bg-indigo-100 text-indigo-800' : '' }}
-                                        {{ $order['delivery_status'] === 'ready' ? 'bg-purple-100 text-purple-800' : '' }}
-                                        {{ $order['delivery_status'] === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
-                                        {{ $order['delivery_status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                        {{ $order['delivery_status'] === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
-                                    ">{{ ucfirst($order['delivery_status'] ?? 'Pending') }}</span>
-                                    @if($order['tracking_number'])
-                                        <div class="text-xs text-gray-500 mt-1">#{{ $order['tracking_number'] }}</div>
-                                    @endif
-                                @else
-                                    <span class="text-gray-400">-</span>
+                                @php
+                                    $deliveryStatus = $order['delivery_status'] ?? $order['status'] ?? 'pending';
+                                @endphp
+                                <span class="px-2 py-1 text-xs rounded-full
+                                    {{ $deliveryStatus === 'delivered' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $deliveryStatus === 'shipped' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                                    {{ $deliveryStatus === 'ready' ? 'bg-purple-100 text-purple-800' : '' }}
+                                    {{ $deliveryStatus === 'processing' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $deliveryStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                    {{ $deliveryStatus === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
+                                    {{ $deliveryStatus === 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                                ">{{ ucfirst($deliveryStatus) }}</span>
+                                @if(!empty($order['tracking_number']))
+                                    <div class="text-xs text-gray-500 mt-1">#{{ $order['tracking_number'] }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-gray-600">{{ $order['created_at']->format('M d, Y H:i') }}</td>
