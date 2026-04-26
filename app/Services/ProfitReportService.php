@@ -10,23 +10,32 @@ use Illuminate\Support\Facades\DB;
 class ProfitReportService
 {
     /**
-     * Get profit summary for a date range
+     * Get profit summary for a date range (includes both regular & POS orders)
      */
     public function getProfitSummary(string $startDate, string $endDate, array $filters = []): array
     {
         $status = $filters['status'] ?? 'completed';
 
-        $query = $this->baseOrderQuery($startDate, $endDate, $status);
+        // Regular orders
+        $regular = $this->baseOrderQuery($startDate, $endDate, $status)
+            ->select(
+                DB::raw('SUM(order_items.total_price) as total_revenue'),
+                DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as total_cost'),
+                DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
+                DB::raw('SUM(order_items.quantity) as total_items_sold')
+            )->first();
 
-        $summary = $query->select(
-            DB::raw('SUM(order_items.total_price) as total_revenue'),
-            DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as total_cost'),
-            DB::raw('COUNT(DISTINCT orders.id) as total_orders'),
-            DB::raw('SUM(order_items.quantity) as total_items_sold')
-        )->first();
+        // POS orders
+        $pos = $this->basePosOrderQuery($startDate, $endDate, $status)
+            ->select(
+                DB::raw('SUM(pos_order_items.total_price) as total_revenue'),
+                DB::raw('SUM(pos_order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as total_cost'),
+                DB::raw('COUNT(DISTINCT pos_orders.id) as total_orders'),
+                DB::raw('SUM(pos_order_items.quantity) as total_items_sold')
+            )->first();
 
-        $totalRevenue = (float) ($summary->total_revenue ?? 0);
-        $totalCost = (float) ($summary->total_cost ?? 0);
+        $totalRevenue = (float) ($regular->total_revenue ?? 0) + (float) ($pos->total_revenue ?? 0);
+        $totalCost = (float) ($regular->total_cost ?? 0) + (float) ($pos->total_cost ?? 0);
         $totalProfit = $totalRevenue - $totalCost;
         $profitMargin = $totalRevenue > 0 ? round(($totalProfit / $totalRevenue) * 100, 2) : 0;
 
@@ -35,88 +44,136 @@ class ProfitReportService
             'total_cost' => $totalCost,
             'total_profit' => $totalProfit,
             'profit_margin' => $profitMargin,
-            'total_orders' => (int) ($summary->total_orders ?? 0),
-            'total_items_sold' => (int) ($summary->total_items_sold ?? 0),
+            'total_orders' => (int) ($regular->total_orders ?? 0) + (int) ($pos->total_orders ?? 0),
+            'total_items_sold' => (int) ($regular->total_items_sold ?? 0) + (int) ($pos->total_items_sold ?? 0),
         ];
     }
 
     /**
-     * Get profit breakdown by product
+     * Get profit breakdown by product (includes both regular & POS orders)
      */
     public function getProfitByProduct(string $startDate, string $endDate, array $filters = []): array
     {
         $status = $filters['status'] ?? 'completed';
         $limit = $filters['limit'] ?? 50;
 
-        $products = $this->baseOrderQuery($startDate, $endDate, $status)
+        // Regular orders
+        $regularProducts = $this->baseOrderQuery($startDate, $endDate, $status)
             ->select(
                 'products.id as product_id',
                 'products.name as product_name',
                 'products.sku_prefix',
                 DB::raw('SUM(order_items.quantity) as quantity_sold'),
                 DB::raw('SUM(order_items.total_price) as revenue'),
-                DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost'),
-                DB::raw('SUM(order_items.total_price) - SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as profit')
+                DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost')
             )
             ->groupBy('products.id', 'products.name', 'products.sku_prefix')
-            ->orderByDesc('profit')
-            ->limit($limit)
             ->get()
-            ->map(function ($item) {
-                $revenue = (float) $item->revenue;
-                $cost = (float) $item->cost;
-                $profit = (float) $item->profit;
+            ->keyBy('product_id');
 
-                return [
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product_name,
-                    'sku_prefix' => $item->sku_prefix,
-                    'quantity_sold' => (int) $item->quantity_sold,
-                    'revenue' => $revenue,
-                    'cost' => $cost,
-                    'profit' => $profit,
-                    'profit_margin' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : 0,
-                ];
-            })
+        // POS orders
+        $posProducts = $this->basePosOrderQuery($startDate, $endDate, $status)
+            ->select(
+                'products.id as product_id',
+                'products.name as product_name',
+                'products.sku_prefix',
+                DB::raw('SUM(pos_order_items.quantity) as quantity_sold'),
+                DB::raw('SUM(pos_order_items.total_price) as revenue'),
+                DB::raw('SUM(pos_order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost')
+            )
+            ->groupBy('products.id', 'products.name', 'products.sku_prefix')
+            ->get()
+            ->keyBy('product_id');
+
+        // Merge and aggregate
+        $merged = collect();
+        $allIds = $regularProducts->keys()->merge($posProducts->keys())->unique();
+
+        foreach ($allIds as $id) {
+            $reg = $regularProducts->get($id);
+            $pos = $posProducts->get($id);
+
+            $qty = (int) ($reg?->quantity_sold ?? 0) + (int) ($pos?->quantity_sold ?? 0);
+            $revenue = (float) ($reg?->revenue ?? 0) + (float) ($pos?->revenue ?? 0);
+            $cost = (float) ($reg?->cost ?? 0) + (float) ($pos?->cost ?? 0);
+            $profit = $revenue - $cost;
+
+            $merged->put($id, [
+                'product_id' => $id,
+                'product_name' => $reg?->product_name ?? $pos?->product_name,
+                'sku_prefix' => $reg?->sku_prefix ?? $pos?->sku_prefix,
+                'quantity_sold' => $qty,
+                'revenue' => $revenue,
+                'cost' => $cost,
+                'profit' => $profit,
+                'profit_margin' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : 0,
+            ]);
+        }
+
+        return $merged
+            ->sortByDesc('profit')
+            ->take($limit)
+            ->values()
             ->toArray();
-
-        return $products;
     }
 
     /**
-     * Get daily profit breakdown
+     * Get daily profit breakdown (includes both regular & POS orders)
      */
     public function getDailyProfit(string $startDate, string $endDate, array $filters = []): array
     {
         $status = $filters['status'] ?? 'completed';
 
-        $daily = $this->baseOrderQuery($startDate, $endDate, $status)
+        // Regular orders
+        $regularDaily = $this->baseOrderQuery($startDate, $endDate, $status)
             ->select(
                 DB::raw('DATE(orders.created_at) as date'),
                 DB::raw('COUNT(DISTINCT orders.id) as orders'),
                 DB::raw('SUM(order_items.total_price) as revenue'),
-                DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost'),
-                DB::raw('SUM(order_items.total_price) - SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as profit')
+                DB::raw('SUM(order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost')
             )
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(function ($item) {
-                $revenue = (float) $item->revenue;
-                $profit = (float) $item->profit;
+            ->keyBy('date');
 
-                return [
-                    'date' => $item->date,
-                    'orders' => (int) $item->orders,
-                    'revenue' => $revenue,
-                    'cost' => (float) $item->cost,
-                    'profit' => $profit,
-                    'profit_margin' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : 0,
-                ];
-            })
-            ->toArray();
+        // POS orders
+        $posDaily = $this->basePosOrderQuery($startDate, $endDate, $status)
+            ->select(
+                DB::raw('DATE(pos_orders.created_at) as date'),
+                DB::raw('COUNT(DISTINCT pos_orders.id) as orders'),
+                DB::raw('SUM(pos_order_items.total_price) as revenue'),
+                DB::raw('SUM(pos_order_items.quantity * COALESCE(variants.cost_price, products.cost_price, 0)) as cost')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
 
-        return $daily;
+        // Merge and aggregate by date
+        $merged = collect();
+        $allDates = $regularDaily->keys()->merge($posDaily->keys())->unique()->sort();
+
+        foreach ($allDates as $date) {
+            $reg = $regularDaily->get($date);
+            $pos = $posDaily->get($date);
+
+            $orders = (int) ($reg?->orders ?? 0) + (int) ($pos?->orders ?? 0);
+            $revenue = (float) ($reg?->revenue ?? 0) + (float) ($pos?->revenue ?? 0);
+            $cost = (float) ($reg?->cost ?? 0) + (float) ($pos?->cost ?? 0);
+            $profit = $revenue - $cost;
+
+            $merged->put($date, [
+                'date' => $date,
+                'orders' => $orders,
+                'revenue' => $revenue,
+                'cost' => $cost,
+                'profit' => $profit,
+                'profit_margin' => $revenue > 0 ? round(($profit / $revenue) * 100, 2) : 0,
+            ]);
+        }
+
+        return $merged->values()->toArray();
     }
 
     /**
@@ -190,7 +247,7 @@ class ProfitReportService
     }
 
     /**
-     * Base query for profit calculations
+     * Base query for regular order profit calculations
      */
     protected function baseOrderQuery(string $startDate, string $endDate, string $status)
     {
@@ -202,6 +259,24 @@ class ProfitReportService
 
         if ($status !== 'all') {
             $query->where('orders.status', $status);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Base query for POS order profit calculations
+     */
+    protected function basePosOrderQuery(string $startDate, string $endDate, string $status)
+    {
+        $query = DB::table('pos_orders')
+            ->join('pos_order_items', 'pos_orders.id', '=', 'pos_order_items.pos_order_id')
+            ->leftJoin('variants', 'pos_order_items.product_variant_id', '=', 'variants.id')
+            ->join('products', 'pos_order_items.product_id', '=', 'products.id')
+            ->whereBetween('pos_orders.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+
+        if ($status !== 'all') {
+            $query->where('pos_orders.status', $status);
         }
 
         return $query;
