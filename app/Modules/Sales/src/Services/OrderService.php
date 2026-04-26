@@ -12,6 +12,7 @@ use App\Modules\Sales\Contracts\OrderServiceInterface;
 use App\Modules\Sales\DTOs\CreateOrderDTO;
 use App\Modules\Sales\Enums\OrderStatus;
 use App\Modules\Sales\Enums\PaymentStatus;
+use App\Models\InventoryMovement;
 use App\Modules\Sales\Events\OrderCreated;
 use App\Modules\Sales\Events\OrderStatusChanged;
 use App\Modules\Sales\Exceptions\EmptyCartException;
@@ -78,7 +79,7 @@ class OrderService implements OrderServiceInterface
                 'tax_amount' => $tax,
                 'shipping_amount' => $shipping,
                 'total_amount' => $total,
-                'currency' => config('app.currency', 'USD'),
+                'currency' => config('app.currency', 'BDT'),
                 'notes' => $dto->notes,
                 'delivery_address' => $deliveryAddress,
                 'billing_address' => $deliveryAddress,
@@ -100,8 +101,22 @@ class OrderService implements OrderServiceInterface
                     'total_price' => $item->quantity * $item->unit_price,
                 ]);
 
-                // Decrease stock
-                $this->variantRepository->decrementStock($item->variant_id, $item->quantity);
+                // Decrease stock atomically
+                $decremented = $this->variantRepository->decrementStock($item->variant_id, $item->quantity);
+                if (!$decremented) {
+                    throw new \RuntimeException("Failed to decrement stock for variant {$item->variant_id}");
+                }
+
+                // Log inventory movement
+                InventoryMovement::logMovement(
+                    productId: $variant->product_id,
+                    variantId: $item->variant_id,
+                    type: InventoryMovement::TYPE_SALE,
+                    quantity: -$item->quantity,
+                    reason: 'Order created: ' . $orderNumber,
+                    referenceId: $order->id,
+                    referenceType: Order::class
+                );
             }
 
             // Record coupon usage if coupon was applied
@@ -164,7 +179,7 @@ class OrderService implements OrderServiceInterface
                 'status' => $status,
                 'previous_status' => $previousStatus,
                 'notes' => $notes,
-                'created_by' => auth()->id(),
+                'changed_by' => auth()->id(),
             ]);
 
             OrderStatusChanged::dispatch($order->fresh(), $previousStatus, $status);
@@ -187,6 +202,16 @@ class OrderService implements OrderServiceInterface
             // Restore stock
             foreach ($order->items as $item) {
                 $this->variantRepository->incrementStock($item->variant_id, $item->quantity);
+
+                InventoryMovement::logMovement(
+                    productId: $item->variant->product_id ?? $item->product_id,
+                    variantId: $item->variant_id,
+                    type: InventoryMovement::TYPE_RETURN,
+                    quantity: $item->quantity,
+                    reason: 'Order cancelled: ' . $order->order_number,
+                    referenceId: $order->id,
+                    referenceType: Order::class
+                );
             }
 
             $this->orderRepository->update($orderId, ['status' => OrderStatus::CANCELLED]);
@@ -195,7 +220,7 @@ class OrderService implements OrderServiceInterface
                 'status' => OrderStatus::CANCELLED,
                 'previous_status' => $previousStatus,
                 'notes' => $reason ?? 'Order cancelled by customer',
-                'created_by' => $userId,
+                'changed_by' => $userId,
             ]);
 
             OrderStatusChanged::dispatch($order->fresh(), $previousStatus, OrderStatus::CANCELLED);

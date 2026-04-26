@@ -45,6 +45,11 @@ class PaymentController extends Controller
                 return $this->error('Order already paid', 422);
             }
 
+            // Block payment initiation for COD orders
+            if ($order->payment_method === 'cod') {
+                return $this->error('COD orders do not require online payment', 422);
+            }
+
             $customerInfo = [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -94,7 +99,11 @@ class PaymentController extends Controller
 
         $result = $this->aamarPayService->handleFailure($request->all());
 
-        return $this->error($result['message'], 400, $result['order'] ?? null);
+        return response()->json([
+            'success' => false,
+            'message' => $result['message'],
+            'data' => $result['order'] ?? null,
+        ], 200);
     }
 
     /**
@@ -110,13 +119,19 @@ class PaymentController extends Controller
             $order = Order::where('order_number', $orderNumber)->first();
             
             if ($order) {
-                $order->update([
-                    'payment_status' => 'cancelled',
-                ]);
+                // Only update if not already paid
+                if ($order->payment_status !== 'paid') {
+                    $order->update([
+                        'payment_status' => 'cancelled',
+                    ]);
+                }
             }
         }
 
-        return $this->error('Payment cancelled by user', 400);
+        return response()->json([
+            'success' => false,
+            'message' => 'Payment cancelled by user',
+        ], 200);
     }
 
     /**

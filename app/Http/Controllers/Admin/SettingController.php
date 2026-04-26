@@ -164,7 +164,7 @@ class SettingController extends Controller
     public function uploadLogo(Request $request)
     {
         $request->validate([
-            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $oldUrl = Setting::get('site_logo_url');
@@ -179,7 +179,7 @@ class SettingController extends Controller
     public function uploadFavicon(Request $request)
     {
         $request->validate([
-            'favicon' => 'required|mimes:ico,png,jpg,svg,webp|max:512',
+            'favicon' => 'required|mimes:ico,png,jpg,webp|max:512',
         ]);
 
         $oldUrl = Setting::get('site_favicon');

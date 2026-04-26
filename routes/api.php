@@ -48,7 +48,7 @@ Route::get('/size-charts/category/{slug}', [\App\Http\Controllers\Api\SizeChartC
 
 // Product Reviews (Public - View)
 Route::get('/products/{productId}/reviews', [\App\Http\Controllers\Frontend\ReviewController::class, 'index']);
-Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\ReviewController::class, 'helpful']);
+Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\ReviewController::class, 'helpful'])->middleware('throttle:10,1');
 
 // Related Products
 Route::get('/products/{productId}/related', [\App\Http\Controllers\Frontend\RelatedProductController::class, 'index']);
@@ -62,12 +62,12 @@ Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingControll
 Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponController::class, 'validate']);
 
 // Guest Checkout (Public)
-Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout');
+Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout')->middleware('throttle:5,1');
 
 // Payment Callbacks (Public - Webhook endpoints)
-Route::post('/payment/aamarpay/success', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPaySuccess'])->name('api.payment.aamarpay.success');
-Route::post('/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail');
-Route::post('/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayCancel'])->name('api.payment.aamarpay.cancel');
+Route::post('/payment/aamarpay/success', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPaySuccess'])->name('api.payment.aamarpay.success')->middleware('throttle:20,1');
+Route::post('/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail')->middleware('throttle:20,1');
+Route::post('/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayCancel'])->name('api.payment.aamarpay.cancel')->middleware('throttle:20,1');
 
 // Sliders / Banners (Frontend)
 Route::get('/sliders', [SliderController::class, 'index']);
@@ -94,6 +94,7 @@ Route::group(['prefix' => 'auth'], function () {
     // Public auth routes with rate limiting
     Route::post('/mobile/send-otp', [OTPAuthController::class, 'sendOTP'])->middleware('throttle:3,1');
     Route::post('/mobile/verify', [OTPAuthController::class, 'verifyOTP'])->middleware('throttle:5,1');
+    Route::post('/password/reset', [OTPAuthController::class, 'resetPassword'])->middleware('throttle:3,1');
     Route::post('/login', [JWTAuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/refresh', [JWTAuthController::class, 'refresh'])->middleware('throttle:10,1');
 
@@ -140,6 +141,8 @@ Route::middleware('jwt.auth')->group(function () {
     Route::get('/wishlist', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'index']);
     Route::post('/wishlist', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'store']);
     Route::delete('/wishlist/{productId}', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'destroy']);
+    Route::get('/wishlist/{productId}/check', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'check']);
+    Route::post('/wishlist/toggle', [\App\Modules\Sales\Http\Controllers\WishlistController::class, 'toggle']);
 
     // Notifications
     Route::get('/notifications', [\App\Modules\Notification\Http\Controllers\NotificationController::class, 'index']);

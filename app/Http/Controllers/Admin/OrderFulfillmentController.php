@@ -21,6 +21,11 @@ class OrderFulfillmentController extends Controller
             'notes' => 'nullable|string',
         ]);
         
+        // Only allow courier assignment for processing/packed orders
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return redirect()->back()->with('error', 'Cannot assign courier to order with status: ' . $order->status);
+        }
+        
         $courier = Courier::findOrFail($validated['courier_id']);
         
         // Create or update courier assignment
@@ -99,6 +104,11 @@ class OrderFulfillmentController extends Controller
             'notes' => 'nullable|string',
         ]);
         
+        // Only allow shipping from pending/processing status
+        if (!in_array($order->status, ['pending', 'processing'])) {
+            return redirect()->back()->with('error', 'Cannot mark as shipped. Order status is: ' . $order->status);
+        }
+        
         $order->update(['status' => 'shipped']);
         $order->addStatusHistory('shipped', $validated['notes'] ?? 'Order shipped');
         
@@ -111,6 +121,11 @@ class OrderFulfillmentController extends Controller
         $validated = $request->validate([
             'notes' => 'nullable|string',
         ]);
+        
+        // Only allow delivery from shipped status
+        if ($order->status !== 'shipped') {
+            return redirect()->back()->with('error', 'Cannot mark as delivered. Order must be shipped first. Current status: ' . $order->status);
+        }
         
         $order->update([
             'status' => 'delivered',

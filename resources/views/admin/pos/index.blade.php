@@ -609,6 +609,8 @@ function posSystem() {
                     this.cart = [];
                     this.showPaymentModal = false;
                     this.payment = { method: 'cash', received: 0, change: 0, reference: '', split: [{ method: 'cash', amount: 0 }, { method: 'card', amount: 0 }] };
+                    this.appliedDiscount = { active: false, type: 'fixed', value: 0 };
+                    this.customer = { name: '', phone: '', id: null };
                     
                     // Print receipt
                     window.open(`/admin/pos/order/${data.data.order_id}/receipt`, '_blank');
@@ -706,6 +708,8 @@ function posSystem() {
 @push('styles')
 <style>
     [x-cloak] { display: none !important; }
-    body { overflow: hidden; }
+    @media (min-width: 1024px) {
+        body { overflow: hidden; }
+    }
 </style>
 @endpush

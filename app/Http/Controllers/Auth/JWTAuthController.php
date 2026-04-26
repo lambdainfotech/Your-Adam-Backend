@@ -56,7 +56,7 @@ class JWTAuthController extends Controller
         // Validate request
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required|string|min:4',
+            'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/',
         ]);
 
         if ($validator->fails()) {
@@ -176,6 +176,9 @@ class JWTAuthController extends Controller
                 'success' => true,
                 'message' => 'Token refreshed successfully',
                 'data' => [
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'],
+                    'token_type' => $tokenData['token_type'],
                     'expires_in' => $tokenData['expires_in'],
                 ],
             ]);

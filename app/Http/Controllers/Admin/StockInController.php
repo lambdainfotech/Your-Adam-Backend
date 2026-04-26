@@ -66,8 +66,7 @@ class StockInController extends Controller
                 
                 if ($variant) {
                     $oldStock = $variant->stock_quantity;
-                    $variant->stock_quantity += $item['quantity'];
-                    $variant->save();
+                    $variant->increment('stock_quantity', $item['quantity']);
                     
                     // Log inventory movement
                     InventoryMovement::create([
@@ -77,7 +76,7 @@ class StockInController extends Controller
                         'quantity' => $item['quantity'],
                         'reason' => 'Stock In: ' . ($validated['reference_no'] ?? 'Bulk'),
                         'stock_before' => $oldStock,
-                        'stock_after' => $variant->stock_quantity,
+                        'stock_after' => $oldStock + $item['quantity'],
                         'created_by' => auth()->id(),
                     ]);
                     
@@ -88,8 +87,7 @@ class StockInController extends Controller
             } else {
                 // Simple product - update product stock directly
                 $oldStock = $product->stock_quantity;
-                $product->stock_quantity += $item['quantity'];
-                $product->save();
+                $product->increment('stock_quantity', $item['quantity']);
                 
                 // Log inventory movement
                 InventoryMovement::create([
@@ -99,7 +97,7 @@ class StockInController extends Controller
                     'quantity' => $item['quantity'],
                     'reason' => 'Stock In: ' . ($validated['reference_no'] ?? 'Bulk'),
                     'stock_before' => $oldStock,
-                    'stock_after' => $product->stock_quantity,
+                    'stock_after' => $oldStock + $item['quantity'],
                     'created_by' => auth()->id(),
                 ]);
                 

@@ -45,15 +45,18 @@ class VariantRepository extends BaseRepository implements VariantRepositoryInter
 
     public function decrementStock(int $variantId, int $quantity): bool
     {
-        $variant = $this->model->find($variantId);
-        
-        if (!$variant) {
-            return false;
+        $affected = $this->model->where('id', $variantId)
+            ->where('stock_quantity', '>=', $quantity)
+            ->decrement('stock_quantity', $quantity);
+
+        if ($affected > 0) {
+            $variant = $this->model->find($variantId);
+            if ($variant) {
+                $variant->updateStockStatus();
+            }
         }
 
-        $variant->stock_quantity -= $quantity;
-        
-        return $variant->save();
+        return $affected > 0;
     }
 
     public function incrementStock(int $variantId, int $quantity): bool
@@ -64,8 +67,9 @@ class VariantRepository extends BaseRepository implements VariantRepositoryInter
             return false;
         }
 
-        $variant->stock_quantity += $quantity;
+        $variant->increment('stock_quantity', $quantity);
+        $variant->updateStockStatus();
         
-        return $variant->save();
+        return true;
     }
 }

@@ -53,7 +53,7 @@ class ProductController extends Controller
         if ($request->filled('category')) {
             $selectedCat = Category::find($request->category);
             if ($selectedCat) {
-                if ($selectedCat->parent_id === null && $selectedCat->children()->count() > 0) {
+                if ($selectedCat->parent_id === null) {
                     // Parent category selected — filter by category_id
                     $query->where('category_id', $request->category);
                 } else {
@@ -151,6 +151,7 @@ class ProductController extends Controller
                 'is_active' => 'boolean',
                 'is_featured' => 'boolean',
                 'sku' => 'nullable|string|max:50|unique:products,sku',
+                'barcode' => 'nullable|string|max:50|unique:products,barcode',
                 'manage_stock' => 'boolean',
                 'stock_quantity' => 'nullable|integer|min:0',
                 'stock_status' => 'nullable|in:in_stock,out_of_stock,on_backorder',
@@ -236,6 +237,7 @@ class ProductController extends Controller
 
             if ($product->product_type === 'simple') {
                 $rules['sku'] = 'nullable|string|max:50|unique:products,sku,' . $product->id;
+                $rules['barcode'] = 'nullable|string|max:50|unique:products,barcode,' . $product->id;
                 $rules['manage_stock'] = 'boolean';
                 $rules['stock_quantity'] = 'nullable|integer|min:0';
                 $rules['low_stock_threshold'] = 'nullable|integer|min:0';
@@ -259,8 +261,8 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         try {
-            // Check if product has orders
-            if ($product->variants()->whereHas('orderItems')->exists()) {
+            // Check if product has orders (via variants or direct order items)
+            if ($product->variants()->whereHas('orderItems')->exists() || $product->orderItems()->exists()) {
                 return redirect()->route('admin.products.index')
                     ->with('error', 'Cannot delete product with existing orders.');
             }

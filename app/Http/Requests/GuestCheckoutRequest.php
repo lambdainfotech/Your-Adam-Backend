@@ -16,7 +16,7 @@ class GuestCheckoutRequest extends FormRequest
         return [
             // Guest info
             'guest.name' => ['required', 'string', 'max:255'],
-            'guest.email' => ['required', 'email', 'unique:users,email'],
+            'guest.email' => ['required', 'email'],
             'guest.phone' => ['required', 'string', 'max:20'],
             'guest.password' => ['required', 'string', 'min:6'],
 

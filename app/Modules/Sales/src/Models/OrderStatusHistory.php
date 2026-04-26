@@ -20,7 +20,7 @@ class OrderStatusHistory extends Model
         'status',
         'previous_status',
         'notes',
-        'created_by',
+        'changed_by',
     ];
 
     protected $casts = [

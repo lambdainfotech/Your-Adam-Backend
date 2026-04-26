@@ -70,6 +70,12 @@ class AddressService extends BaseService implements AddressServiceInterface
 
     public function setDefaultAddress(int $userId, int $addressId): void
     {
+        $address = $this->repository->findById($addressId);
+        
+        if (!$address || $address->user_id !== $userId) {
+            throw new \Illuminate\Auth\Access\AuthorizationException('Address not found.');
+        }
+        
         $this->repository->setDefault($userId, $addressId);
     }
 }

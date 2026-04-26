@@ -120,7 +120,7 @@
         </div>
         <div class="flex justify-between">
             <span>Cashier:</span>
-            <span>{{ $order->user->name ?? 'Unknown' }}</span>
+            <span>{{ $order->user?->name ?? 'Unknown' }}</span>
         </div>
         @if($order->customer_name)
         <div class="flex justify-between">

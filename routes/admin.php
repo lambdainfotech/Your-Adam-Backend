@@ -47,8 +47,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('/refresh', [JWTAuthController::class, 'refresh'])->name('admin.refresh');
 });
 
-// Protected routes (JWT auth required)
-Route::middleware(['web', 'jwt.auth'])->group(function () {
+// Protected routes (JWT auth + admin role required)
+Route::middleware(['web', 'jwt.auth', 'role:admin'])->group(function () {
     Route::post('/logout', [JWTAuthController::class, 'logout'])->name('admin.logout');
     
     // Dashboard

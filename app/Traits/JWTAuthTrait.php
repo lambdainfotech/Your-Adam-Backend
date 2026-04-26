@@ -172,7 +172,7 @@ trait JWTAuthTrait
             minutes: $ttl,
             path: '/',
             domain: null,
-            secure: config('jwt.cookie_secure', false),
+            secure: config('jwt.cookie_secure', true),
             httpOnly: true,
             sameSite: 'lax'
         );
@@ -205,6 +205,12 @@ trait JWTAuthTrait
         try {
             if ($refreshToken) {
                 JWTAuth::setToken($refreshToken);
+            }
+
+            // Verify this is a refresh token, not an access token
+            $payload = JWTAuth::getPayload();
+            if (($payload['type'] ?? 'access') !== 'refresh') {
+                return null;
             }
 
             // Check if token is valid (even if expired, we can refresh)

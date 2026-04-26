@@ -130,7 +130,7 @@ class ReviewService
     /**
      * Mark review as helpful
      */
-    public function markHelpful(int $reviewId): array
+    public function markHelpful(int $reviewId, int $userId): array
     {
         $review = Review::find($reviewId);
         
@@ -138,11 +138,28 @@ class ReviewService
             return ['success' => false, 'message' => 'Review not found'];
         }
 
+        // Check if user already voted
+        $existingVote = \DB::table('review_helpful_votes')
+            ->where('review_id', $reviewId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($existingVote) {
+            return ['success' => false, 'message' => 'You have already marked this review as helpful'];
+        }
+
+        \DB::table('review_helpful_votes')->insert([
+            'review_id' => $reviewId,
+            'user_id' => $userId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $review->increment('helpful_count');
 
         return [
             'success' => true,
-            'helpfulCount' => $review->helpful_count,
+            'helpfulCount' => $review->fresh()->helpful_count,
         ];
     }
 }

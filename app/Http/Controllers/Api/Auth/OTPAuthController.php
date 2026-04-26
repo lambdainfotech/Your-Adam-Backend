@@ -146,15 +146,70 @@ class OTPAuthController extends Controller
     }
 
     /**
+     * Reset password using OTP
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'mobile' => 'required|string|min:10|max:15',
+                'otp' => 'required|string|size:6',
+                'reference' => 'required|string',
+                'new_password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/',
+                'new_password_confirmation' => 'required|string|same:new_password',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error('Validation failed', 422, $validator->errors());
+            }
+
+            $mobile = $request->input('mobile');
+            $otp = $request->input('otp');
+            $reference = $request->input('reference');
+
+            if (!$this->otpService->verifyOTP($mobile, $otp, $reference)) {
+                return $this->error('Invalid or expired OTP', 400, ['error_code' => 'INVALID_OTP']);
+            }
+
+            $normalizedMobile = preg_replace('/[^0-9]/', '', $mobile);
+            if (str_starts_with($normalizedMobile, '0')) {
+                $normalizedMobile = '88' . $normalizedMobile;
+            } elseif (!str_starts_with($normalizedMobile, '880')) {
+                $normalizedMobile = '880' . $normalizedMobile;
+            }
+
+            $user = User::where('mobile', $normalizedMobile)->first();
+            if (!$user) {
+                return $this->error('No account found with this mobile number', 404, ['error_code' => 'USER_NOT_FOUND']);
+            }
+
+            $user->update([
+                'password' => bcrypt($request->input('new_password')),
+            ]);
+
+            return $this->success([], 'Password reset successful. Please login with your new password.');
+        } catch (\Exception $e) {
+            return $this->error('Failed to reset password: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Generate token directly for a user (for OTP-based auth)
      */
     protected function generateTokenForUser(User $user): array
     {
         $token = JWTAuth::fromUser($user);
 
+        // Generate refresh token explicitly from the user model
+        $refreshTTL = config('jwt.refresh_ttl', 20160);
+        $refreshToken = JWTAuth::fromUser($user, [
+            'type' => 'refresh',
+            'iat' => time(),
+        ]);
+
         return [
             'access_token' => $token,
-            'refresh_token' => $this->generateRefreshToken(),
+            'refresh_token' => $refreshToken,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ];

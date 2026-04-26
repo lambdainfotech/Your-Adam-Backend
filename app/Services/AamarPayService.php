@@ -35,10 +35,13 @@ class AamarPayService
         try {
             $settings = Setting::allSettings();
             
+            // Generate unique transaction ID to allow retries
+            $tranId = $order->order_number . '-' . substr(uniqid(), -4);
+            
             $payload = [
                 'store_id' => $this->storeId,
                 'signature_key' => $this->signatureKey,
-                'tran_id' => $order->order_number,
+                'tran_id' => $tranId,
                 'amount' => number_format($order->total_amount, 2, '.', ''),
                 'currency' => $order->currency ?? 'BDT',
                 'desc' => 'Order #' . $order->order_number,
@@ -156,11 +159,21 @@ class AamarPayService
         $orderNumber = $data['mer_txnid'] ?? null;
         $payStatus = $data['pay_status'] ?? null;
         $amount = $data['amount'] ?? 0;
+        $storeId = $data['store_id'] ?? null;
         
         if (!$orderNumber) {
             return [
                 'success' => false,
                 'message' => 'Invalid callback data',
+            ];
+        }
+
+        // Verify store_id matches configuration
+        if ($storeId && $storeId !== $this->storeId) {
+            Log::warning('AamarPay callback store_id mismatch', ['expected' => $this->storeId, 'received' => $storeId]);
+            return [
+                'success' => false,
+                'message' => 'Invalid store configuration',
             ];
         }
 
@@ -171,6 +184,44 @@ class AamarPayService
                 'success' => false,
                 'message' => 'Order not found',
             ];
+        }
+
+        // Idempotency: already paid
+        if ($order->payment_status === 'paid') {
+            return [
+                'success' => true,
+                'order' => $order,
+                'message' => 'Payment already processed',
+            ];
+        }
+
+        // Verify amount matches order total
+        if ((float) $amount !== (float) $order->total_amount) {
+            Log::warning('AamarPay amount mismatch', [
+                'order' => $orderNumber,
+                'expected' => $order->total_amount,
+                'received' => $amount,
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Amount mismatch',
+            ];
+        }
+
+        // Server-side verification via AamarPay API
+        $requestId = $data['pg_txnid'] ?? $data['opt_a'] ?? null;
+        if ($requestId && $this->signatureKey) {
+            $verification = $this->verifyPayment($orderNumber, $requestId);
+            if (!$verification['success'] || ($verification['status'] ?? '') !== 'Successful') {
+                Log::warning('AamarPay server verification failed', [
+                    'order' => $orderNumber,
+                    'verification' => $verification,
+                ]);
+                return [
+                    'success' => false,
+                    'message' => 'Payment verification failed',
+                ];
+            }
         }
 
         // Update order status

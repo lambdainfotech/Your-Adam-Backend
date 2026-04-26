@@ -81,7 +81,23 @@ class UserController extends Controller
 
     private function generateRandomPassword(): string
     {
-        return substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*';
+        
+        $password = 
+            $lowercase[random_int(0, strlen($lowercase) - 1)] .
+            $uppercase[random_int(0, strlen($uppercase) - 1)] .
+            $numbers[random_int(0, strlen($numbers) - 1)] .
+            $symbols[random_int(0, strlen($symbols) - 1)];
+        
+        $all = $lowercase . $uppercase . $numbers . $symbols;
+        for ($i = 0; $i < 8; $i++) {
+            $password .= $all[random_int(0, strlen($all) - 1)];
+        }
+        
+        return str_shuffle($password);
     }
 
     public function show(User $user)

@@ -8,6 +8,7 @@ use App\Modules\Sales\Contracts\OrderServiceInterface;
 use App\Modules\Sales\DTOs\CreateOrderDTO;
 use App\Modules\Sales\Http\Requests\CancelOrderRequest;
 use App\Modules\Sales\Http\Requests\CreateOrderRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -39,29 +40,41 @@ class OrderController extends Controller
 
     public function show(Request $request, string $id): JsonResponse
     {
-        $order = $this->service->getById(
-            $request->user()->id,
-            (int) $id
-        );
+        try {
+            $order = $this->service->getById(
+                $request->user()->id,
+                (int) $id
+            );
 
-        return $this->successResponse($order);
+            return $this->successResponse($order);
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404);
+        }
     }
 
     public function track(Request $request, string $id): JsonResponse
     {
-        $tracking = $this->service->getTrackingForUser($request->user()->id, (int) $id);
+        try {
+            $tracking = $this->service->getTrackingForUser($request->user()->id, (int) $id);
 
-        return $this->successResponse($tracking);
+            return $this->successResponse($tracking);
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404);
+        }
     }
 
     public function cancel(CancelOrderRequest $request, string $id): JsonResponse
     {
-        $order = $this->service->cancel(
-            $request->user()->id,
-            (int) $id,
-            $request->validated()['reason'] ?? null
-        );
+        try {
+            $order = $this->service->cancel(
+                $request->user()->id,
+                (int) $id,
+                $request->validated()['reason'] ?? null
+            );
 
-        return $this->successResponse($order);
+            return $this->successResponse($order);
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse($e->getMessage(), 404);
+        }
     }
 }

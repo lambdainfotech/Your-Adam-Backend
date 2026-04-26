@@ -77,14 +77,13 @@ class ImageUploadService
         $timestamp = now()->format('Ymd_His');
         $random = Str::random(8);
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $extension = $file->getClientOriginalExtension();
+        $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
         
         return Str::slug("{$timestamp}_{$random}_{$originalName}") . ".{$extension}";
     }
 
     /**
-     * Create thumbnails for uploaded image
-     * Note: Using simple copy for now. For production, use Intervention Image or GD library
+     * Create thumbnails for uploaded image using GD
      *
      * @param UploadedFile $file
      * @param string $basePath
@@ -99,14 +98,77 @@ class ImageUploadService
             'small' => [150, 150],
         ];
         
-        foreach ($sizes as $sizeName => [$width, $height]) {
-            $thumbnailPath = "{$basePath}/thumbnails/{$sizeName}/{$filename}";
-            
-            // Store a copy as thumbnail (in production, resize here)
-            $file->storeAs("{$basePath}/thumbnails/{$sizeName}", $filename, $this->disk);
-            
-            $paths[$sizeName] = Storage::url($thumbnailPath);
+        $sourcePath = $file->getRealPath();
+        $sourceInfo = getimagesize($sourcePath);
+        
+        if (!$sourceInfo) {
+            // Fallback to simple copy if image analysis fails
+            foreach ($sizes as $sizeName => [$width, $height]) {
+                $file->storeAs("{$basePath}/thumbnails/{$sizeName}", $filename, $this->disk);
+                $paths[$sizeName] = Storage::url("{$basePath}/thumbnails/{$sizeName}/{$filename}");
+            }
+            return $paths;
         }
+        
+        $sourceWidth = $sourceInfo[0];
+        $sourceHeight = $sourceInfo[1];
+        $mimeType = $sourceInfo['mime'];
+        
+        // Create source image
+        $sourceImage = match ($mimeType) {
+            'image/jpeg' => imagecreatefromjpeg($sourcePath),
+            'image/png' => imagecreatefrompng($sourcePath),
+            'image/webp' => imagecreatefromwebp($sourcePath),
+            'image/gif' => imagecreatefromgif($sourcePath),
+            default => null,
+        };
+        
+        if (!$sourceImage) {
+            foreach ($sizes as $sizeName => [$width, $height]) {
+                $file->storeAs("{$basePath}/thumbnails/{$sizeName}", $filename, $this->disk);
+                $paths[$sizeName] = Storage::url("{$basePath}/thumbnails/{$sizeName}/{$filename}");
+            }
+            return $paths;
+        }
+        
+        foreach ($sizes as $sizeName => [$width, $height]) {
+            // Calculate dimensions preserving aspect ratio
+            $ratio = min($width / $sourceWidth, $height / $sourceHeight);
+            $newWidth = (int) ($sourceWidth * $ratio);
+            $newHeight = (int) ($sourceHeight * $ratio);
+            
+            $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+            
+            // Preserve transparency for PNG/WebP
+            if ($mimeType === 'image/png' || $mimeType === 'image/webp') {
+                imagealphablending($thumbnail, false);
+                imagesavealpha($thumbnail, true);
+            }
+            
+            imagecopyresampled($thumbnail, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $sourceWidth, $sourceHeight);
+            
+            $thumbnailFullPath = Storage::disk($this->disk)->path("{$basePath}/thumbnails/{$sizeName}/{$filename}");
+            
+            // Ensure directory exists
+            $dir = dirname($thumbnailFullPath);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            
+            match ($mimeType) {
+                'image/jpeg' => imagejpeg($thumbnail, $thumbnailFullPath, 85),
+                'image/png' => imagepng($thumbnail, $thumbnailFullPath, 8),
+                'image/webp' => imagewebp($thumbnail, $thumbnailFullPath, 85),
+                'image/gif' => imagegif($thumbnail, $thumbnailFullPath),
+                default => imagejpeg($thumbnail, $thumbnailFullPath, 85),
+            };
+            
+            imagedestroy($thumbnail);
+            
+            $paths[$sizeName] = Storage::url("{$basePath}/thumbnails/{$sizeName}/{$filename}");
+        }
+        
+        imagedestroy($sourceImage);
         
         return $paths;
     }

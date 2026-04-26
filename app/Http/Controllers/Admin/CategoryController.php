@@ -46,7 +46,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:categories',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|exists:categories,id|not_in:' . ($category->id ?? '0'),
             'sort_order' => 'integer|min:0',
             'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -61,7 +61,7 @@ class CategoryController extends Controller
         ]);
         
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : false;
         
         if ($request->hasFile('image')) {
             $validated['image'] = $this->fileUploadService->upload($request->file('image'), 'categories');
@@ -106,7 +106,7 @@ class CategoryController extends Controller
             'hero_image.max' => 'Maximum file size is 2MB.',
         ]);
         
-        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : false;
         
         if ($request->hasFile('image')) {
             $this->fileUploadService->deleteByUrl($category->image);
@@ -129,6 +129,11 @@ class CategoryController extends Controller
         if ($category->products()->count() > 0) {
             return redirect()->route('admin.categories.index')
                 ->with('error', 'Cannot delete category with associated products.');
+        }
+        
+        if ($category->children()->count() > 0) {
+            return redirect()->route('admin.categories.index')
+                ->with('error', 'Cannot delete category with subcategories. Please delete or reassign subcategories first.');
         }
         
         $this->fileUploadService->deleteByUrl($category->image);

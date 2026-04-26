@@ -10,7 +10,7 @@ The API uses JWT Bearer token authentication for protected endpoints.
 
 ### Login
 ```http
-POST /api/v1/auth/login
+POST /api/auth/login
 Content-Type: application/json
 
 {
@@ -48,13 +48,13 @@ Authorization: Bearer <your_access_token>
 ### Authentication
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/v1/auth/mobile/send-otp` | Send OTP to mobile | No |
-| POST | `/api/v1/auth/mobile/verify` | Verify OTP | No |
-| POST | `/api/v1/auth/login` | Login with email/password | No |
-| POST | `/api/v1/auth/refresh` | Refresh access token | No* |
-| POST | `/api/v1/auth/logout` | Logout user | Yes |
-| GET | `/api/v1/auth/me` | Get current user | Yes |
-| GET | `/api/v1/auth/check` | Check token validity | Yes |
+| POST | `/api/auth/mobile/send-otp` | Send OTP to mobile | No |
+| POST | `/api/auth/mobile/verify` | Verify OTP | No |
+| POST | `/api/auth/login` | Login with email/password | No |
+| POST | `/api/auth/refresh` | Refresh access token | No* |
+| POST | `/api/auth/logout` | Logout user | Yes |
+| GET | `/api/auth/me` | Get current user | Yes |
+| GET | `/api/auth/check` | Check token validity | Yes |
 
 **Login Request:**
 ```json
@@ -66,7 +66,7 @@ Authorization: Bearer <your_access_token>
 
 #### Send OTP
 ```http
-POST /api/v1/auth/mobile/send-otp
+POST /api/auth/mobile/send-otp
 Content-Type: application/json
 ```
 
@@ -95,7 +95,7 @@ Content-Type: application/json
 
 #### Verify OTP (Registration)
 ```http
-POST /api/v1/auth/mobile/verify
+POST /api/auth/mobile/verify
 Content-Type: application/json
 ```
 
@@ -115,7 +115,7 @@ Content-Type: application/json
 
 #### Verify OTP (Login)
 ```http
-POST /api/v1/auth/mobile/verify
+POST /api/auth/mobile/verify
 Content-Type: application/json
 ```
 
@@ -172,15 +172,15 @@ Content-Type: application/json
 ### Sliders (Public)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/v1/sliders` | List active sliders / banners | No |
+| GET | `/api/sliders` | List active sliders / banners | No |
 
 ---
 
 ### Categories (Public)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/v1/categories` | List all categories | No |
-| GET | `/api/v1/categories/{slug}` | Get category by slug | No |
+| GET | `/api/categories` | List all categories | No |
+| GET | `/api/categories/{slug}` | Get category by slug | No |
 
 **Query Parameters:**
 - `page` - Page number
@@ -191,13 +191,13 @@ Content-Type: application/json
 ### Products (Public)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/v1/products` | List all products | No |
-| GET | `/api/v1/products/search` | Search products | No |
-| GET | `/api/v1/products/slug/{slug}` | Get product by slug | No |
-| GET | `/api/v1/products/{product}` | Get product by ID | No |
-| POST | `/api/v1/products/check-availability` | Check stock availability | No |
-| GET | `/api/v1/products/{product}/price` | Get product price | No |
-| POST | `/api/v1/products/{product}/find-variant` | Find variant by attributes | No |
+| GET | `/api/products` | List all products | No |
+| GET | `/api/products/search` | Search products | No |
+| GET | `/api/products/slug/{slug}` | Get product by slug | No |
+| GET | `/api/products/{product}` | Get product by ID | No |
+| POST | `/api/products/check-availability` | Check stock availability | No |
+| GET | `/api/products/{product}/price` | Get product price | No |
+| POST | `/api/products/{product}/find-variant` | Find variant by attributes | No |
 | GET | `/api/products/{productId}/reviews` | Get product reviews | No |
 | POST | `/api/reviews/{reviewId}/helpful` | Mark review as helpful | No |
 | GET | `/api/products/{productId}/related` | Related products | No |
@@ -211,7 +211,7 @@ Content-Type: application/json
 
 #### Check Availability
 ```http
-POST /api/v1/products/check-availability
+POST /api/products/check-availability
 Content-Type: application/json
 ```
 
@@ -225,7 +225,7 @@ Content-Type: application/json
 
 #### Find Variant
 ```http
-POST /api/v1/products/1/find-variant
+POST /api/products/1/find-variant
 Content-Type: application/json
 ```
 
@@ -243,8 +243,8 @@ Content-Type: application/json
 ### User Profile (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/users/profile` | Get user profile |
-| PUT | `/api/v1/users/profile` | Update user profile |
+| GET | `/api/users/profile` | Get user profile |
+| PUT | `/api/users/profile` | Update user profile |
 
 **Update Profile Request:**
 ```json
@@ -260,11 +260,11 @@ Content-Type: application/json
 ### Addresses (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/users/addresses` | List addresses |
-| POST | `/api/v1/users/addresses` | Create address |
-| PUT | `/api/v1/users/addresses/{id}` | Update address |
-| DELETE | `/api/v1/users/addresses/{id}` | Delete address |
-| PATCH | `/api/v1/users/addresses/{id}/default` | Set as default |
+| GET | `/api/users/addresses` | List addresses |
+| POST | `/api/users/addresses` | Create address |
+| PUT | `/api/users/addresses/{id}` | Update address |
+| DELETE | `/api/users/addresses/{id}` | Delete address |
+| PATCH | `/api/users/addresses/{id}/default` | Set as default |
 
 **Create Address Request:**
 ```json
@@ -284,12 +284,12 @@ Content-Type: application/json
 ### Cart (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/cart` | Get cart |
-| POST | `/api/v1/cart/items` | Add item to cart |
-| PUT | `/api/v1/cart/items/{id}` | Update cart item |
-| DELETE | `/api/v1/cart/items/{id}` | Remove item from cart |
-| POST | `/api/v1/cart/apply-coupon` | Apply coupon |
-| DELETE | `/api/v1/cart/coupon` | Remove coupon |
+| GET | `/api/cart` | Get cart |
+| POST | `/api/cart/items` | Add item to cart |
+| PUT | `/api/cart/items/{id}` | Update cart item |
+| DELETE | `/api/cart/items/{id}` | Remove item from cart |
+| POST | `/api/cart/apply-coupon` | Apply coupon |
+| DELETE | `/api/cart/coupon` | Remove coupon |
 
 **Add to Cart Request:**
 ```json
@@ -304,13 +304,13 @@ Content-Type: application/json
 ### Orders (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/orders` | List orders |
-| POST | `/api/v1/orders` | Create order |
-| GET | `/api/v1/orders/{id}` | Get order details |
-| GET | `/api/v1/orders/{id}/track` | Track order |
-| POST | `/api/v1/orders/{id}/cancel` | Cancel order |
-| POST | `/api/v1/orders/{orderId}/payment/initiate` | Initiate payment |
-| GET | `/api/v1/orders/{orderId}/payment/status` | Check payment status |
+| GET | `/api/orders` | List orders |
+| POST | `/api/orders` | Create order |
+| GET | `/api/orders/{id}` | Get order details |
+| GET | `/api/orders/{id}/track` | Track order |
+| POST | `/api/orders/{id}/cancel` | Cancel order |
+| POST | `/api/orders/{orderId}/payment/initiate` | Initiate payment |
+| GET | `/api/orders/{orderId}/payment/status` | Check payment status |
 
 **Create Order Request:**
 ```json
@@ -326,9 +326,9 @@ Content-Type: application/json
 ### Wishlist (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/wishlist` | Get wishlist |
-| POST | `/api/v1/wishlist` | Add to wishlist |
-| DELETE | `/api/v1/wishlist/{productId}` | Remove from wishlist |
+| GET | `/api/wishlist` | Get wishlist |
+| POST | `/api/wishlist` | Add to wishlist |
+| DELETE | `/api/wishlist/{productId}` | Remove from wishlist |
 
 **Add to Wishlist Request:**
 ```json
@@ -342,9 +342,9 @@ Content-Type: application/json
 ### Notifications (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/notifications` | List notifications |
-| PATCH | `/api/v1/notifications/{id}/read` | Mark as read |
-| GET | `/api/v1/notifications/unread-count` | Get unread count |
+| GET | `/api/notifications` | List notifications |
+| PATCH | `/api/notifications/{id}/read` | Mark as read |
+| GET | `/api/notifications/unread-count` | Get unread count |
 
 ---
 
@@ -385,47 +385,47 @@ Content-Type: application/json
 ### Inventory (Public)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/v1/inventory/summary` | Inventory summary | No |
-| GET | `/api/v1/inventory/low-stock` | Low stock alerts | No |
-| GET | `/api/v1/inventory/out-of-stock` | Out of stock products | No |
-| GET | `/api/v1/inventory/movements` | Stock movements | No |
+| GET | `/api/inventory/summary` | Inventory summary | No |
+| GET | `/api/inventory/low-stock` | Low stock alerts | No |
+| GET | `/api/inventory/out-of-stock` | Out of stock products | No |
+| GET | `/api/inventory/movements` | Stock movements | No |
 
 ---
 
 ### Tracking (Public)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/v1/tracking?order_number=ORD-123456` | Track order | No |
+| GET | `/api/tracking?order_number=ORD-123456` | Track order | No |
 
 ---
 
 ### Coupons (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/coupons/available` | List available coupons | Yes |
+| GET | `/api/coupons/available` | List available coupons | Yes |
 
 ---
 
 ### Product Reviews (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/products/{productId}/reviews` | Write a review | Yes |
+| POST | `/api/products/{productId}/reviews` | Write a review | Yes |
 
 ---
 
 ### Admin Routes (Admin Only)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/admin/dashboard` | Dashboard stats |
-| GET | `/api/v1/admin/reports/sales` | Sales report |
-| GET | `/api/v1/admin/reports/inventory` | Inventory report |
-| GET | `/api/v1/admin/reports/customers` | Customers report |
-| GET | `/api/v1/admin/reports/coupons` | Coupons report |
-| POST | `/api/v1/admin/reports/export` | Export report |
-| GET | `/api/v1/admin/inventory/valuation` | Inventory valuation |
-| POST | `/api/v1/admin/inventory/variants/{variant}/stock` | Update variant stock |
-| POST | `/api/v1/admin/inventory/bulk-update` | Bulk inventory update |
-| GET | `/api/v1/admin/inventory/variants/{variant}/history` | Variant stock history |
+| GET | `/api/admin/dashboard` | Dashboard stats |
+| GET | `/api/admin/reports/sales` | Sales report |
+| GET | `/api/admin/reports/inventory` | Inventory report |
+| GET | `/api/admin/reports/customers` | Customers report |
+| GET | `/api/admin/reports/coupons` | Coupons report |
+| POST | `/api/admin/reports/export` | Export report |
+| GET | `/api/admin/inventory/valuation` | Inventory valuation |
+| POST | `/api/admin/inventory/variants/{variant}/stock` | Update variant stock |
+| POST | `/api/admin/inventory/bulk-update` | Bulk inventory update |
+| GET | `/api/admin/inventory/variants/{variant}/history` | Variant stock history |
 
 **Export Report Request:**
 ```json
@@ -720,4 +720,4 @@ Set these in Postman:
 2. Currency is in USD ($)
 3. Prices are in decimal format (e.g., 99.99)
 4. Pagination returns 20 items per page by default
-5. API version is v1 (prefix all endpoints with `/api/v1`)
+5. API version is v1 (prefix all endpoints with `/api/`)

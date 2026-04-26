@@ -92,9 +92,11 @@ class PosController extends Controller
      */
     public function findByBarcode($barcode)
     {
-        // Try product first
-        $product = Product::where('barcode', $barcode)
-            ->orWhere('sku', $barcode)
+        // Try product first — wrap OR conditions to ensure is_active is always applied
+        $product = Product::where(function ($q) use ($barcode) {
+                $q->where('barcode', $barcode)
+                  ->orWhere('sku', $barcode);
+            })
             ->where('is_active', true)
             ->first();
 
@@ -175,6 +177,27 @@ class PosController extends Controller
         ]);
 
         try {
+            // Validate stock availability before creating order
+            foreach ($validated['items'] as $item) {
+                if (!empty($item['variant_id'])) {
+                    $variant = Variant::find($item['variant_id']);
+                    if (!$variant || $variant->stock_quantity < $item['quantity']) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Insufficient stock for variant ID {$item['variant_id']}. Available: " . ($variant?->stock_quantity ?? 0),
+                        ], 422);
+                    }
+                } else {
+                    $product = Product::find($item['product_id']);
+                    if (!$product || $product->stock_quantity < $item['quantity']) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Insufficient stock for product ID {$item['product_id']}. Available: " . ($product?->stock_quantity ?? 0),
+                        ], 422);
+                    }
+                }
+            }
+
             $order = $this->posOrderService->createOrder($validated);
 
             return response()->json([
@@ -186,9 +209,10 @@ class PosController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
+            Log::error('POS order creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create order: ' . $e->getMessage(),
+                'message' => 'Failed to create order. Please try again.',
             ], 500);
         }
     }
@@ -232,7 +256,11 @@ class PosController extends Controller
             'query' => 'nullable|string|max:255',
         ]);
 
-        $query = User::query();
+        $query = User::query()
+            ->where('status', true)
+            ->whereHas('role', function ($q) {
+                $q->where('slug', 'customer');
+            });
 
         if (!empty($validated['query'])) {
             $search = $validated['query'];
@@ -304,6 +332,7 @@ class PosController extends Controller
             'tracking_number' => 'nullable|string|max:100',
             'courier_id' => 'nullable|exists:couriers,id',
             'estimated_delivery_date' => 'nullable|date',
+            'delivery_address' => 'nullable|string|max:500',
         ]);
 
         $order = PosOrder::findOrFail($id);

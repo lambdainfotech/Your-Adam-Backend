@@ -157,15 +157,10 @@ class GuestCheckoutService
      */
     protected function createUser(array $guest): User
     {
-        // Check for existing user by email
-        $existingUser = User::where('email', $guest['email'])->first();
-        if ($existingUser) {
-            return $existingUser;
-        }
-
         // Get customer role (default to 3 if not found)
         $customerRoleId = \App\Models\Role::where('slug', 'customer')->value('id') ?? 3;
 
+        // Always create a new guest user — never reuse existing accounts without authentication
         return User::create([
             'name' => $guest['name'],
             'email' => $guest['email'],
@@ -261,12 +256,8 @@ class GuestCheckoutService
         $freeShippingThreshold = (float) ($settings['feature_free_shipping_threshold'] ?? 2000);
         $baseShippingRate = (float) ($settings['shipping_base_rate'] ?? 100);
 
-        // If frontend provided shipping cost, use it (but validate free shipping logic)
-        if (isset($orderSummary['shippingCost']) && is_numeric($orderSummary['shippingCost'])) {
-            $shipping = (float) $orderSummary['shippingCost'];
-        } else {
-            $shipping = $subtotal >= $freeShippingThreshold ? 0 : $baseShippingRate;
-        }
+        // Always calculate shipping server-side — ignore frontend-provided value
+        $shipping = $subtotal >= $freeShippingThreshold ? 0 : $baseShippingRate;
 
         $total = max(0, $subtotal - $discount + $tax + $shipping);
 

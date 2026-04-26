@@ -118,9 +118,6 @@ class ProductApiTransformer
                 'weight' => $product->weight ? (float) $product->weight : null,
                 'sku_prefix' => $product->sku_prefix,
                 'barcode' => $product->barcode,
-                'cost_price' => $product->cost_price ? (float) $product->cost_price : null,
-                'wholesale_price' => $product->wholesale_price ? (float) $product->wholesale_price : null,
-                'wholesale_percentage' => $product->wholesale_percentage ? (float) $product->wholesale_percentage : null,
             ];
         }
 

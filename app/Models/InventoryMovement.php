@@ -154,7 +154,7 @@ class InventoryMovement extends Model
     ): self {
         $variant = $variantId ? Variant::find($variantId) : null;
         $stockBefore = $variant ? $variant->stock_quantity : 0;
-        $stockAfter = $stockBefore + $quantity;
+        $stockAfter = max(0, $stockBefore + $quantity);
         
         return self::create([
             'product_id' => $productId,

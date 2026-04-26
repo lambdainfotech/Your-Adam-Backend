@@ -305,7 +305,7 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Cashier</span>
-                    <span class="info-value">{{ $order->user->name ?? 'Unknown' }}</span>
+                    <span class="info-value">{{ $order->user?->name ?? 'Unknown' }}</span>
                 </div>
                 @if($order->customer_name)
                 <div class="info-row">

@@ -40,13 +40,17 @@ class ReviewController extends Controller
             return $this->error('Authentication required', 401);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'rating' => 'required|numeric|min:1|max:5',
             'title' => 'nullable|string|max:255',
             'comment' => 'required|string|min:10|max:2000',
             'images' => 'nullable|array',
             'images.*' => 'url',
         ]);
+        
+        // Sanitize HTML in comment and title
+        $validated['comment'] = strip_tags($validated['comment'], '<b><i><u><br><p><strong><em>');
+        $validated['title'] = strip_tags($validated['title'] ?? '');
 
         $result = $this->reviewService->createReview($productId, $user->id, $request->all());
 
