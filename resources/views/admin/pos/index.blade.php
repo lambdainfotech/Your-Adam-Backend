@@ -87,7 +87,7 @@
                 </div>
                 
                 <!-- Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4" x-show="!loading">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" x-show="!loading">
                     <template x-for="product in products" :key="product.id">
                         <div @click="addToCart(product)"
                             class="group bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-indigo-300 hover:-translate-y-0.5"
