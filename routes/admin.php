@@ -241,12 +241,6 @@ Route::middleware(['web', 'jwt.auth'])->group(function () {
         Route::get('/products/barcode/{barcode}', [PosController::class, 'findByBarcode'])->name('admin.pos.products.barcode');
         Route::get('/customers/search', [PosController::class, 'searchCustomers'])->name('admin.pos.customers.search');
         
-        // Cart Operations
-        Route::post('/cart/hold', [PosController::class, 'holdCart'])->name('admin.pos.cart.hold');
-        Route::get('/cart/held', [PosController::class, 'getHeldCarts'])->name('admin.pos.cart.held');
-        Route::post('/cart/retrieve/{id}', [PosController::class, 'retrieveCart'])->name('admin.pos.cart.retrieve');
-        Route::delete('/cart/held/{id}', [PosController::class, 'deleteHeldCart'])->name('admin.pos.cart.delete');
-        
         // Order Processing
         Route::post('/order', [PosController::class, 'createOrder'])->name('admin.pos.order.store');
         Route::get('/order/{id}', [PosController::class, 'showOrder'])->name('admin.pos.order.show');

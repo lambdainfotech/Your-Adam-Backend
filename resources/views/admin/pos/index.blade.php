@@ -19,9 +19,7 @@
                 <i class="fas fa-warehouse mr-1"></i>
                 <span x-text="isWholesale ? 'Wholesale' : 'Retail'"></span>
             </button>
-            <button @click="showHeldCartsModal = true" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">
-                <i class="fas fa-pause mr-1"></i>Hold (<span x-text="heldCartsCount"></span>)
-            </button>
+
         </div>
     </div>
 
@@ -91,9 +89,6 @@
             <div class="bg-white p-2 border-t flex gap-2 text-sm">
                 <button @click="clearCart()" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
                     <i class="fas fa-trash mr-1"></i>Clear (F5)
-                </button>
-                <button @click="holdCart()" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">
-                    <i class="fas fa-pause mr-1"></i>Hold (F3)
                 </button>
                 <div class="flex-1"></div>
                 <span class="text-gray-500 px-2">Shortcuts: F1=Search, F2=Customer, F9=Pay</span>
@@ -358,12 +353,10 @@ function posSystem() {
         selectedCategory: '',
         loading: false,
         currentTime: new Date().toLocaleTimeString(),
-        heldCartsCount: {{ $heldCartsCount }},
-        heldCarts: [],
+
         
         // Modals
         showPaymentModal: false,
-        showHeldCartsModal: false,
         showCustomerModal: false,
         
         // Payment
@@ -645,97 +638,6 @@ function posSystem() {
             }
         },
         
-        async holdCart() {
-            if (this.cart.length === 0) {
-                alert('Cart is empty');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/admin/pos/cart/hold', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        cart_data: {
-                            items: this.cart,
-                            total: this.total,
-                            item_count: this.cart.reduce((sum, item) => sum + item.quantity, 0),
-                            customer: this.customer,
-                            is_wholesale: this.isWholesale
-                        },
-                        customer_name: this.customer.name,
-                        customer_phone: this.customer.phone,
-                        note: ''
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    alert('Cart held successfully');
-                    this.cart = [];
-                    this.customer = { name: '', phone: '', id: null };
-                    this.heldCartsCount++;
-                }
-            } catch (error) {
-                console.error('Error holding cart:', error);
-            }
-        },
-        
-        async getHeldCarts() {
-            try {
-                const response = await fetch('/admin/pos/cart/held');
-                const data = await response.json();
-                if (data.success) {
-                    this.heldCarts = data.data;
-                }
-            } catch (error) {
-                console.error('Error fetching held carts:', error);
-            }
-        },
-        
-        async retrieveCart(id) {
-            try {
-                const response = await fetch(`/admin/pos/cart/retrieve/${id}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    this.cart = data.data.items || [];
-                    this.customer = data.data.customer || { name: '', phone: '', id: null };
-                    this.isWholesale = data.data.is_wholesale || false;
-                    this.showHeldCartsModal = false;
-                    this.heldCartsCount--;
-                }
-            } catch (error) {
-                console.error('Error retrieving cart:', error);
-            }
-        },
-        
-        async deleteHeldCart(id) {
-            if (!confirm('Delete this held cart?')) return;
-            
-            try {
-                const response = await fetch(`/admin/pos/cart/held/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-                if (response.ok) {
-                    this.getHeldCarts();
-                    this.heldCartsCount--;
-                }
-            } catch (error) {
-                console.error('Error deleting held cart:', error);
-            }
-        },
-        
         async searchCustomers() {
             try {
                 const params = new URLSearchParams();
@@ -800,10 +702,7 @@ function posSystem() {
                     e.preventDefault();
                     this.showCustomerModal = true;
                     break;
-                case 'F3':
-                    e.preventDefault();
-                    this.holdCart();
-                    break;
+
                 case 'F5':
                     e.preventDefault();
                     this.clearCart();

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PosOrder;
-use App\Models\PosHeldCart;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\PosOrderService;
@@ -26,11 +25,8 @@ class PosController extends Controller
     {
         // Get categories for filtering
         $categories = \App\Models\Category::active()->select('id', 'name')->get();
-        
-        // Get held carts count
-        $heldCartsCount = PosHeldCart::byUser(Auth::id())->count();
 
-        return view('admin.pos.index', compact('categories', 'heldCartsCount'));
+        return view('admin.pos.index', compact('categories'));
     }
 
     /**
@@ -147,86 +143,6 @@ class PosController extends Controller
             'success' => false,
             'message' => 'Product not found',
         ], 404);
-    }
-
-    /**
-     * Hold a cart
-     */
-    public function holdCart(Request $request)
-    {
-        $validated = $request->validate([
-            'cart_data' => 'required|array',
-            'customer_name' => 'nullable|string|max:255',
-            'customer_phone' => 'nullable|string|max:20',
-            'note' => 'nullable|string|max:255',
-        ]);
-
-        $heldCart = PosHeldCart::create([
-            'user_id' => Auth::id(),
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'cart_data' => $validated['cart_data'],
-            'note' => $validated['note'],
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cart held successfully',
-            'data' => ['id' => $heldCart->id],
-        ]);
-    }
-
-    /**
-     * Get held carts
-     */
-    public function getHeldCarts()
-    {
-        $carts = PosHeldCart::byUser(Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($cart) {
-                return [
-                    'id' => $cart->id,
-                    'customer_name' => $cart->customer_name,
-                    'item_count' => $cart->item_count,
-                    'total' => $cart->cart_total,
-                    'note' => $cart->note,
-                    'created_at' => $cart->created_at->diffForHumans(),
-                ];
-            });
-
-        return response()->json(['success' => true, 'data' => $carts]);
-    }
-
-    /**
-     * Retrieve a held cart
-     */
-    public function retrieveCart($id)
-    {
-        $cart = PosHeldCart::byUser(Auth::id())->findOrFail($id);
-        
-        $cartData = $cart->cart_data;
-        
-        $cart->delete();
-
-        return response()->json([
-            'success' => true,
-            'data' => $cartData,
-        ]);
-    }
-
-    /**
-     * Delete a held cart
-     */
-    public function deleteHeldCart($id)
-    {
-        $cart = PosHeldCart::byUser(Auth::id())->findOrFail($id);
-        $cart->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Held cart deleted',
-        ]);
     }
 
     /**
