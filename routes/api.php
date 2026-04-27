@@ -113,6 +113,7 @@ Route::middleware('jwt.auth')->group(function () {
     // User Profile
     Route::get('/users/profile', [\App\Modules\User\Http\Controllers\ProfileController::class, 'show']);
     Route::put('/users/profile', [\App\Modules\User\Http\Controllers\ProfileController::class, 'update']);
+    Route::get('/users/me', [\App\Modules\User\Http\Controllers\ProfileController::class, 'me']);
 
     // Addresses
     Route::get('/users/addresses', [\App\Modules\User\Http\Controllers\AddressController::class, 'index']);

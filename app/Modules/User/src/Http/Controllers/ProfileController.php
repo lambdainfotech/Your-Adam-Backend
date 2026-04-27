@@ -24,6 +24,22 @@ class ProfileController extends BaseController
         );
     }
 
+    /**
+     * Get complete user data: profile, addresses, and orders
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user()->load([
+            'profile',
+            'addresses',
+            'orders' => function ($query) {
+                $query->latest()->with('items');
+            },
+        ]);
+
+        return $this->successResponse($user);
+    }
+
     public function update(ProfileUpdateRequest $request): JsonResponse
     {
         return $this->successResponse(
