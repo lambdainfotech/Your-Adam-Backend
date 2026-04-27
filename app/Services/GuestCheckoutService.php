@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
+use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Variant;
@@ -201,11 +202,13 @@ class GuestCheckoutService
         $processed = [];
 
         foreach ($items as $item) {
-            $variant = Variant::with(['product', 'attributeValues.attribute'])->find($item['variant_id']);
+            $variant = $this->resolveItemVariant($item);
 
             if (!$variant || !$variant->is_active) {
+                $identifier = $item['variant_id'] ?? $item['product_id'];
+                $type = !empty($item['variant_id']) ? 'variant' : 'product';
                 throw ValidationException::withMessages([
-                    'items' => "Product variant ID {$item['variant_id']} is not available.",
+                    'items' => "Product {$type} ID {$identifier} is not available.",
                 ]);
             }
 
@@ -237,6 +240,38 @@ class GuestCheckoutService
         }
 
         return $processed;
+    }
+
+    /**
+     * Resolve variant from item data (supports variant_id or product_id)
+     */
+    protected function resolveItemVariant(array $item): ?Variant
+    {
+        if (!empty($item['variant_id'])) {
+            return Variant::with(['product', 'attributeValues.attribute'])->find($item['variant_id']);
+        }
+
+        if (!empty($item['product_id'])) {
+            $product = Product::find($item['product_id']);
+
+            if (!$product || !$product->is_active) {
+                return null;
+            }
+
+            // For products with explicit variants, require variant_id to be specified
+            if ($product->has_variants) {
+                throw ValidationException::withMessages([
+                    'items' => "Product ID {$item['product_id']} has multiple variants. Please specify a variant_id.",
+                ]);
+            }
+
+            // For simple products, find the single/default variant
+            return Variant::with(['product', 'attributeValues.attribute'])
+                ->where('product_id', $item['product_id'])
+                ->first();
+        }
+
+        return null;
     }
 
     /**

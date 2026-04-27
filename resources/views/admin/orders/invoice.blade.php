@@ -103,8 +103,8 @@
                                 <p class="text-sm text-gray-500">SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
                             </td>
                             <td class="py-4 text-center">{{ $item->quantity }}</td>
-                            <td class="py-4 text-right">${{ number_format($item->unit_price, 2) }}</td>
-                            <td class="py-4 text-right font-medium">${{ number_format($item->total, 2) }}</td>
+                            <td class="py-4 text-right">৳{{ number_format($item->unit_price, 2) }}</td>
+                            <td class="py-4 text-right font-medium">৳{{ number_format($item->total_price, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -115,26 +115,32 @@
                 <div class="w-full max-w-sm space-y-2">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal:</span>
-                        <span>${{ number_format($order->subtotal, 2) }}</span>
+                        <span>৳{{ number_format($order->subtotal, 2) }}</span>
                     </div>
                     @if($order->discount_amount > 0)
                         <div class="flex justify-between text-green-600">
                             <span>Discount:</span>
-                            <span>-${{ number_format($order->discount_amount, 2) }}</span>
+                            <span>-৳{{ number_format($order->discount_amount, 2) }}</span>
                         </div>
                     @endif
                     <div class="flex justify-between text-gray-600">
                         <span>Tax:</span>
-                        <span>${{ number_format($order->tax_amount, 2) }}</span>
+                        <span>৳{{ number_format($order->tax_amount, 2) }}</span>
                     </div>
                     <div class="flex justify-between text-gray-600">
                         <span>Shipping:</span>
-                        <span>${{ number_format($order->shipping_amount, 2) }}</span>
+                        <span>
+                            @if($order->shipping_amount > 0)
+                                ৳{{ number_format($order->shipping_amount, 2) }}
+                            @else
+                                <span class="text-green-600">Free</span>
+                            @endif
+                        </span>
                     </div>
                     <div class="border-t pt-2 mt-2">
                         <div class="flex justify-between text-xl font-bold text-gray-800">
                             <span>Total:</span>
-                            <span class="text-blue-600">${{ number_format($order->total_amount, 2) }}</span>
+                            <span class="text-blue-600">৳{{ number_format($order->total_amount, 2) }}</span>
                         </div>
                     </div>
                 </div>
