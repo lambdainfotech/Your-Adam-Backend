@@ -214,7 +214,6 @@ class PosController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create order. Please try again.',
-                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -788,7 +788,7 @@ function posSystem() {
                     
                     window.open(`/admin/pos/order/${data.data.order_id}/receipt`, '_blank');
                 } else {
-                    this.showToast(data.error || data.message || 'Payment failed', 'error');
+                    this.showToast(data.message || 'Payment failed', 'error');
                 }
             } catch (error) {
                 console.error('Error processing payment:', error);
