@@ -10,6 +10,7 @@ use App\Models\Variant;
 use App\Services\PosOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PosController extends Controller
 {
@@ -208,7 +209,7 @@ class PosController extends Controller
                     'order_number' => $order->order_number,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('POS order creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
