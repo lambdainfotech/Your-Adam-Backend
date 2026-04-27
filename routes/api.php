@@ -116,6 +116,7 @@ Route::middleware('jwt.auth')->group(function () {
 
     // Addresses
     Route::get('/users/addresses', [\App\Modules\User\Http\Controllers\AddressController::class, 'index']);
+    Route::get('/users/addresses/default', [\App\Modules\User\Http\Controllers\AddressController::class, 'default']);
     Route::post('/users/addresses', [\App\Modules\User\Http\Controllers\AddressController::class, 'store']);
     Route::put('/users/addresses/{id}', [\App\Modules\User\Http\Controllers\AddressController::class, 'update']);
     Route::delete('/users/addresses/{id}', [\App\Modules\User\Http\Controllers\AddressController::class, 'destroy']);

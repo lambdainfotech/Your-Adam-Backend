@@ -22,15 +22,27 @@ class AddressService extends BaseService implements AddressServiceInterface
         return $this->repository->findByUserId($userId);
     }
 
+    public function getDefaultAddress(int $userId): ?Address
+    {
+        return $this->repository->query()
+            ->where('user_id', $userId)
+            ->where('is_default', true)
+            ->first();
+    }
+
     public function createAddress(int $userId, AddressDTO $dto): Address
     {
         return $this->transaction(function () use ($userId, $dto) {
+            // If this is the user's first address, auto-set as default
+            $isFirstAddress = $this->repository->findByUserId($userId)->isEmpty();
+            $isDefault = $isFirstAddress || $dto->isDefault;
+
             $address = $this->repository->create(array_merge(
                 ['user_id' => $userId],
                 $dto->toArray()
             ));
 
-            if ($dto->isDefault) {
+            if ($isDefault) {
                 $this->repository->setDefault($userId, $address->id);
             }
 

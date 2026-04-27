@@ -50,4 +50,24 @@ abstract class BaseController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Return a created (201) response.
+     */
+    protected function createdResponse(mixed $data = null, string $message = 'Created'): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ], 201);
+    }
+
+    /**
+     * Return a no content (204) response.
+     */
+    protected function noContentResponse(): JsonResponse
+    {
+        return response()->json(null, 204);
+    }
 }

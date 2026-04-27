@@ -24,6 +24,17 @@ class AddressController extends BaseController
         );
     }
 
+    public function default(Request $request): JsonResponse
+    {
+        $address = $this->service->getDefaultAddress($request->user()->id);
+
+        if (!$address) {
+            return $this->errorResponse('No default address found.', 404);
+        }
+
+        return $this->successResponse($address);
+    }
+
     public function store(AddressRequest $request): JsonResponse
     {
         return $this->createdResponse(

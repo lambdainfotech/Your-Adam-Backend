@@ -16,15 +16,16 @@ class AddressRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|in:home,office,other',
+            'type' => 'nullable|in:home,office,other',
             'full_name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
-            'address_line_1' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
-            'district' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:20',
+            'district' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
             'landmark' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:100',
             'is_default' => 'boolean',
         ];
     }

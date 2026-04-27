@@ -13,6 +13,8 @@ class CustomerOrderRequest extends FormRequest
 
     public function rules(): array
     {
+        $hasAddressId = $this->filled('address_id');
+
         return [
             // Items — support both variant_id (variant product) and product_id (simple product)
             'items' => ['required', 'array', 'min:1'],
@@ -20,14 +22,17 @@ class CustomerOrderRequest extends FormRequest
             'items.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
 
-            // Shipping Address
-            'shippingAddress' => ['required', 'array'],
-            'shippingAddress.name' => ['required', 'string', 'max:255'],
-            'shippingAddress.phone' => ['required', 'string', 'max:20'],
-            'shippingAddress.address' => ['required', 'string', 'max:255'],
-            'shippingAddress.city' => ['required', 'string', 'max:100'],
+            // Address: either use saved address ID or provide inline shipping address
+            'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+
+            // Shipping Address (required only when address_id is not provided)
+            'shippingAddress' => [$hasAddressId ? 'nullable' : 'required', 'array'],
+            'shippingAddress.name' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:255'],
+            'shippingAddress.phone' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:20'],
+            'shippingAddress.address' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:255'],
+            'shippingAddress.city' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:100'],
             'shippingAddress.district' => ['nullable', 'string', 'max:100'],
-            'shippingAddress.postcode' => ['required', 'string', 'max:20'],
+            'shippingAddress.postcode' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:20'],
 
             // Payment
             'paymentMethod' => ['required', 'array'],
@@ -70,6 +75,18 @@ class CustomerOrderRequest extends FormRequest
                     );
                 }
             }
+
+            // Ensure exactly one of address_id or shippingAddress is provided
+            $hasAddressId = $this->filled('address_id');
+            $hasShippingAddress = $this->has('shippingAddress') && is_array($this->input('shippingAddress'));
+
+            if (!$hasAddressId && !$hasShippingAddress) {
+                $validator->errors()->add('address', 'Please provide either an address_id or a shippingAddress.');
+            }
+
+            if ($hasAddressId && $hasShippingAddress) {
+                $validator->errors()->add('address', 'Please provide either an address_id or a shippingAddress, not both.');
+            }
         });
     }
 
@@ -79,7 +96,7 @@ class CustomerOrderRequest extends FormRequest
             'items.required' => 'Please add at least one item to your order.',
             'items.*.variant_id.exists' => 'One or more selected products are no longer available.',
             'items.*.product_id.exists' => 'One or more selected products are no longer available.',
-            'shippingAddress.required' => 'Please provide a shipping address.',
+            'address_id.exists' => 'The selected address does not exist.',
             'paymentMethod.id.in' => 'Invalid payment method selected.',
         ];
     }

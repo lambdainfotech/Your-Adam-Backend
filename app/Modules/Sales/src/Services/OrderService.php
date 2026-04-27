@@ -157,18 +157,39 @@ class OrderService implements OrderServiceInterface
             $processedItems = $this->processItemsDirect($data['items']);
             $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? []);
 
-            // Build delivery address
-            $shippingAddress = $data['shippingAddress'];
-            $deliveryAddress = [
-                'name' => $shippingAddress['name'],
-                'phone' => $shippingAddress['phone'],
-                'address_line_1' => $shippingAddress['address'],
-                'address_line_2' => null,
-                'city' => $shippingAddress['city'],
-                'state' => $shippingAddress['district'] ?? null,
-                'postal_code' => $shippingAddress['postcode'],
-                'country' => 'Bangladesh',
-            ];
+            // Build delivery address from saved address or inline input
+            if (!empty($data['address_id'])) {
+                $address = \App\Models\Address::where('id', $data['address_id'])
+                    ->where('user_id', $userId)
+                    ->first();
+
+                if (!$address) {
+                    throw new \InvalidArgumentException('Address not found.');
+                }
+
+                $deliveryAddress = [
+                    'name' => $address->full_name,
+                    'phone' => $address->mobile,
+                    'address_line_1' => $address->address_line_1,
+                    'address_line_2' => $address->address_line_2,
+                    'city' => $address->city,
+                    'state' => $address->district,
+                    'postal_code' => $address->postal_code,
+                    'country' => $address->country ?? 'Bangladesh',
+                ];
+            } else {
+                $shippingAddress = $data['shippingAddress'];
+                $deliveryAddress = [
+                    'name' => $shippingAddress['name'],
+                    'phone' => $shippingAddress['phone'],
+                    'address_line_1' => $shippingAddress['address'],
+                    'address_line_2' => null,
+                    'city' => $shippingAddress['city'],
+                    'state' => $shippingAddress['district'] ?? null,
+                    'postal_code' => $shippingAddress['postcode'],
+                    'country' => 'Bangladesh',
+                ];
+            }
 
             $orderNumber = $this->generateOrderNumber();
             $paymentMethod = $data['paymentMethod']['id'] === 'cod' ? 'cod' : 'online';

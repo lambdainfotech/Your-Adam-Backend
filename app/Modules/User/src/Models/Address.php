@@ -25,6 +25,7 @@ class Address extends Model
         'district',
         'postal_code',
         'landmark',
+        'country',
         'is_default',
     ];
 

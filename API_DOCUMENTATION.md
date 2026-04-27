@@ -260,7 +260,8 @@ Content-Type: application/json
 ### Addresses (Authenticated)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/users/addresses` | List addresses |
+| GET | `/api/users/addresses` | List all addresses |
+| GET | `/api/users/addresses/default` | Get default address |
 | POST | `/api/users/addresses` | Create address |
 | PUT | `/api/users/addresses/{id}` | Update address |
 | DELETE | `/api/users/addresses/{id}` | Delete address |
@@ -269,12 +270,16 @@ Content-Type: application/json
 **Create Address Request:**
 ```json
 {
+  "type": "home",
+  "full_name": "John Doe",
+  "mobile": "01712345678",
   "address_line_1": "123 Main Street",
   "address_line_2": "Apt 4B",
   "city": "Dhaka",
-  "state": "Dhaka",
+  "district": "Dhaka",
   "postal_code": "1200",
   "country": "Bangladesh",
+  "landmark": "Near Gulshan Circle",
   "is_default": true
 }
 ```
@@ -305,19 +310,50 @@ Content-Type: application/json
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/orders` | List orders |
-| POST | `/api/orders` | Create order |
+| POST | `/api/orders` | Create order from cart |
+| POST | `/api/orders/direct` | Create direct order from items |
 | GET | `/api/orders/{id}` | Get order details |
 | GET | `/api/orders/{id}/track` | Track order |
 | POST | `/api/orders/{id}/cancel` | Cancel order |
 | POST | `/api/orders/{orderId}/payment/initiate` | Initiate payment |
 | GET | `/api/orders/{orderId}/payment/status` | Check payment status |
 
-**Create Order Request:**
+**Create Order Request (from cart):**
 ```json
 {
   "address_id": 1,
   "payment_method": "cod",
   "notes": "Please deliver after 5 PM"
+}
+```
+
+**Create Direct Order Request (with saved address):**
+```json
+{
+  "items": [
+    { "variant_id": 1, "quantity": 2 },
+    { "product_id": 5, "quantity": 1 }
+  ],
+  "address_id": 3,
+  "paymentMethod": { "id": "cod" }
+}
+```
+
+**Create Direct Order Request (with inline address):**
+```json
+{
+  "items": [
+    { "variant_id": 1, "quantity": 2 }
+  ],
+  "shippingAddress": {
+    "name": "John Doe",
+    "phone": "01712345678",
+    "address": "House 12, Road 5",
+    "city": "Dhaka",
+    "district": "Dhaka",
+    "postcode": "1212"
+  },
+  "paymentMethod": { "id": "aamarpay" }
 }
 ```
 

@@ -14,37 +14,24 @@ use Symfony\Component\HttpFoundation\Response;
  * Unified JWT Authentication Middleware
  * 
  * Handles authentication for both web and API routes using JWT tokens.
- * - Web: Tokens are passed via HTTP-Only cookies (encrypted by us, not Laravel)
- * - API: Tokens are passed via Authorization header
+ * - Web: Tokens are passed via HTTP-Only cookies
+ * - API: Tokens are passed via Authorization header ONLY
  */
 class JWTAuthMiddleware
 {
-    /**
-     * Cookie name for JWT token storage
-     */
     protected string $cookieName = 'jwt_token';
 
-    /**
-     * Routes that should be excluded from JWT auth check
-     */
     protected array $excludedRoutes = [
         'admin.login',
         'admin.login.post',
     ];
 
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip JWT auth for login routes to avoid redirect loops
         if ($this->isExcludedRoute($request)) {
             return $next($request);
         }
 
-        // Try to authenticate the user
         $authenticated = $this->authenticate($request);
 
         if (!$authenticated) {
@@ -54,17 +41,12 @@ class JWTAuthMiddleware
         return $next($request);
     }
 
-    /**
-     * Check if route should be excluded from JWT auth
-     */
     protected function isExcludedRoute(Request $request): bool
     {
-        // Check by route name
         if ($request->routeIs($this->excludedRoutes)) {
             return true;
         }
 
-        // Check by path
         $path = $request->path();
         if (str_starts_with($path, 'admin/login') || $path === 'admin/login') {
             return true;
@@ -73,70 +55,70 @@ class JWTAuthMiddleware
         return false;
     }
 
-    /**
-     * Attempt to authenticate the user via JWT token
-     */
     protected function authenticate(Request $request): bool
     {
         try {
-            // First, try to get token from cookie (web requests)
-            $token = $this->getTokenFromCookie($request);
+            $token = null;
+            $source = 'none';
 
-            // If no cookie token, try Authorization header (API requests)
-            if (!$token) {
-                $token = JWTAuth::getToken();
+            // For API routes: ONLY accept Authorization header (Bearer token)
+            // Never accept cookies on API routes
+            if ($request->is('api/*')) {
+                $authHeader = $request->header('Authorization');
+                if ($authHeader && preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+                    $token = $matches[1];
+                    $source = 'header';
+                }
+            } else {
+                // For web routes: check cookie first, then header
+                $token = $request->cookie($this->cookieName);
+                if ($token) {
+                    $source = 'cookie';
+                } elseif (($authHeader = $request->header('Authorization')) && preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+                    $token = $matches[1];
+                    $source = 'header';
+                }
             }
 
-            // If still no token, user is not authenticated
             if (!$token) {
+                \Log::debug('JWTAuthMiddleware: No token found', ['path' => $request->path(), 'is_api' => $request->is('api/*')]);
                 return false;
             }
 
-            // Set the token and authenticate
+            \Log::debug('JWTAuthMiddleware: Token found', ['source' => $source, 'path' => $request->path()]);
+
             JWTAuth::setToken($token);
             $user = JWTAuth::authenticate();
 
             if ($user) {
-                // Set the authenticated user in the request
                 auth()->setUser($user);
                 $request->setUserResolver(function () use ($user) {
                     return $user;
                 });
+                \Log::debug('JWTAuthMiddleware: Authenticated', ['user_id' => $user->id]);
                 return true;
             }
 
+            \Log::debug('JWTAuthMiddleware: Token invalid - no user');
             return false;
 
         } catch (TokenExpiredException $e) {
-            // Token expired - let the caller handle this
-            // We don't auto-refresh here to avoid side effects in middleware
+            \Log::debug('JWTAuthMiddleware: Token expired');
             return false;
         } catch (TokenInvalidException $e) {
+            \Log::debug('JWTAuthMiddleware: Token invalid');
             return false;
         } catch (JWTException $e) {
+            \Log::debug('JWTAuthMiddleware: JWT exception', ['message' => $e->getMessage()]);
             return false;
         } catch (\Exception $e) {
+            \Log::debug('JWTAuthMiddleware: Exception', ['message' => $e->getMessage()]);
             return false;
         }
     }
 
-    /**
-     * Get JWT token from cookie
-     * Laravel's EncryptCookies middleware automatically decrypts the cookie.
-     */
-    protected function getTokenFromCookie(Request $request): ?string
-    {
-        // Laravel's EncryptCookies middleware automatically decrypts cookies
-        // So $request->cookie() returns the decrypted value directly
-        return $request->cookie($this->cookieName);
-    }
-
-    /**
-     * Handle unauthenticated request
-     */
     protected function unauthenticated(Request $request): Response
     {
-        // For API requests, return JSON response
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
                 'success' => false,
@@ -145,7 +127,6 @@ class JWTAuthMiddleware
             ], 401);
         }
 
-        // For web requests, store intended URL and redirect to login page
         return redirect()->guest(route('admin.login'));
     }
 }
