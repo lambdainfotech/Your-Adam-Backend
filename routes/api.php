@@ -92,6 +92,7 @@ Route::get('/tracking', [\App\Modules\Courier\Http\Controllers\TrackingControlle
 // Auth Routes (Unified JWT)
 Route::group(['prefix' => 'auth'], function () {
     // Public auth routes with rate limiting
+    Route::post('/register', [OTPAuthController::class, 'register'])->middleware('throttle:5,1');
     Route::post('/mobile/send-otp', [OTPAuthController::class, 'sendOTP'])->middleware('throttle:3,1');
     Route::post('/mobile/verify', [OTPAuthController::class, 'verifyOTP'])->middleware('throttle:5,1');
     Route::post('/password/reset', [OTPAuthController::class, 'resetPassword'])->middleware('throttle:3,1');

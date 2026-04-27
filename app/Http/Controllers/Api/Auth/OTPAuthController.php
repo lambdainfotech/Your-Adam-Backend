@@ -146,6 +146,56 @@ class OTPAuthController extends Controller
     }
 
     /**
+     * Register user with normal flow (no OTP)
+     */
+    public function register(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'full_name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email',
+                'mobile' => 'required|string|min:10|max:15|unique:users,mobile',
+                'password' => 'required|string|min:6|confirmed',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->error('Validation failed', 422, $validator->errors());
+            }
+
+            $user = $this->otpService->registerUser([
+                'mobile' => $request->input('mobile'),
+                'password' => $request->input('password'),
+                'full_name' => $request->input('full_name'),
+                'email' => $request->input('email'),
+            ]);
+
+            $tokenData = $this->generateTokenForUser($user);
+
+            return $this->success([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'role' => $user->role?->name,
+                    'status' => $user->status,
+                    'email_verified' => !is_null($user->email_verified_at),
+                    'mobile_verified' => !is_null($user->mobile_verified_at),
+                    'created_at' => $user->created_at,
+                ],
+                'tokens' => [
+                    'access_token' => $tokenData['access_token'],
+                    'refresh_token' => $tokenData['refresh_token'] ?? null,
+                    'token_type' => 'bearer',
+                    'expires_in' => $tokenData['expires_in'] ?? 3600,
+                ],
+            ], 'Registration successful');
+        } catch (\Exception $e) {
+            return $this->error('Registration failed: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Reset password using OTP
      */
     public function resetPassword(Request $request): JsonResponse
