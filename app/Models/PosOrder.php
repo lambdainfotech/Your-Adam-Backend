@@ -14,7 +14,6 @@ class PosOrder extends Model
 
     protected $fillable = [
         'order_number',
-        'pos_session_id', // legacy: required for older databases still having this column
         'user_id',
         'customer_id',
         'customer_name',

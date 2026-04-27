@@ -24,8 +24,23 @@ class PosOrderService
      */
     public function createOrder(array $validated): PosOrder
     {
+        // One-time cleanup: remove legacy pos_session_id column + FK constraint
+        // if the previous migration failed to drop it
+        if (Schema::hasColumn('pos_orders', 'pos_session_id')) {
+            try {
+                DB::statement('ALTER TABLE pos_orders DROP FOREIGN KEY pos_orders_pos_session_id_foreign');
+            } catch (\Exception $e) {
+                // FK may already be dropped or named differently
+            }
+            try {
+                DB::statement('ALTER TABLE pos_orders DROP COLUMN pos_session_id');
+            } catch (\Exception $e) {
+                // Column may already be dropped
+            }
+        }
+
         return DB::transaction(function () use ($validated) {
-            $orderData = [
+            $order = PosOrder::create([
                 'user_id' => Auth::id(),
                 'customer_id' => $validated['customer_id'] ?? null,
                 'customer_name' => $validated['customer_name'] ?? null,
@@ -37,14 +52,7 @@ class PosOrderService
                 'note' => $validated['note'] ?? null,
                 'status' => 'completed',
                 'is_wholesale' => $validated['is_wholesale'] ?? false,
-            ];
-
-            // Handle legacy pos_session_id column on older databases
-            if (Schema::hasColumn('pos_orders', 'pos_session_id')) {
-                $orderData['pos_session_id'] = 0;
-            }
-
-            $order = PosOrder::create($orderData);
+            ]);
 
             $this->createOrderItems($order, $validated['items']);
             $this->processPayments($order, $validated['payments']);
