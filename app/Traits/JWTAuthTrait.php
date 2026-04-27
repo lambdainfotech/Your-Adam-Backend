@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cookie;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 
 /**
  * JWT Authentication Trait
@@ -57,15 +58,21 @@ trait JWTAuthTrait
             return null;
         }
 
-        // Create a new token specifically for refresh purposes
-        // Using a longer TTL for the refresh token
-        $refreshTTL = config('jwt.refresh_ttl', 20160); // default 2 weeks in minutes
-        
-        // Generate token with custom claims for refresh
-        $token = JWTAuth::fromUser($user, [
-            'type' => 'refresh',
-            'iat' => time(),
-        ]);
+        // Save original state
+        $originalClaims = JWTAuth::getCustomClaims();
+        $originalTTL = JWTAuth::factory()->getTTL();
+
+        // Set refresh-specific claims and TTL (2 weeks)
+        $refreshTTL = config('jwt.refresh_ttl', 20160);
+        JWTAuth::factory()->setTTL($refreshTTL);
+        JWTAuth::customClaims(['type' => 'refresh']);
+
+        // Generate the refresh token
+        $token = JWTAuth::fromUser($user);
+
+        // Restore original state for subsequent access tokens
+        JWTAuth::customClaims($originalClaims);
+        JWTAuth::factory()->setTTL($originalTTL);
 
         return $token;
     }
@@ -203,26 +210,33 @@ trait JWTAuthTrait
     protected function refreshAccessToken(?string $refreshToken = null): ?array
     {
         try {
-            if ($refreshToken) {
-                JWTAuth::setToken($refreshToken);
-            }
-
-            // Verify this is a refresh token, not an access token
-            $payload = JWTAuth::getPayload();
-            if (($payload['type'] ?? 'access') !== 'refresh') {
+            if (!$refreshToken) {
                 return null;
             }
 
-            // Check if token is valid (even if expired, we can refresh)
-            $user = JWTAuth::authenticate();
-            
+            // Manually decode payload to verify this is a refresh token
+            // (works even for expired tokens — base64 decode needs no validation)
+            $parts = explode('.', $refreshToken);
+            if (count($parts) !== 3) {
+                return null;
+            }
+
+            $payloadJson = base64_decode(str_replace(['-', '_'], ['+', '/'], $parts[1]));
+            $payload = json_decode($payloadJson, true);
+
+            if (!is_array($payload) || ($payload['type'] ?? 'access') !== 'refresh') {
+                return null;
+            }
+
+            // Get user from payload
+            $user = \App\Models\User::find($payload['sub'] ?? null);
             if (!$user) {
                 return null;
             }
 
             // Invalidate the old token
             try {
-                JWTAuth::invalidate($refreshToken);
+                JWTAuth::setToken($refreshToken)->invalidate();
             } catch (\Exception $e) {
                 // Token might already be invalid, continue
             }
