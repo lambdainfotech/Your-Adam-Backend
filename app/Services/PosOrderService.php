@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PosOrderService
 {
@@ -24,7 +25,7 @@ class PosOrderService
     public function createOrder(array $validated): PosOrder
     {
         return DB::transaction(function () use ($validated) {
-            $order = PosOrder::create([
+            $orderData = [
                 'user_id' => Auth::id(),
                 'customer_id' => $validated['customer_id'] ?? null,
                 'customer_name' => $validated['customer_name'] ?? null,
@@ -36,7 +37,14 @@ class PosOrderService
                 'note' => $validated['note'] ?? null,
                 'status' => 'completed',
                 'is_wholesale' => $validated['is_wholesale'] ?? false,
-            ]);
+            ];
+
+            // Handle legacy pos_session_id column on older databases
+            if (Schema::hasColumn('pos_orders', 'pos_session_id')) {
+                $orderData['pos_session_id'] = 0;
+            }
+
+            $order = PosOrder::create($orderData);
 
             $this->createOrderItems($order, $validated['items']);
             $this->processPayments($order, $validated['payments']);
