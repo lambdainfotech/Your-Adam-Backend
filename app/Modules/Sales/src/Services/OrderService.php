@@ -13,6 +13,9 @@ use App\Modules\Sales\DTOs\CreateOrderDTO;
 use App\Modules\Sales\Enums\OrderStatus;
 use App\Modules\Sales\Enums\PaymentStatus;
 use App\Models\InventoryMovement;
+use App\Models\Product;
+use App\Models\Setting;
+use App\Models\Variant;
 use App\Modules\Sales\Events\OrderCreated;
 use App\Modules\Sales\Events\OrderStatusChanged;
 use App\Modules\Sales\Exceptions\EmptyCartException;
@@ -21,6 +24,7 @@ use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Repositories\OrderRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Validation\ValidationException;
 
 class OrderService implements OrderServiceInterface
 {
@@ -131,6 +135,95 @@ class OrderService implements OrderServiceInterface
             $this->cartService->clearCart($userId);
 
             // Dispatch event
+            OrderCreated::dispatch($order);
+
+            return $order->fresh(['items']);
+        });
+    }
+
+    /**
+     * Create order directly from items (like guest checkout but for logged-in users)
+     */
+    public function createDirect(int $userId, array $data): Order
+    {
+        return $this->transaction(function () use ($userId, $data) {
+            $user = \App\Models\User::find($userId);
+
+            if (!$user) {
+                throw new \InvalidArgumentException('User not found.');
+            }
+
+            // Process items and calculate totals
+            $processedItems = $this->processItemsDirect($data['items']);
+            $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? []);
+
+            // Build delivery address
+            $shippingAddress = $data['shippingAddress'];
+            $deliveryAddress = [
+                'name' => $shippingAddress['name'],
+                'phone' => $shippingAddress['phone'],
+                'address_line_1' => $shippingAddress['address'],
+                'address_line_2' => null,
+                'city' => $shippingAddress['city'],
+                'state' => $shippingAddress['district'] ?? null,
+                'postal_code' => $shippingAddress['postcode'],
+                'country' => 'Bangladesh',
+            ];
+
+            $orderNumber = $this->generateOrderNumber();
+            $paymentMethod = $data['paymentMethod']['id'] === 'cod' ? 'cod' : 'online';
+
+            $order = $this->orderRepository->create([
+                'order_number' => $orderNumber,
+                'user_id' => $userId,
+                'status' => OrderStatus::PENDING,
+                'payment_status' => PaymentStatus::PENDING,
+                'payment_method' => $paymentMethod,
+                'subtotal' => $financials['subtotal'],
+                'discount_amount' => $financials['discount'],
+                'coupon_code' => null,
+                'coupon_discount' => 0,
+                'tax_amount' => $financials['tax'],
+                'shipping_amount' => $financials['shipping'],
+                'total_amount' => $financials['total'],
+                'currency' => config('app.currency', 'BDT'),
+                'notes' => $data['note'] ?? null,
+                'delivery_address' => $deliveryAddress,
+                'billing_address' => $deliveryAddress,
+                'estimated_delivery_date' => now()->addDays(config('sales.default_delivery_days', 7)),
+            ]);
+
+            foreach ($processedItems as $item) {
+                $order->items()->create([
+                    'variant_id' => $item['variant_id'],
+                    'product_name' => $item['product_name'],
+                    'variant_sku' => $item['variant_sku'],
+                    'variant_attributes' => $item['variant_attributes'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'original_price' => $item['original_price'],
+                    'discount_amount' => $item['discount_amount'],
+                    'total_price' => $item['total_price'],
+                ]);
+
+                // Decrease stock atomically
+                $decremented = $this->variantRepository->decrementStock($item['variant_id'], $item['quantity']);
+                if (!$decremented) {
+                    throw new \RuntimeException("Failed to decrement stock for variant {$item['variant_id']}");
+                }
+
+                // Log inventory movement
+                InventoryMovement::logMovement(
+                    productId: $item['variant']->product_id,
+                    variantId: $item['variant_id'],
+                    type: InventoryMovement::TYPE_SALE,
+                    quantity: -$item['quantity'],
+                    reason: 'Order created: ' . $orderNumber,
+                    referenceId: $order->id,
+                    referenceType: Order::class
+                );
+            }
+
             OrderCreated::dispatch($order);
 
             return $order->fresh(['items']);
@@ -307,6 +400,113 @@ class OrderService implements OrderServiceInterface
         }
 
         return $baseShipping;
+    }
+
+    /**
+     * Process and validate items for direct order
+     */
+    protected function processItemsDirect(array $items): array
+    {
+        $processed = [];
+
+        foreach ($items as $item) {
+            $variant = $this->resolveItemVariant($item);
+
+            if (!$variant || !$variant->is_active) {
+                $identifier = $item['variant_id'] ?? $item['product_id'];
+                $type = !empty($item['variant_id']) ? 'variant' : 'product';
+                throw ValidationException::withMessages([
+                    'items' => "Product {$type} ID {$identifier} is not available.",
+                ]);
+            }
+
+            $productName = $variant->product?->name ?? 'Unknown Product';
+
+            if (!$variant->canPurchase($item['quantity'])) {
+                throw ValidationException::withMessages([
+                    'items' => "Insufficient stock for {$productName}. Available: {$variant->stock_quantity}, Requested: {$item['quantity']}",
+                ]);
+            }
+
+            $unitPrice = $variant->final_price;
+            $originalPrice = $variant->compare_price ?? $variant->price ?? $variant->product?->base_price ?? $unitPrice;
+            $discountAmount = ($originalPrice - $unitPrice) * $item['quantity'];
+            $totalPrice = $unitPrice * $item['quantity'];
+
+            $processed[] = [
+                'variant_id' => $variant->id,
+                'variant' => $variant,
+                'product_name' => $productName,
+                'variant_sku' => $variant->sku,
+                'variant_attributes' => $variant->attributeValues->pluck('value', 'attribute.name')->toArray(),
+                'quantity' => $item['quantity'],
+                'unit_price' => $unitPrice,
+                'original_price' => $originalPrice,
+                'discount_amount' => max(0, $discountAmount),
+                'total_price' => $totalPrice,
+            ];
+        }
+
+        return $processed;
+    }
+
+    /**
+     * Resolve variant from item data (supports variant_id or product_id)
+     */
+    protected function resolveItemVariant(array $item): ?Variant
+    {
+        if (!empty($item['variant_id'])) {
+            return Variant::with(['product', 'attributeValues.attribute'])->find($item['variant_id']);
+        }
+
+        if (!empty($item['product_id'])) {
+            $product = Product::find($item['product_id']);
+
+            if (!$product || !$product->is_active) {
+                return null;
+            }
+
+            if ($product->has_variants) {
+                throw ValidationException::withMessages([
+                    'items' => "Product ID {$item['product_id']} has multiple variants. Please specify a variant_id.",
+                ]);
+            }
+
+            return Variant::with(['product', 'attributeValues.attribute'])
+                ->where('product_id', $item['product_id'])
+                ->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * Calculate financial totals for direct order
+     */
+    protected function calculateFinancialsDirect(array $processedItems, array $orderSummary): array
+    {
+        $settings = Setting::allSettings();
+
+        $subtotal = collect($processedItems)->sum('total_price');
+        $discount = 0;
+
+        $taxRate = (float) ($settings['tax_rate'] ?? 0);
+        $tax = $subtotal * $taxRate;
+
+        $freeShippingThreshold = (float) ($settings['feature_free_shipping_threshold'] ?? 2000);
+        $baseShippingRate = (float) ($settings['shipping_base_rate'] ?? 100);
+
+        $shipping = $subtotal >= $freeShippingThreshold ? 0 : $baseShippingRate;
+
+        $total = max(0, $subtotal - $discount + $tax + $shipping);
+
+        return [
+            'subtotal' => round($subtotal, 2),
+            'discount' => round($discount, 2),
+            'tax' => round($tax, 2),
+            'shipping' => round($shipping, 2),
+            'total' => round($total, 2),
+        ];
     }
 
     protected function transaction(\Closure $callback)

@@ -46,4 +46,14 @@ class Variant extends Model
     {
         return $this->stock_quantity <= $this->low_stock_alert;
     }
+
+    public function updateStockStatus(): void
+    {
+        if ($this->stock_quantity > 0) {
+            $this->stock_status = 'in_stock';
+        } else {
+            $this->stock_status = 'out_of_stock';
+        }
+        $this->saveQuietly();
+    }
 }

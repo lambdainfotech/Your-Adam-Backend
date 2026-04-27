@@ -17,6 +17,11 @@ interface OrderServiceInterface
     public function create(int $userId, CreateOrderDTO $dto): Order;
 
     /**
+     * Create a new order directly from items (bypass cart).
+     */
+    public function createDirect(int $userId, array $data): Order;
+
+    /**
      * Get order by ID.
      */
     public function getById(int $userId, int $orderId): Order;

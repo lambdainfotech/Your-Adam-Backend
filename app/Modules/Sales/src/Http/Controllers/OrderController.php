@@ -8,6 +8,7 @@ use App\Modules\Sales\Contracts\OrderServiceInterface;
 use App\Modules\Sales\DTOs\CreateOrderDTO;
 use App\Modules\Sales\Http\Requests\CancelOrderRequest;
 use App\Modules\Sales\Http\Requests\CreateOrderRequest;
+use App\Modules\Sales\Http\Requests\CustomerOrderRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,19 @@ class OrderController extends Controller
         $order = $this->service->create(
             $request->user()->id,
             CreateOrderDTO::fromRequest($request->validated())
+        );
+
+        return $this->createdResponse($order);
+    }
+
+    /**
+     * Create order directly from items (same format as guest checkout)
+     */
+    public function storeDirect(CustomerOrderRequest $request): JsonResponse
+    {
+        $order = $this->service->createDirect(
+            $request->user()->id,
+            $request->validated()
         );
 
         return $this->createdResponse($order);

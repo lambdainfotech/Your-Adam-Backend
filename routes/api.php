@@ -134,6 +134,7 @@ Route::middleware('jwt.auth')->group(function () {
     // Orders
     Route::get('/orders', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'index']);
     Route::post('/orders', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'store']);
+    Route::post('/orders/direct', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'storeDirect']);
     Route::get('/orders/{id}', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'show']);
     Route::get('/orders/{id}/track', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'track']);
     Route::post('/orders/{id}/cancel', [\App\Modules\Sales\Http\Controllers\OrderController::class, 'cancel']);
