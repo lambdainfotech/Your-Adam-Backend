@@ -47,6 +47,7 @@ class Product extends Model
         'status',
         'is_active',
         'is_featured',
+        'is_bestseller',
         'has_variants',
         'seo_title',
         'seo_description',
@@ -67,6 +68,7 @@ class Product extends Model
         'low_stock_threshold' => 'integer',
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
+        'is_bestseller' => 'boolean',
         'has_variants' => 'boolean',
     ];
 
@@ -79,6 +81,11 @@ class Product extends Model
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeBestSeller($query)
+    {
+        return $query->where('is_bestseller', true);
     }
 
     public function scopeSimple($query)

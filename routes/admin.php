@@ -60,6 +60,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     // Products
     Route::resource('products', ProductController::class)->names('admin.products');
     Route::post('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('admin.products.toggle-status');
+    Route::post('products/{product}/toggle-bestseller', [ProductController::class, 'toggleBestSeller'])->name('admin.products.toggle-bestseller');
     Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('admin.products.duplicate');
     Route::post('products/{product}/quick-update-stock', [ProductController::class, 'quickUpdateStock'])->name('admin.products.quick-update-stock');
 

@@ -90,6 +90,9 @@
                                         @if($product->is_featured)
                                             <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Featured</span>
                                         @endif
+                                        @if($product->is_bestseller)
+                                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Best Seller</span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -132,6 +135,12 @@
                                     <a href="{{ route('admin.products.variants', $product) }}" class="text-purple-600 hover:text-purple-800" title="Manage Variants">
                                         <i class="fas fa-layer-group"></i>
                                     </a>
+                                    <form method="POST" action="{{ route('admin.products.toggle-bestseller', $product) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="{{ $product->is_bestseller ? 'text-orange-600 hover:text-orange-800' : 'text-gray-400 hover:text-orange-600' }}" title="{{ $product->is_bestseller ? 'Remove Best Seller' : 'Mark as Best Seller' }}">
+                                            <i class="fas fa-fire"></i>
+                                        </button>
+                                    </form>
                                     <form method="POST" action="{{ route('admin.products.toggle-status', $product) }}" class="inline">
                                         @csrf
                                         <button type="submit" class="{{ $product->is_active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800' }}" title="{{ $product->is_active ? 'Deactivate' : 'Activate' }}">

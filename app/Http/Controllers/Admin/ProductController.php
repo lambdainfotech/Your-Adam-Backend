@@ -288,6 +288,17 @@ class ProductController extends Controller
             ->with('success', "Product {$status} successfully.");
     }
 
+    public function toggleBestSeller(Product $product)
+    {
+        $product->is_bestseller = !$product->is_bestseller;
+        $product->save();
+        
+        $status = $product->is_bestseller ? 'marked as Best Seller' : 'removed from Best Seller';
+        
+        return redirect()->route('admin.products.index')
+            ->with('success', "Product {$status} successfully.");
+    }
+
     /**
      * Quick update product stock (AJAX)
      */

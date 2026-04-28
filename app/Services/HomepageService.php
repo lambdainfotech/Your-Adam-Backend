@@ -124,7 +124,7 @@ class HomepageService
     {
         $products = Product::with(['category', 'images'])
             ->where('status', 1)
-            ->where('is_featured', true)
+            ->where('is_bestseller', true)
             ->take(8)
             ->get();
 
