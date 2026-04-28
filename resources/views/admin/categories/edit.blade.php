@@ -192,6 +192,67 @@
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <!-- Cover Image (Parent Categories Only) -->
+                    <div id="coverImageSection" @if($category->parent_id) class="hidden" @endif>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-image text-rose-600"></i>
+                            </span>
+                            Cover Image
+                        </h3>
+                        
+                        <!-- Current Cover Image -->
+                        @if($category->cover_image)
+                            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-2">Current Cover Image:</p>
+                                <div class="relative inline-block">
+                                    <img src="{{ $category->cover_image }}" alt="{{ $category->name }}" class="h-32 rounded-lg shadow-md">
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Upload Cover Image -->
+                        <div id="coverDropZone" class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-rose-400 hover:bg-rose-50 transition-all cursor-pointer relative">
+                            <input type="file" name="cover_image" id="coverImageInput" accept="image/jpeg,image/png,image/jpg,image/webp" class="hidden">
+                            
+                            <!-- Default State -->
+                            <div id="coverDropZoneDefault">
+                                <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-images text-rose-600 text-2xl"></i>
+                                </div>
+                                <p class="text-gray-600 text-sm mb-2">{{ $category->cover_image ? 'Change Cover Image' : 'Upload Cover Image' }}</p>
+                                <p class="text-gray-400 text-xs mb-3">For parent category page cover. Drag and drop or click to browse</p>
+                                <button type="button" id="coverBrowseButton" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 text-sm">
+                                    <i class="fas fa-folder-open mr-2"></i>{{ $category->cover_image ? 'Select New Image' : 'Select Image' }}
+                                </button>
+                                <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP | Max 2MB | Recommended: 1440x400px</p>
+                            </div>
+
+                            <!-- Preview State -->
+                            <div id="coverDropZonePreview" class="hidden">
+                                <div class="relative inline-block">
+                                    <img id="coverImagePreview" src="" alt="Preview" class="max-h-48 rounded-lg shadow-md">
+                                    <button type="button" id="coverRemoveImage" class="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-lg">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2" id="coverImageName"></p>
+                            </div>
+
+                            <!-- Drag Overlay -->
+                            <div id="coverDragOverlay" class="absolute inset-0 bg-rose-600 bg-opacity-90 rounded-xl flex items-center justify-center hidden">
+                                <div class="text-white text-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl mb-2"></i>
+                                    <p class="font-medium">Drop image here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        @error('cover_image')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Right Column -->
@@ -253,6 +314,14 @@
                                     {{ $category->hero_image ? '✓ Set' : 'Not set' }}
                                 </span>
                             </div>
+                            @if(!$category->parent_id)
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Cover Image</span>
+                                <span class="font-medium {{ $category->cover_image ? 'text-green-600' : 'text-gray-400' }}">
+                                    {{ $category->cover_image ? '✓ Set' : 'Not set' }}
+                                </span>
+                            </div>
+                            @endif
                             <div class="flex justify-between">
                                 <span class="text-gray-500">Created</span>
                                 <span class="font-medium">{{ $category->created_at->format('M d, Y') }}</span>
@@ -382,6 +451,109 @@
         imagePreview.src = '';
         dropZonePreview.classList.add('hidden');
         dropZoneDefault.classList.remove('hidden');
+    });
+
+    // Cover Image visibility toggle based on parent selection
+    const parentSelect = document.getElementById('parent_id');
+    const coverImageSection = document.getElementById('coverImageSection');
+
+    function toggleCoverImageSection() {
+        if (!parentSelect.value) {
+            coverImageSection.classList.remove('hidden');
+        } else {
+            coverImageSection.classList.add('hidden');
+            document.getElementById('coverImageInput').value = '';
+            document.getElementById('coverImagePreview').src = '';
+            document.getElementById('coverDropZonePreview').classList.add('hidden');
+            document.getElementById('coverDropZoneDefault').classList.remove('hidden');
+        }
+    }
+
+    parentSelect.addEventListener('change', toggleCoverImageSection);
+
+    // Cover Image Drop Zone
+    const coverDropZone = document.getElementById('coverDropZone');
+    const coverImageInput = document.getElementById('coverImageInput');
+    const coverDropZoneDefault = document.getElementById('coverDropZoneDefault');
+    const coverDropZonePreview = document.getElementById('coverDropZonePreview');
+    const coverImagePreview = document.getElementById('coverImagePreview');
+    const coverImageName = document.getElementById('coverImageName');
+    const coverDragOverlay = document.getElementById('coverDragOverlay');
+
+    coverDropZone.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        coverImageInput.click();
+    });
+
+    document.getElementById('coverBrowseButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        coverImageInput.click();
+    });
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        coverDropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        coverDropZone.addEventListener(eventName, () => {
+            coverDragOverlay.classList.remove('hidden');
+            coverDropZone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        coverDropZone.addEventListener(eventName, (e) => {
+            if (e.target === coverDropZone || !coverDropZone.contains(e.relatedTarget)) {
+                coverDragOverlay.classList.add('hidden');
+                coverDropZone.classList.remove('dragover');
+            }
+        }, false);
+    });
+
+    coverDropZone.addEventListener('drop', (e) => {
+        coverDragOverlay.classList.add('hidden');
+        coverDropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleCoverFile(files[0]);
+        }
+    }, false);
+
+    coverImageInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleCoverFile(e.target.files[0]);
+        }
+    });
+
+    function handleCoverFile(file) {
+        if (file.size > maxSize) {
+            alert('Image is too large. Maximum size is 2MB.');
+            coverImageInput.value = '';
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file.');
+            coverImageInput.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            coverImagePreview.src = e.target.result;
+            coverImageName.textContent = file.name;
+            coverDropZoneDefault.classList.add('hidden');
+            coverDropZonePreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById('coverRemoveImage').addEventListener('click', (e) => {
+        e.stopPropagation();
+        coverImageInput.value = '';
+        coverImagePreview.src = '';
+        coverDropZonePreview.classList.add('hidden');
+        coverDropZoneDefault.classList.remove('hidden');
     });
 
     // Hero Image Drop Zone

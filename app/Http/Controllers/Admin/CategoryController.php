@@ -51,6 +51,7 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'image.image' => 'The file must be an image.',
             'image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
@@ -58,6 +59,9 @@ class CategoryController extends Controller
             'hero_image.image' => 'The file must be an image.',
             'hero_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
             'hero_image.max' => 'Maximum file size is 2MB.',
+            'cover_image.image' => 'The file must be an image.',
+            'cover_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
+            'cover_image.max' => 'Maximum file size is 2MB.',
         ]);
         
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
@@ -69,6 +73,11 @@ class CategoryController extends Controller
 
         if ($request->hasFile('hero_image')) {
             $validated['hero_image'] = $this->fileUploadService->upload($request->file('hero_image'), 'categories');
+        }
+
+        // Cover image is only for parent (root) categories
+        if (empty($validated['parent_id']) && $request->hasFile('cover_image')) {
+            $validated['cover_image'] = $this->fileUploadService->upload($request->file('cover_image'), 'categories');
         }
         
         Category::create($validated);
@@ -97,6 +106,7 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'image.image' => 'The file must be an image.',
             'image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
@@ -104,6 +114,9 @@ class CategoryController extends Controller
             'hero_image.image' => 'The file must be an image.',
             'hero_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
             'hero_image.max' => 'Maximum file size is 2MB.',
+            'cover_image.image' => 'The file must be an image.',
+            'cover_image.mimes' => 'Supported formats: JPEG, PNG, JPG, WebP.',
+            'cover_image.max' => 'Maximum file size is 2MB.',
         ]);
         
         $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : false;
@@ -116,6 +129,19 @@ class CategoryController extends Controller
         if ($request->hasFile('hero_image')) {
             $this->fileUploadService->deleteByUrl($category->hero_image);
             $validated['hero_image'] = $this->fileUploadService->upload($request->file('hero_image'), 'categories');
+        }
+
+        // Cover image is only for parent (root) categories
+        $isNowParent = empty($validated['parent_id']);
+        $wasParent = is_null($category->parent_id);
+
+        if ($isNowParent && $request->hasFile('cover_image')) {
+            $this->fileUploadService->deleteByUrl($category->cover_image);
+            $validated['cover_image'] = $this->fileUploadService->upload($request->file('cover_image'), 'categories');
+        } elseif (!$isNowParent && $wasParent && $category->cover_image) {
+            // Category changed from parent to child — remove cover image
+            $this->fileUploadService->deleteByUrl($category->cover_image);
+            $validated['cover_image'] = null;
         }
         
         $category->update($validated);
@@ -138,6 +164,7 @@ class CategoryController extends Controller
         
         $this->fileUploadService->deleteByUrl($category->image);
         $this->fileUploadService->deleteByUrl($category->hero_image);
+        $this->fileUploadService->deleteByUrl($category->cover_image);
         
         $category->delete();
         

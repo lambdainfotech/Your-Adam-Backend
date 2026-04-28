@@ -18,6 +18,7 @@ class Category extends Model
         'description',
         'image',
         'hero_image',
+        'cover_image',
         'banner',
         'sort_order',
         'is_active',
