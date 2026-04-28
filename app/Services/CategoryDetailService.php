@@ -45,6 +45,7 @@ class CategoryDetailService
                 'slug' => $category->slug,
                 'description' => $category->description,
                 'heroImage' => $category->hero_image,
+                'coverImage' => $category->cover_image,
                 'breadcrumb' => $breadcrumb,
             ],
             'filters' => $filters,

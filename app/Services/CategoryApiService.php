@@ -47,6 +47,7 @@ class CategoryApiService
             'description' => $category->description,
             'image' => $category->image,
             'heroImage' => $category->hero_image,
+            'coverImage' => $category->cover_image,
             'productCount' => $productCount,
             'sortOrder' => $category->sort_order,
             'isActive' => $category->is_active,
