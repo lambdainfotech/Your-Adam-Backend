@@ -20,6 +20,7 @@ class SiteInfoService
             'social' => $this->getSocialSettings($settings),
             'announcement' => $this->getAnnouncementSettings($settings),
             'features' => $this->getFeatureSettings($settings),
+            'shipping' => $this->getShippingSettings($settings),
             'header' => $this->getHeaderSettings(),
             'footer' => $this->getFooterSettings($settings),
         ];
@@ -141,6 +142,22 @@ class SiteInfoService
             'currencySymbol' => $settings['feature_currency_symbol'] ?? '৳',
             'codAvailable' => filter_var($settings['feature_cod_available'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'returnsDays' => (int) ($settings['feature_returns_days'] ?? 7),
+        ];
+    }
+
+    /**
+     * Get shipping settings
+     */
+    private function getShippingSettings(array $settings): array
+    {
+        $isFreeShipping = filter_var($settings['free_shipping'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        return [
+            'freeShipping' => $isFreeShipping,
+            'insideDhaka' => $isFreeShipping ? 0 : (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+            'outsideDhaka' => $isFreeShipping ? 0 : (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+            'freeShippingThreshold' => (float) ($settings['free_shipping_threshold'] ?? 1000),
+            'enableCourierTracking' => filter_var($settings['enable_courier_tracking'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ];
     }
 

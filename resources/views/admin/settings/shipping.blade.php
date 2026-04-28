@@ -33,6 +33,7 @@
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <label class="flex items-center cursor-pointer">
                         <div class="relative">
+                            <input type="hidden" name="settings[free_shipping]" value="0">
                             <input type="checkbox" name="settings[free_shipping]" id="freeShippingToggle" value="1"
                                 {{ ($settings['free_shipping'] ?? '0') == '1' ? 'checked' : '' }}
                                 class="sr-only peer">
@@ -72,6 +73,7 @@
                 <div class="mb-6">
                     <label class="flex items-center cursor-pointer">
                         <div class="relative">
+                            <input type="hidden" name="settings[enable_courier_tracking]" value="0">
                             <input type="checkbox" name="settings[enable_courier_tracking]" value="1"
                                 {{ ($settings['enable_courier_tracking'] ?? '1') == '1' ? 'checked' : '' }}
                                 class="sr-only peer">

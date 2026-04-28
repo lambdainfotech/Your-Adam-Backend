@@ -31,6 +31,7 @@
                 <h3 class="font-medium mb-4">Payment Methods</h3>
                 <div class="space-y-4 mb-6">
                     <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="hidden" name="settings[payment_method_cod]" value="0">
                         <input type="checkbox" id="payment_cod" name="settings[payment_method_cod]" value="1" {{ ($settings['payment_method_cod'] ?? '1') == '1' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
                         <div class="ml-3">
                             <span class="font-medium">Cash on Delivery (COD)</span>
@@ -38,6 +39,7 @@
                         </div>
                     </label>
                     <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="hidden" name="settings[payment_method_aamarpay]" value="0">
                         <input type="checkbox" id="payment_aamarpay" name="settings[payment_method_aamarpay]" value="1" {{ ($settings['payment_method_aamarpay'] ?? '1') == '1' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
                         <div class="ml-3">
                             <span class="font-medium">aamarPay</span>
@@ -45,6 +47,7 @@
                         </div>
                     </label>
                     <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="hidden" name="settings[payment_method_sslcommerz]" value="0">
                         <input type="checkbox" id="payment_sslcommerz" name="settings[payment_method_sslcommerz]" value="1" {{ ($settings['payment_method_sslcommerz'] ?? '0') == '1' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
                         <div class="ml-3">
                             <span class="font-medium">SSLCommerz</span>
@@ -52,6 +55,7 @@
                         </div>
                     </label>
                     <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="hidden" name="settings[payment_method_stripe]" value="0">
                         <input type="checkbox" id="payment_stripe" name="settings[payment_method_stripe]" value="1" {{ ($settings['payment_method_stripe'] ?? '0') == '1' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
                         <div class="ml-3">
                             <span class="font-medium">Stripe</span>
@@ -107,6 +111,7 @@
                     </div>
                     <div class="mb-4">
                         <label class="flex items-center">
+                            <input type="hidden" name="settings[sslcommerz_sandbox]" value="0">
                             <input type="checkbox" name="settings[sslcommerz_sandbox]" value="1" {{ ($settings['sslcommerz_sandbox'] ?? '1') == '1' ? 'checked' : '' }} class="w-4 h-4 text-blue-600 rounded">
                             <span class="ml-2">Sandbox Mode</span>
                         </label>
