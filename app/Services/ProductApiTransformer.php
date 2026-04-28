@@ -98,6 +98,7 @@ class ProductApiTransformer
             'attributes' => $attributes,
             'meta' => [
                 'is_featured' => $product->is_featured,
+                'is_bestseller' => $product->is_bestseller,
                 'tags' => [],
             ],
             'timestamps' => [

@@ -49,6 +49,10 @@ class ProductController extends Controller
             $query->onSale();
         }
 
+        if ($request->boolean('bestseller')) {
+            $query->bestSeller();
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
