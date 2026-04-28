@@ -20,6 +20,7 @@ class SiteInfoService
             'social' => $this->getSocialSettings($settings),
             'announcement' => $this->getAnnouncementSettings($settings),
             'features' => $this->getFeatureSettings($settings),
+            'payment' => $this->getPaymentSettings($settings),
             'shipping' => $this->getShippingSettings($settings),
             'header' => $this->getHeaderSettings(),
             'footer' => $this->getFooterSettings($settings),
@@ -142,6 +143,51 @@ class SiteInfoService
             'currencySymbol' => $settings['feature_currency_symbol'] ?? '৳',
             'codAvailable' => filter_var($settings['feature_cod_available'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'returnsDays' => (int) ($settings['feature_returns_days'] ?? 7),
+        ];
+    }
+
+    /**
+     * Get payment settings from admin payment configuration
+     */
+    private function getPaymentSettings(array $settings): array
+    {
+        $methods = [];
+
+        if (filter_var($settings['payment_method_cod'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
+            $methods[] = [
+                'id' => 'cod',
+                'name' => 'Cash on Delivery',
+                'description' => 'Pay when you receive',
+            ];
+        }
+
+        if (filter_var($settings['payment_method_aamarpay'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
+            $methods[] = [
+                'id' => 'aamarpay',
+                'name' => 'aamarPay',
+                'description' => 'Bangladesh payment gateway (bKash, Nagad, Cards)',
+            ];
+        }
+
+        if (filter_var($settings['payment_method_sslcommerz'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            $methods[] = [
+                'id' => 'sslcommerz',
+                'name' => 'SSLCommerz',
+                'description' => 'Online payment gateway',
+            ];
+        }
+
+        if (filter_var($settings['payment_method_stripe'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            $methods[] = [
+                'id' => 'stripe',
+                'name' => 'Stripe',
+                'description' => 'Credit/Debit card payments',
+            ];
+        }
+
+        return [
+            'methods' => $methods,
+            'paymentMethods' => array_column($methods, 'name'),
         ];
     }
 
