@@ -249,6 +249,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
         Route::get('/order/{id}/print', [PosController::class, 'printReceipt'])->name('admin.pos.order.print');
         Route::post('/order/{id}/delivery-status', [PosController::class, 'updateDeliveryStatus'])->name('admin.pos.order.delivery-status');
         Route::get('/order/{id}/tracking', [PosController::class, 'getTrackingTimeline'])->name('admin.pos.order.tracking');
+        Route::delete('/order/{id}', [PosController::class, 'destroy'])->name('admin.pos.order.destroy');
         
         // Reports
         Route::get('/reports/daily', [PosController::class, 'dailyReport'])->name('admin.pos.reports.daily');
