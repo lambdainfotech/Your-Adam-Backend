@@ -397,33 +397,4 @@ class PosController extends Controller
             ],
         ]);
     }
-
-    /**
-     * Delete a POS order
-     */
-    public function destroy($id)
-    {
-        try {
-            $order = PosOrder::findOrFail($id);
-
-            \DB::transaction(function () use ($order) {
-                // Restore stock for non-cancelled orders before deleting
-                if ($order->delivery_status !== 'cancelled') {
-                    foreach ($order->items as $item) {
-                        if ($item->product_variant_id && $item->variant) {
-                            $item->variant->increment('stock_quantity', $item->quantity);
-                        } elseif ($item->product_id && $item->product) {
-                            $item->product->increment('stock_quantity', $item->quantity);
-                        }
-                    }
-                }
-
-                $order->delete();
-            });
-
-            return redirect()->route('admin.orders.index')->with('success', 'POS order deleted successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete POS order: ' . $e->getMessage());
-        }
-    }
 }

@@ -113,13 +113,6 @@
                                         <a href="{{ route('admin.pos.order.print', $order['id']) }}" target="_blank" class="text-green-600 hover:text-green-800" title="Print Receipt">
                                             <i class="fas fa-print"></i>
                                         </a>
-                                        <form action="{{ route('admin.pos.order.destroy', $order['id']) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this POS order? This action cannot be undone.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
                                     @else
                                         <a href="{{ route('admin.orders.show', $order['id']) }}" class="text-blue-600 hover:text-blue-800" title="View">
                                             <i class="fas fa-eye"></i>
@@ -130,13 +123,6 @@
                                         <a href="{{ route('admin.orders.print', $order['id']) }}" class="text-purple-600 hover:text-purple-800" title="Print Receipt" target="_blank">
                                             <i class="fas fa-print"></i>
                                         </a>
-                                        <form action="{{ route('admin.orders.destroy', $order['id']) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
                                     @endif
                                 </div>
                             </td>
