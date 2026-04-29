@@ -63,6 +63,7 @@ class ProductService
         // Auto-generate SKU and Barcode for simple products if not provided
         if ($product->product_type === 'simple') {
             $this->generateSimpleProductCodes($product);
+            $this->createDefaultVariantForSimpleProduct($product);
         }
 
         // Save product attributes
@@ -126,6 +127,7 @@ class ProductService
         // Auto-generate SKU and Barcode for simple products if not provided
         if ($product->product_type === 'simple') {
             $this->generateSimpleProductCodes($product);
+            $this->syncDefaultVariantForSimpleProduct($product);
         }
 
         // Update product attributes
@@ -161,6 +163,77 @@ class ProductService
 
         if (!empty($updateData)) {
             $product->update($updateData);
+        }
+    }
+
+    /**
+     * Create a default variant for a simple product if none exists.
+     */
+    protected function createDefaultVariantForSimpleProduct(Product $product): void
+    {
+        if ($product->variants()->exists()) {
+            return;
+        }
+
+        $this->createVariantWithRetry($product, [
+            'variant_name' => $product->name,
+            'sku' => $product->sku,
+            'barcode' => $product->barcode,
+            'price' => $product->base_price,
+            'compare_price' => $product->compare_price,
+            'discount_type' => $product->discount_type,
+            'discount_value' => $product->discount_value,
+            'sale_price' => $product->sale_price,
+            'wholesale_price' => $product->wholesale_price,
+            'wholesale_percentage' => $product->wholesale_percentage,
+            'cost_price' => $product->cost_price,
+            'stock_quantity' => $product->stock_quantity,
+            'stock_status' => $product->stock_status,
+            'low_stock_threshold' => $product->low_stock_threshold,
+            'manage_stock' => $product->manage_stock,
+            'weight' => $product->weight,
+            'is_active' => true,
+            'position' => 0,
+        ]);
+    }
+
+    /**
+     * Sync the default variant for a simple product with product data.
+     */
+    protected function syncDefaultVariantForSimpleProduct(Product $product): void
+    {
+        $variant = $product->variants()->first();
+
+        $data = [
+            'variant_name' => $product->name,
+            'price' => $product->base_price,
+            'compare_price' => $product->compare_price,
+            'discount_type' => $product->discount_type,
+            'discount_value' => $product->discount_value,
+            'sale_price' => $product->sale_price,
+            'wholesale_price' => $product->wholesale_price,
+            'wholesale_percentage' => $product->wholesale_percentage,
+            'cost_price' => $product->cost_price,
+            'stock_quantity' => $product->stock_quantity,
+            'stock_status' => $product->stock_status,
+            'low_stock_threshold' => $product->low_stock_threshold,
+            'manage_stock' => $product->manage_stock,
+            'weight' => $product->weight,
+            'is_active' => true,
+        ];
+
+        if ($variant) {
+            // Only update SKU/barcode if they match the product (default variant)
+            // This prevents overwriting manually customized variants
+            if ($variant->sku === $product->getOriginal('sku') || empty($variant->sku)) {
+                $data['sku'] = $product->sku;
+            }
+            if ($variant->barcode === $product->getOriginal('barcode') || empty($variant->barcode)) {
+                $data['barcode'] = $product->barcode;
+            }
+            $variant->update($data);
+        } else {
+            $this->createDefaultVariantForSimpleProduct($product);
         }
     }
 

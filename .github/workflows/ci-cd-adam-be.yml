@@ -14,10 +14,11 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
-          known_hosts: 'adam_be_deploy'
+          known_hosts: "adam_be_deploy"
 
       - name: 🚚 Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.STAGING_SSH_PORT }} -H ${{ secrets.STAGING_SSH_HOST }} >> ~/.ssh/known_hosts
+        run: ssh-keyscan -p ${{ secrets.STAGING_SSH_PORT }} -H ${{
+          secrets.STAGING_SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: 🚀 Run Deployment Script
         uses: appleboy/ssh-action@master
@@ -33,6 +34,9 @@ jobs:
             git pull origin master
             COMPOSER_ALLOW_SUPERUSER=1 composer install --no-interaction
             php artisan migrate --force
+            php artisan products:backfill-variants
+            php artisan cache:clear
+            php artisan config:clear
             chown -R www:www /www/wwwroot/Your-Adam-Backend
             find . -type d -exec chmod 755 {} \; && find . -type f -exec chmod 644 {} \;
             chmod -R 775 /www/wwwroot/Your-Adam-Backend/storage /www/wwwroot/Your-Adam-Backend/bootstrap/cache
