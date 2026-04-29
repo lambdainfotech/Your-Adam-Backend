@@ -261,8 +261,8 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         try {
-            // Check if product has orders (via variants or direct order items)
-            if ($product->variants()->whereHas('orderItems')->exists() || $product->orderItems()->exists()) {
+            // Check if product has orders via variants
+            if ($product->variants()->whereHas('orderItems')->exists()) {
                 return redirect()->route('admin.products.index')
                     ->with('error', 'Cannot delete product with existing orders.');
             }
