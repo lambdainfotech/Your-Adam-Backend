@@ -20,33 +20,33 @@ class ActivityLogController extends Controller
         ]);
 
         $query = ActivityLog::with('user');
-        
+
         if (!empty($validated['user_id'])) {
             $query->forUser($validated['user_id']);
         }
-        
+
         if (!empty($validated['action'])) {
             $query->byAction($validated['action']);
         }
-        
+
         if (!empty($validated['entity_type'])) {
             $query->forEntity($validated['entity_type'], $validated['entity_id'] ?? null);
         }
-        
+
         if (!empty($validated['date_from'])) {
             $query->whereDate('created_at', '>=', $validated['date_from']);
         }
-        
+
         if (!empty($validated['date_to'])) {
             $query->whereDate('created_at', '<=', $validated['date_to']);
         }
-        
+
         $logs = $query->recent()->paginate(50)->withQueryString();
-        
+
         // Get unique values for filters
         $actions = ActivityLog::select('action')->distinct()->pluck('action');
         $entityTypes = ActivityLog::select('entity_type')->distinct()->pluck('entity_type');
-        
+
         return view('admin.activity-logs.index', compact('logs', 'actions', 'entityTypes'));
     }
 
@@ -63,16 +63,17 @@ class ActivityLogController extends Controller
             ->recent()
             ->paginate(50)
             ->withQueryString();
-        
+
         return view('admin.activity-logs.index', compact('logs', 'userId'));
     }
 
     public function entityLogs(Request $request, $entityType, $entityId = null)
     {
         $query = ActivityLog::with('user')->forEntity($entityType, $entityId);
-        
+
         $logs = $query->recent()->paginate(50)->withQueryString();
-        
+
         return view('admin.activity-logs.index', compact('logs', 'entityType', 'entityId'));
+        
     }
 }
