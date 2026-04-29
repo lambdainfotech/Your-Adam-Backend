@@ -310,7 +310,7 @@ class StockManagerService
                     'name' => ($variant->product?->name ?? 'Unknown Product') . ' - ' . $variant->attribute_text_short,
                     'sku' => $variant->sku,
                     'stock' => $variant->stock_quantity,
-                    'category' => $variant->product->category?->name,
+                    'category' => $variant->product?->category?->name,
                 ];
             });
 
