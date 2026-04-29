@@ -181,4 +181,26 @@ class OrderController extends Controller
         $order->load('user', 'items.variant.product');
         return view('admin.orders.print', compact('order'));
     }
+
+    public function destroy(Order $order)
+    {
+        try {
+            \DB::transaction(function () use ($order) {
+                // Restore stock for non-cancelled orders before deleting
+                if ($order->status !== 'cancelled') {
+                    foreach ($order->items as $item) {
+                        if ($item->variant_id && $item->variant) {
+                            $item->variant->increment('stock_quantity', $item->quantity);
+                        }
+                    }
+                }
+
+                $order->delete();
+            });
+
+            return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete order: ' . $e->getMessage());
+        }
+    }
 }
