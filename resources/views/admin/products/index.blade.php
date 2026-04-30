@@ -101,7 +101,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-gray-600">{{ $product->sku_prefix }}</td>
+                            <td class="px-6 py-4 text-gray-600">{{ $product->sku ?? $product->sku_prefix ?? '-' }}</td>
                             <td class="px-6 py-4">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $product->category->name ?? 'N/A' }}</span>
                             </td>
