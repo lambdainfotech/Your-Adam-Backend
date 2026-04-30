@@ -87,6 +87,11 @@
                                     </div>
                                     <div>
                                         <p class="font-medium text-gray-800">{{ $product->name }}</p>
+                                        @if($product->product_type === 'variable')
+                                            <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded">Variant</span>
+                                        @else
+                                            <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Simple</span>
+                                        @endif
                                         @if($product->is_featured)
                                             <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Featured</span>
                                         @endif
