@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campaign;
+use App\Models\Product;
 use App\Services\ProductApiTransformer;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -57,15 +58,42 @@ class CampaignController extends Controller
     {
         $campaign = Campaign::where('slug', $slug)
             ->with([
-                'products' => function ($query) {
-                    $query->where('is_active', true)
-                        ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage']);
-                },
                 'categories' => function ($query) {
                     $query->where('is_active', true);
                 },
             ])
             ->firstOrFail();
+
+        // Load products based on campaign apply type
+        if ($campaign->apply_to_all || $campaign->apply_type === 'all') {
+            $products = Product::where('is_active', true)
+                ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
+                ->get();
+            $campaign->setRelation('products', $products);
+        } elseif ($campaign->apply_type === 'categories') {
+            $categoryIds = $campaign->categories->pluck('id');
+            if ($categoryIds->isNotEmpty()) {
+                $products = Product::where('is_active', true)
+                    ->where(function ($query) use ($categoryIds) {
+                        $query->whereIn('category_id', $categoryIds)
+                            ->orWhereHas('categories', function ($q) use ($categoryIds) {
+                                $q->whereIn('categories.id', $categoryIds);
+                            });
+                    })
+                    ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
+                    ->get();
+            } else {
+                $products = collect();
+            }
+            $campaign->setRelation('products', $products);
+        } else {
+            // Explicitly attached products
+            $products = $campaign->products()
+                ->where('is_active', true)
+                ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
+                ->get();
+            $campaign->setRelation('products', $products);
+        }
 
         $data = $this->transformCampaign($campaign, true);
 
