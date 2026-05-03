@@ -73,6 +73,7 @@ class OrderService implements OrderServiceInterface
             $order = $this->orderRepository->create([
                 'order_number' => $orderNumber,
                 'user_id' => $userId,
+                'customer_type' => 'registered',
                 'status' => OrderStatus::PENDING,
                 'payment_status' => PaymentStatus::PENDING,
                 'payment_method' => $dto->paymentMethod,
@@ -197,6 +198,7 @@ class OrderService implements OrderServiceInterface
             $order = $this->orderRepository->create([
                 'order_number' => $orderNumber,
                 'user_id' => $userId,
+                'customer_type' => 'registered',
                 'status' => OrderStatus::PENDING,
                 'payment_status' => PaymentStatus::PENDING,
                 'payment_method' => $paymentMethod,

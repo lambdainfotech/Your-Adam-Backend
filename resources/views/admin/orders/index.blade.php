@@ -59,9 +59,15 @@
                                         <i class="fas fa-cash-register mr-1"></i>POS
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                                        <i class="fas fa-globe mr-1"></i>Website
-                                    </span>
+                                    @if(($order['customer_type'] ?? 'registered') === 'guest')
+                                        <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
+                                            <i class="fas fa-user-clock mr-1"></i>Guest
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                            <i class="fas fa-globe mr-1"></i>Website
+                                        </span>
+                                    @endif
                                 @endif
                             </td>
                             <td class="px-6 py-4">

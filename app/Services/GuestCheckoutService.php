@@ -61,6 +61,7 @@ class GuestCheckoutService
             $order = Order::create([
                 'order_number' => $orderNumber,
                 'user_id' => $user->id,
+                'customer_type' => 'guest',
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'payment_method' => $data['paymentMethod']['id'] === 'cod' ? 'cod' : 'online',

@@ -70,6 +70,7 @@ class OrderController extends Controller
                 'created_at' => $order->created_at,
                 'type' => 'online',
                 'source' => 'Website',
+                'customer_type' => $order->customer_type ?? 'registered',
             ];
         });
 
