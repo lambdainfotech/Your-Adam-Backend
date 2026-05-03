@@ -18,7 +18,7 @@ class GuestCheckoutRequest extends FormRequest
             'guest.name' => ['required', 'string', 'max:255'],
             'guest.email' => ['required', 'email'],
             'guest.phone' => ['required', 'string', 'max:20'],
-            'guest.password' => ['required', 'string', 'min:6'],
+            'guest.password' => ['nullable', 'string', 'min:6'],
 
             // Items — support both variant_id (variant product) and product_id (simple product)
             'items' => ['required', 'array', 'min:1'],

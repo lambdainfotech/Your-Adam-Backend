@@ -161,12 +161,15 @@ class GuestCheckoutService
         // Get customer role (default to 3 if not found)
         $customerRoleId = \App\Models\Role::where('slug', 'customer')->value('id') ?? 3;
 
+        // Auto-generate password if not provided by guest
+        $password = $guest['password'] ?? \Illuminate\Support\Str::random(12);
+
         // Always create a new guest user — never reuse existing accounts without authentication
         return User::create([
             'name' => $guest['name'],
             'email' => $guest['email'],
             'mobile' => $guest['phone'],
-            'password' => $guest['password'],
+            'password' => $password,
             'role_id' => $customerRoleId,
             'status' => true,
             'email_verified_at' => now(),
