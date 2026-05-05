@@ -34,7 +34,10 @@ class JWTAuthController extends Controller
             $token = request()->cookie('jwt_token');
             if ($token) {
                 \PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::setToken($token);
-                if (\PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::check()) {
+                // Use authenticate() (same as middleware) instead of check()
+                // check() can return true for invalid tokens, causing redirect loops
+                $user = \PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth::authenticate();
+                if ($user) {
                     return redirect()->intended(route('admin.dashboard'));
                 }
             }

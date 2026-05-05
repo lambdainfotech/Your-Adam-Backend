@@ -127,6 +127,9 @@ class JWTAuthMiddleware
             ], 401);
         }
 
-        return redirect()->guest(route('admin.login'));
+        // Clear invalid token cookie to prevent redirect loops
+        return redirect()
+            ->guest(route('admin.login'))
+            ->withoutCookie($this->cookieName);
     }
 }
