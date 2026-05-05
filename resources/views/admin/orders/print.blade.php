@@ -400,12 +400,21 @@
                 </thead>
                 <tbody>
                     @foreach($order->items as $item)
+                    @php
+                        $imageUrl = $item->variant->mainImage?->full_image_url
+                            ?? $item->variant->product?->mainImage?->full_image_url
+                            ?? null;
+                    @endphp
                     <tr>
                         <td>
                             <div class="product-info">
-                                <div class="product-icon">
-                                    <i class="fas fa-box"></i>
-                                </div>
+                                @if($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $item->variant->product->name ?? 'Product' }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-right: 12px;">
+                                @else
+                                    <div class="product-icon">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                @endif
                                 <div class="product-details">
                                     <h4>{{ $item->variant->product->name ?? 'Unknown Product' }}</h4>
                                     <p>SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
@@ -416,7 +425,7 @@
                             <span class="qty-badge">{{ $item->quantity }}</span>
                         </td>
                         <td class="text-right">৳{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="text-right" style="font-weight: 600;">৳{{ number_format($item->total, 2) }}</td>
+                        <td class="text-right" style="font-weight: 600;">৳{{ number_format($item->total_price, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>

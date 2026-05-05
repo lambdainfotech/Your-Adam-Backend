@@ -114,7 +114,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load('user', 'guest', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.show', compact('order'));
     }
 
@@ -173,13 +173,13 @@ class OrderController extends Controller
     
     public function invoice(Order $order)
     {
-        $order->load('user', 'guest', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.invoice', compact('order'));
     }
 
     public function print(Order $order)
     {
-        $order->load('user', 'guest', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.print', compact('order'));
     }
 }

@@ -100,10 +100,22 @@
                 </thead>
                 <tbody>
                     @foreach($order->items as $item)
+                        @php
+                            $imageUrl = $item->variant->mainImage?->full_image_url
+                                ?? $item->variant->product?->mainImage?->full_image_url
+                                ?? null;
+                        @endphp
                         <tr class="border-b border-gray-100">
                             <td class="py-4">
-                                <p class="font-medium text-gray-800">{{ $item->variant->product->name ?? 'Unknown Product' }}</p>
-                                <p class="text-sm text-gray-500">SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
+                                <div class="flex items-center gap-3">
+                                    @if($imageUrl)
+                                        <img src="{{ $imageUrl }}" alt="{{ $item->variant->product->name ?? 'Product' }}" class="w-12 h-12 object-cover rounded border border-gray-200">
+                                    @endif
+                                    <div>
+                                        <p class="font-medium text-gray-800">{{ $item->variant->product->name ?? 'Unknown Product' }}</p>
+                                        <p class="text-sm text-gray-500">SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
                             </td>
                             <td class="py-4 text-center">{{ $item->quantity }}</td>
                             <td class="py-4 text-right">৳{{ number_format($item->unit_price, 2) }}</td>

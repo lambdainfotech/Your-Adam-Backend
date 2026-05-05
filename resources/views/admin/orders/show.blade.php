@@ -54,11 +54,23 @@
                 <h3 class="font-semibold text-gray-800 mb-4">Order Items</h3>
                 <div class="space-y-4">
                     @foreach($order->items as $item)
+                        @php
+                            $imageUrl = $item->variant->mainImage?->full_image_url
+                                ?? $item->variant->product?->mainImage?->full_image_url
+                                ?? null;
+                        @endphp
                         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="font-medium text-gray-800">{{ $item->variant->product->name ?? 'Unknown Product' }}</p>
-                                <p class="text-sm text-gray-500">SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
-                                <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                            <div class="flex items-center gap-4">
+                                @if($imageUrl)
+                                    <img src="{{ $imageUrl }}" alt="{{ $item->variant->product->name ?? 'Product' }}" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+                                @else
+                                    <div class="w-16 h-16 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                                @endif
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ $item->variant->product->name ?? 'Unknown Product' }}</p>
+                                    <p class="text-sm text-gray-500">SKU: {{ $item->variant->sku ?? 'N/A' }}</p>
+                                    <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                                </div>
                             </div>
                             <div class="text-right">
                                 <p class="font-medium">৳{{ number_format($item->unit_price, 2) }} each</p>
