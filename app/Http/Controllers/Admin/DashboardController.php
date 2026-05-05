@@ -55,13 +55,13 @@ class DashboardController extends Controller
         ];
 
         // Recent orders (both regular + POS)
-        $recentRegularOrders = Order::with('user')
-            ->select('id', 'order_number as number', 'total_amount', 'status', 'created_at', DB::raw("'online' as type"))
+        $recentRegularOrders = Order::with('user', 'guest')
+            ->select('id', 'order_number as number', 'customer_type', 'total_amount', 'status', 'created_at', DB::raw("'online' as type"))
             ->orderBy('created_at', 'desc')
             ->limit(5);
 
         $recentPosOrders = PosOrder::with('user')
-            ->select('id', 'order_number as number', 'total_amount', DB::raw("COALESCE(delivery_status, status) as status"), 'created_at', DB::raw("'pos' as type"))
+            ->select('id', 'order_number as number', DB::raw("'pos' as customer_type"), 'total_amount', DB::raw("COALESCE(delivery_status, status) as status"), 'created_at', DB::raw("'pos' as type"))
             ->orderBy('created_at', 'desc')
             ->limit(5);
 

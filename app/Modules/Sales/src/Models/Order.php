@@ -19,6 +19,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'user_id',
+        'guest_id',
         'customer_type',
         'status',
         'payment_status',
@@ -54,6 +55,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
     }
 
     public function items(): HasMany

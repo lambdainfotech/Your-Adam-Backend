@@ -24,7 +24,7 @@ class OrderController extends Controller
         $page = $validated['page'] ?? 1;
 
         // Get regular orders (paginated)
-        $regularOrdersQuery = Order::with('user', 'items')
+        $regularOrdersQuery = Order::with('user', 'guest', 'items')
             ->orderBy('created_at', 'desc');
 
         if (!empty($validated['status'])) {
@@ -60,7 +60,7 @@ class OrderController extends Controller
             return [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
-                'customer_name' => $order->user?->name ?? 'Guest',
+                'customer_name' => $order->customer_type === 'guest' ? ($order->guest?->name ?? 'Guest') : ($order->user?->name ?? 'Guest'),
                 'total' => $order->total_amount,
                 'status' => $order->status,
                 'payment_status' => $order->payment_status,
@@ -114,7 +114,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load('user', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product');
         return view('admin.orders.show', compact('order'));
     }
 
@@ -173,13 +173,13 @@ class OrderController extends Controller
     
     public function invoice(Order $order)
     {
-        $order->load('user', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product');
         return view('admin.orders.invoice', compact('order'));
     }
 
     public function print(Order $order)
     {
-        $order->load('user', 'items.variant.product');
+        $order->load('user', 'guest', 'items.variant.product');
         return view('admin.orders.print', compact('order'));
     }
 }

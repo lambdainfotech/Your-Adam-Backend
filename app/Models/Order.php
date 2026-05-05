@@ -15,6 +15,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'guest_id',
         'customer_type',
         'order_number',
         'status',
@@ -55,6 +56,19 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function guest(): BelongsTo
+    {
+        return $this->belongsTo(Guest::class);
+    }
+
+    /**
+     * Get the customer (user or guest) associated with this order.
+     */
+    public function customer(): User|Guest|null
+    {
+        return $this->customer_type === 'guest' ? $this->guest : $this->user;
     }
 
     public function items(): HasMany

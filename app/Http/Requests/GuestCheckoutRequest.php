@@ -18,7 +18,7 @@ class GuestCheckoutRequest extends FormRequest
             'guest.name' => ['required', 'string', 'max:255'],
             'guest.email' => ['required', 'email'],
             'guest.phone' => ['required', 'string', 'max:20'],
-            'guest.password' => ['nullable', 'string', 'min:6'],
+            // 'guest.password' => ['nullable', 'string', 'min:6'], // No longer needed — guests don't create accounts
 
             // Items — support both variant_id (variant product) and product_id (simple product)
             'items' => ['required', 'array', 'min:1'],
@@ -81,7 +81,7 @@ class GuestCheckoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'guest.email.unique' => 'This email is already registered. Please login or use a different email.',
+            'guest.email.email' => 'Please provide a valid email address.',
             'items.required' => 'Please add at least one item to your order.',
             'items.*.variant_id.exists' => 'One or more selected products are no longer available.',
             'items.*.product_id.exists' => 'One or more selected products are no longer available.',

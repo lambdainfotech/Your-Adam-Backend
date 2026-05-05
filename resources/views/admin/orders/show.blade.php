@@ -110,17 +110,20 @@
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <h3 class="font-semibold text-gray-800 mb-4">Customer Information</h3>
                 <div class="space-y-3">
+                    @php
+                        $customer = $order->customer_type === 'guest' ? $order->guest : $order->user;
+                    @endphp
                     <div>
                         <p class="text-sm text-gray-500">Name</p>
-                        <p class="font-medium">{{ $order->user->name ?? 'Guest' }}</p>
+                        <p class="font-medium">{{ $customer?->name ?? 'Guest' }}</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Email</p>
-                        <p class="font-medium">{{ $order->user->email ?? 'N/A' }}</p>
+                        <p class="font-medium">{{ $customer?->email ?? 'N/A' }}</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Phone</p>
-                        <p class="font-medium">{{ $order->user->phone ?? 'N/A' }}</p>
+                        <p class="font-medium">{{ $customer?->phone ?? ($customer?->mobile ?? 'N/A') }}</p>
                     </div>
                 </div>
             </div>

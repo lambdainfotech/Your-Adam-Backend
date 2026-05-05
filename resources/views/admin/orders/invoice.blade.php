@@ -46,9 +46,12 @@
             <div class="grid grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Bill To</h3>
-                    <p class="font-medium text-gray-800">{{ $order->user->name ?? 'Guest' }}</p>
-                    <p class="text-gray-600">{{ $order->user->email ?? 'N/A' }}</p>
-                    <p class="text-gray-600">{{ $order->user->mobile ?? 'N/A' }}</p>
+                    @php
+                        $customer = $order->customer_type === 'guest' ? $order->guest : $order->user;
+                    @endphp
+                    <p class="font-medium text-gray-800">{{ $customer?->name ?? 'Guest' }}</p>
+                    <p class="text-gray-600">{{ $customer?->email ?? 'N/A' }}</p>
+                    <p class="text-gray-600">{{ $customer?->phone ?? ($customer?->mobile ?? 'N/A') }}</p>
                 </div>
                 <div class="text-right">
                     <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Order Details</h3>

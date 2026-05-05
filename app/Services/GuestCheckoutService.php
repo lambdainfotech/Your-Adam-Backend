@@ -2,19 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\Address;
+use App\Models\Guest;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Setting;
-use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Validation\ValidationException;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class GuestCheckoutService
 {
@@ -30,22 +27,19 @@ class GuestCheckoutService
     public function checkout(array $data, Request $request): array
     {
         return DB::transaction(function () use ($data, $request) {
-            // 1. Create user
-            $user = $this->createUser($data['guest']);
+            // 1. Create or reuse guest record
+            $guest = $this->createGuest($data['guest'], $request);
 
-            // 2. Create address for user
-            $address = $this->createAddress($user->id, $data['shippingAddress']);
-
-            // 3. Process items and calculate totals
+            // 2. Process items and calculate totals
             $processedItems = $this->processItems($data['items']);
 
-            // 4. Calculate financials
+            // 3. Calculate financials
             $financials = $this->calculateFinancials($processedItems, $data['orderSummary'] ?? []);
 
-            // 5. Generate order number
+            // 4. Generate order number
             $orderNumber = $this->generateOrderNumber();
 
-            // 6. Build delivery address
+            // 5. Build delivery address
             $deliveryAddress = [
                 'name' => $data['shippingAddress']['name'],
                 'phone' => $data['shippingAddress']['phone'],
@@ -57,10 +51,11 @@ class GuestCheckoutService
                 'country' => 'Bangladesh',
             ];
 
-            // 7. Create order
+            // 6. Create order (no user_id, linked to guest instead)
             $order = Order::create([
                 'order_number' => $orderNumber,
-                'user_id' => $user->id,
+                'user_id' => null,
+                'guest_id' => $guest->id,
                 'customer_type' => 'guest',
                 'status' => 'pending',
                 'payment_status' => 'pending',
@@ -81,7 +76,7 @@ class GuestCheckoutService
                 'user_agent' => $request->userAgent(),
             ]);
 
-            // 8. Create order items and decrement stock
+            // 7. Create order items and decrement stock
             foreach ($processedItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -105,23 +100,23 @@ class GuestCheckoutService
                 );
             }
 
-            // 9. Record status history
+            // 8. Record status history (no authenticated user for guests)
             OrderStatusHistory::create([
                 'order_id' => $order->id,
                 'status' => 'pending',
                 'previous_status' => null,
                 'notes' => 'Order placed via guest checkout',
-                'changed_by' => $user->id,
+                'changed_by' => null,
             ]);
 
-            // 10. Handle payment
+            // 9. Handle payment
             $paymentUrl = null;
             $paymentError = null;
 
             if ($data['paymentMethod']['id'] === 'aamarpay') {
                 $customerInfo = [
-                    'name' => $user->name,
-                    'email' => $user->email,
+                    'name' => $guest->name,
+                    'email' => $guest->email,
                     'phone' => $data['shippingAddress']['phone'],
                     'address' => $data['shippingAddress']['address'],
                     'city' => $data['shippingAddress']['city'],
@@ -138,61 +133,29 @@ class GuestCheckoutService
                 }
             }
 
-            // 11. Generate JWT token for new user
-            $token = JWTAuth::fromUser($user);
-
-            // Load relationships for response
+            // 10. Load relationships for response
             $order->load(['items.variant.product']);
 
             return [
                 'order' => $order,
-                'token' => $token,
                 'payment_url' => $paymentUrl,
                 'payment_error' => $paymentError,
-                'user' => $user,
+                'guest' => $guest,
             ];
         });
     }
 
     /**
-     * Create a new user from guest details
+     * Create a new guest record from checkout details.
+     * Always creates a fresh record to avoid any unique constraint issues.
      */
-    protected function createUser(array $guest): User
+    protected function createGuest(array $guestData, Request $request): Guest
     {
-        // Get customer role (default to 3 if not found)
-        $customerRoleId = \App\Models\Role::where('slug', 'customer')->value('id') ?? 3;
-
-        // Auto-generate password if not provided by guest
-        $password = $guest['password'] ?? \Illuminate\Support\Str::random(12);
-
-        // Always create a new guest user — never reuse existing accounts without authentication
-        return User::create([
-            'name' => $guest['name'],
-            'email' => $guest['email'],
-            'mobile' => $guest['phone'],
-            'password' => $password,
-            'role_id' => $customerRoleId,
-            'status' => true,
-            'email_verified_at' => now(),
-        ]);
-    }
-
-    /**
-     * Create address for the newly created user
-     */
-    protected function createAddress(int $userId, array $shippingAddress): Address
-    {
-        return Address::create([
-            'user_id' => $userId,
-            'type' => 'home',
-            'full_name' => $shippingAddress['name'],
-            'mobile' => $shippingAddress['phone'],
-            'address_line_1' => $shippingAddress['address'],
-            'city' => $shippingAddress['city'],
-            'district' => $shippingAddress['district'] ?? null,
-            'postal_code' => $shippingAddress['postcode'],
-            'country' => 'Bangladesh',
-            'is_default' => true,
+        return Guest::create([
+            'name' => $guestData['name'],
+            'email' => $guestData['email'],
+            'phone' => $guestData['phone'],
+            'ip_address' => $request->ip(),
         ]);
     }
 

@@ -296,7 +296,7 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-slate-600">
-                                {{ $order->user?->name ?? 'Guest' }}
+                                {{ $order->customer_type === 'guest' ? ($order->guest?->name ?? 'Guest') : ($order->user?->name ?? 'Guest') }}
                             </td>
                             <td class="px-5 py-3 text-slate-500">
                                 {{ $order->created_at->format('M d, Y') }}

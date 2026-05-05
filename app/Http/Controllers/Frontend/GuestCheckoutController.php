@@ -7,11 +7,11 @@ use App\Http\Requests\GuestCheckoutRequest;
 use App\Services\GuestCheckoutService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class GuestCheckoutController extends Controller
 {
     use ApiResponse;
+
     public function __construct(
         protected GuestCheckoutService $service,
     ) {}
@@ -21,6 +21,7 @@ class GuestCheckoutController extends Controller
         $result = $this->service->checkout($request->validated(), $request);
 
         $order = $result['order'];
+        $guest = $result['guest'];
 
         return $this->success([
             'order' => [
@@ -59,10 +60,10 @@ class GuestCheckoutController extends Controller
                 'payment_url' => $result['payment_url'],
                 'error' => $result['payment_error'],
             ],
-            'token' => [
-                'access_token' => $result['token'],
-                'token_type' => 'bearer',
-                'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            'guest' => [
+                'name' => $guest->name,
+                'email' => $guest->email,
+                'phone' => $guest->phone,
             ],
         ], 'Order created successfully', 201);
     }

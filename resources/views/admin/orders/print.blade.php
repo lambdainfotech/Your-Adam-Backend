@@ -359,9 +359,12 @@
             <div class="customer-info">
                 <div class="info-card">
                     <h4>Bill To</h4>
-                    <p>{{ $order->user->name ?? 'Guest' }}</p>
-                    <p class="small">{{ $order->user->email ?? 'N/A' }}</p>
-                    <p class="small">{{ $order->user->mobile ?? 'N/A' }}</p>
+                    @php
+                        $customer = $order->customer_type === 'guest' ? $order->guest : $order->user;
+                    @endphp
+                    <p>{{ $customer?->name ?? 'Guest' }}</p>
+                    <p class="small">{{ $customer?->email ?? 'N/A' }}</p>
+                    <p class="small">{{ $customer?->phone ?? ($customer?->mobile ?? 'N/A') }}</p>
                 </div>
                 <div class="info-card">
                     <h4>Shipping Address</h4>

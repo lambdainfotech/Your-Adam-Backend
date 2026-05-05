@@ -63,6 +63,8 @@ Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponControlle
 
 // Guest Checkout (Public)
 Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout')->middleware('throttle:5,1');
+Route::get('/guest-orders/{orderNumber}', [\App\Http\Controllers\Frontend\GuestOrderController::class, 'show'])->name('api.guest-orders.show')->middleware('throttle:10,1');
+Route::get('/guest-orders/{orderNumber}/track', [\App\Http\Controllers\Frontend\GuestOrderController::class, 'track'])->name('api.guest-orders.track')->middleware('throttle:10,1');
 
 // Payment Callbacks (Public - Webhook endpoints)
 Route::post('/payment/aamarpay/success', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPaySuccess'])->name('api.payment.aamarpay.success')->middleware('throttle:20,1');
