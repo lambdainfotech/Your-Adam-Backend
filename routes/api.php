@@ -91,6 +91,9 @@ Route::get('/inventory/movements', [\App\Http\Controllers\Api\InventoryControlle
 // Tracking (Public)
 Route::get('/tracking', [\App\Modules\Courier\Http\Controllers\TrackingController::class, 'track']);
 
+// Public Order Tracking by Order Number + Phone (No auth required)
+Route::post('/track-order', [\App\Http\Controllers\Frontend\OrderTrackingController::class, 'track'])->name('api.track-order')->middleware('throttle:10,1');
+
 // Auth Routes (Unified JWT)
 Route::group(['prefix' => 'auth'], function () {
     // Public auth routes with rate limiting

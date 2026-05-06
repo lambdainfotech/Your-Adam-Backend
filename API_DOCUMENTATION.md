@@ -432,6 +432,91 @@ Content-Type: application/json
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | GET | `/api/tracking?order_number=ORD-123456` | Track order | No |
+| POST | `/api/track-order` | Track order by number + phone | No |
+
+#### Track Order by Number + Phone
+```http
+POST /api/track-order
+Content-Type: application/json
+
+{
+  "order_number": "ORD-123456",
+  "phone": "01XXXXXXXXX"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Tracking information retrieved successfully",
+  "data": {
+    "order_number": "ORD-123456",
+    "status": "shipped",
+    "status_label": "Shipped",
+    "payment_status": "paid",
+    "payment_method": "cod",
+    "total_amount": 2500.00,
+    "currency": "BDT",
+    "item_count": 3,
+    "estimated_delivery": "2026-05-10",
+    "delivered_at": null,
+    "created_at": "2026-05-01 14:30:00",
+    "customer": {
+      "name": "John Doe",
+      "phone": "01XXXXXXXXX"
+    },
+    "delivery_address": {
+      "name": "John Doe",
+      "phone": "01XXXXXXXXX",
+      "address": "123 Main St",
+      "city": "Dhaka",
+      "zone": "Gulshan"
+    },
+    "courier": {
+      "name": "Pathao",
+      "tracking_number": "TRK-987654",
+      "tracking_url": "https://pathao.com/track/TRK-987654",
+      "assigned_at": "2026-05-02 10:00:00",
+      "picked_up_at": "2026-05-02 14:00:00",
+      "delivered_at": null
+    },
+    "items": [
+      {
+        "product_name": "Wireless Headphones",
+        "variant_sku": "WH-BLK-001",
+        "variant_attributes": {"color": "Black"},
+        "quantity": 1,
+        "unit_price": 1500.00,
+        "total_price": 1500.00
+      }
+    ],
+    "timeline": [
+      {
+        "status": "pending",
+        "status_label": "Pending",
+        "previous_status": null,
+        "notes": "Order placed successfully",
+        "created_at": "2026-05-01 14:30:00"
+      },
+      {
+        "status": "confirmed",
+        "status_label": "Confirmed",
+        "previous_status": "Pending",
+        "notes": "Payment confirmed",
+        "created_at": "2026-05-01 15:00:00"
+      },
+      {
+        "status": "shipped",
+        "status_label": "Shipped",
+        "previous_status": "Confirmed",
+        "notes": "Handed over to courier",
+        "created_at": "2026-05-02 10:00:00"
+      }
+    ]
+  }
+}
+```
 
 ---
 
