@@ -1880,6 +1880,35 @@
                         }
                     },
                     "response": []
+                },
+                {
+                    "name": "Get Order Details by ID or Number",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/order-details",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "order-details"
+                            ]
+                        },
+                        "description": "Get full order details by order ID or order number. Works for both online and POS orders.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"order_number\": \"ORD-123456\"\n}"
+                        }
+                    },
+                    "response": []
                 }
             ]
         },

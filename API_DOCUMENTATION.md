@@ -433,6 +433,7 @@ Content-Type: application/json
 |--------|----------|-------------|------|
 | GET | `/api/tracking?order_number=ORD-123456` | Track order | No |
 | POST | `/api/track-order` | Track order by number + phone | No |
+| POST | `/api/order-details` | Get order details by ID or number | No |
 
 #### Track Order by Number + Phone
 ```http
@@ -512,6 +513,111 @@ Content-Type: application/json
         "previous_status": "Confirmed",
         "notes": "Handed over to courier",
         "created_at": "2026-05-02 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+#### Get Order Details by ID or Number
+```http
+POST /api/order-details
+Content-Type: application/json
+
+{
+  "order_number": "ORD-123456"
+}
+```
+
+Or by numeric ID:
+```http
+POST /api/order-details
+Content-Type: application/json
+
+{
+  "order_id": 1
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Order details retrieved successfully",
+  "data": {
+    "order": {
+      "id": 1,
+      "order_number": "ORD-123456",
+      "status": "confirmed",
+      "status_label": "Confirmed",
+      "payment_status": "paid",
+      "payment_method": "cod",
+      "subtotal": 2500.00,
+      "discount_amount": 0.00,
+      "coupon_code": "SAVE10",
+      "coupon_discount": 0.00,
+      "tax_amount": 0.00,
+      "shipping_amount": 100.00,
+      "total_amount": 2600.00,
+      "currency": "BDT",
+      "notes": null,
+      "admin_notes": null,
+      "estimated_delivery_date": "2026-05-10",
+      "delivered_at": null,
+      "created_at": "2026-05-01 14:30:00",
+      "updated_at": "2026-05-01 14:30:00"
+    },
+    "customer": {
+      "type": "guest",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "01XXXXXXXXX"
+    },
+    "delivery_address": {
+      "name": "John Doe",
+      "phone": "01XXXXXXXXX",
+      "address": "123 Main St",
+      "city": "Dhaka",
+      "zone": "Gulshan"
+    },
+    "billing_address": {
+      "name": "John Doe",
+      "phone": "01XXXXXXXXX",
+      "address": "123 Main St",
+      "city": "Dhaka"
+    },
+    "courier": {
+      "name": "Pathao",
+      "tracking_number": "TRK-987654",
+      "tracking_url": "https://pathao.com/track/TRK-987654",
+      "shipping_cost": 100.00,
+      "assigned_at": "2026-05-02 10:00:00",
+      "picked_up_at": "2026-05-02 14:00:00",
+      "delivered_at": null,
+      "notes": null
+    },
+    "item_count": 3,
+    "items": [
+      {
+        "id": 1,
+        "product_name": "Wireless Headphones",
+        "variant_sku": "WH-BLK-001",
+        "variant_attributes": {"color": "Black"},
+        "quantity": 1,
+        "unit_price": 1500.00,
+        "original_price": 1500.00,
+        "discount_amount": 0.00,
+        "total_price": 1500.00,
+        "product_image": null
+      }
+    ],
+    "timeline": [
+      {
+        "status": "pending",
+        "status_label": "Pending",
+        "previous_status": null,
+        "notes": "Order placed successfully",
+        "created_at": "2026-05-01 14:30:00"
       }
     ]
   }

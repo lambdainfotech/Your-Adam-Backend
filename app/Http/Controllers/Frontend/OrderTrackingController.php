@@ -15,6 +15,47 @@ class OrderTrackingController extends Controller
     use ApiResponse;
 
     /**
+     * Get full order details by order ID or order number.
+     *
+     * Works for both online orders (guest & registered) and POS orders.
+     */
+    public function details(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'order_id' => ['required_without:order_number', 'integer'],
+            'order_number' => ['required_without:order_id', 'string', 'max:50'],
+        ]);
+
+        // 1. Try to find as regular online order first
+        $orderQuery = Order::with(['items.variant.product', 'statusHistory', 'courierAssignment.courier', 'guest', 'user']);
+
+        if (!empty($validated['order_id'])) {
+            $order = $orderQuery->find($validated['order_id']);
+        } else {
+            $order = $orderQuery->where('order_number', $validated['order_number'])->first();
+        }
+
+        if ($order) {
+            return $this->success($this->formatOnlineOrderDetails($order), 'Order details retrieved successfully');
+        }
+
+        // 2. Fallback to POS order
+        $posOrderQuery = PosOrder::with(['items', 'statusHistory', 'courier']);
+
+        if (!empty($validated['order_id'])) {
+            $posOrder = $posOrderQuery->find($validated['order_id']);
+        } else {
+            $posOrder = $posOrderQuery->where('order_number', $validated['order_number'])->first();
+        }
+
+        if ($posOrder) {
+            return $this->success($this->formatPosOrderDetails($posOrder), 'Order details retrieved successfully');
+        }
+
+        return $this->error('Order not found.', 404);
+    }
+
+    /**
      * Track order by order number and phone number.
      *
      * Works for both online orders (guest & registered) and POS orders.
@@ -129,6 +170,119 @@ class OrderTrackingController extends Controller
         }
 
         return $digits;
+    }
+
+    /**
+     * Format full online order details response.
+     */
+    private function formatOnlineOrderDetails(Order $order): array
+    {
+        $courier = $order->courierAssignment;
+
+        return [
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+                'status_label' => ucfirst(str_replace('_', ' ', $order->status)),
+                'payment_status' => $order->payment_status,
+                'payment_method' => $order->payment_method,
+                'subtotal' => $order->subtotal,
+                'discount_amount' => $order->discount_amount,
+                'coupon_code' => $order->coupon_code,
+                'coupon_discount' => $order->coupon_discount,
+                'tax_amount' => $order->tax_amount,
+                'shipping_amount' => $order->shipping_amount,
+                'total_amount' => $order->total_amount,
+                'currency' => $order->currency,
+                'notes' => $order->notes,
+                'admin_notes' => $order->admin_notes,
+                'estimated_delivery_date' => $order->estimated_delivery_date?->toDateString(),
+                'delivered_at' => $order->delivered_at?->toDateTimeString(),
+                'created_at' => $order->created_at->toDateTimeString(),
+                'updated_at' => $order->updated_at->toDateTimeString(),
+            ],
+            'customer' => [
+                'type' => $order->customer_type,
+                'name' => $order->customer()?->name ?? 'Guest',
+                'email' => $order->customer()?->email ?? null,
+                'phone' => $order->customer()?->phone ?? $order->customer()?->mobile ?? ($order->delivery_address['phone'] ?? null),
+            ],
+            'delivery_address' => $order->delivery_address,
+            'billing_address' => $order->billing_address,
+            'courier' => $courier ? [
+                'name' => $courier->courier?->name,
+                'tracking_number' => $courier->tracking_number,
+                'tracking_url' => $courier->tracking_url,
+                'shipping_cost' => $courier->shipping_cost,
+                'assigned_at' => $courier->assigned_at?->toDateTimeString(),
+                'picked_up_at' => $courier->picked_up_at?->toDateTimeString(),
+                'delivered_at' => $courier->delivered_at?->toDateTimeString(),
+                'notes' => $courier->notes,
+            ] : null,
+            'item_count' => $order->items->sum('quantity'),
+            'items' => $order->items->map(fn ($item) => [
+                'id' => $item->id,
+                'product_name' => $item->product_name,
+                'variant_sku' => $item->variant_sku,
+                'variant_attributes' => $item->variant_attributes,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'original_price' => $item->original_price,
+                'discount_amount' => $item->discount_amount,
+                'total_price' => $item->total_price,
+                'product_image' => $item->variant?->product?->image ?? null,
+            ]),
+            'timeline' => $this->buildTimeline($order->statusHistory),
+        ];
+    }
+
+    /**
+     * Format full POS order details response.
+     */
+    private function formatPosOrderDetails(PosOrder $order): array
+    {
+        return [
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+                'status_label' => ucfirst(str_replace('_', ' ', $order->status)),
+                'delivery_status' => $order->delivery_status,
+                'total_amount' => $order->total_amount,
+                'subtotal' => $order->subtotal,
+                'discount_amount' => $order->discount_amount,
+                'tax_amount' => $order->tax_amount,
+                'is_wholesale' => $order->is_wholesale,
+                'currency' => 'BDT',
+                'estimated_delivery_date' => $order->estimated_delivery_date?->toDateString(),
+                'delivered_at' => $order->delivered_at?->toDateTimeString(),
+                'created_at' => $order->created_at->toDateTimeString(),
+                'updated_at' => $order->updated_at->toDateTimeString(),
+            ],
+            'customer' => [
+                'type' => 'pos',
+                'name' => $order->customer_name ?? 'Walk-in Customer',
+                'phone' => $order->customer_phone,
+                'email' => $order->customer_email,
+            ],
+            'item_count' => $order->items->sum('quantity'),
+            'delivery_address' => $order->delivery_address,
+            'delivery_notes' => $order->delivery_notes,
+            'courier' => $order->courier ? [
+                'name' => $order->courier->name,
+                'tracking_number' => $order->tracking_number,
+            ] : null,
+            'items' => $order->items->map(fn ($item) => [
+                'id' => $item->id,
+                'product_name' => $item->product_name,
+                'sku' => $item->sku,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'total_price' => $item->total_price,
+            ]),
+            'timeline' => $this->buildTimeline($order->statusHistory),
+        ];
     }
 
     /**
