@@ -183,18 +183,4 @@ class OrderController extends Controller
         return view('admin.orders.print', compact('order'));
     }
 
-    public function destroy(Order $order)
-    {
-        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
-        
-        try {
-            $order->delete();
-            
-            return redirect()->route('admin.orders.index')
-                ->with('success', 'Order deleted successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Failed to delete order: ' . $e->getMessage());
-        }
-    }
 }
