@@ -153,4 +153,29 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', "User {$status} successfully.");
     }
+
+    public function destroy(User $user)
+    {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
+        
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'You cannot delete your own account.');
+        }
+        
+        if ($user->hasRole('super-admin')) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Super Admin cannot be deleted.');
+        }
+        
+        try {
+            $user->delete();
+            
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Customer deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete customer: ' . $e->getMessage());
+        }
+    }
 }
