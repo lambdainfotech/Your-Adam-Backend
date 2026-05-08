@@ -82,6 +82,55 @@
             </form>
         </div>
         
+        <!-- Social Share Buttons Config -->
+        <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold">Social Share Buttons</h2>
+                <span class="text-sm text-gray-500">Enable platforms for product sharing</span>
+            </div>
+            
+            <form action="{{ route('admin.settings.update') }}" method="POST">
+                @csrf
+                <input type="hidden" name="redirect" value="{{ route('admin.settings.social') }}">
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    @php
+                        $platforms = [
+                            'facebook' => 'Facebook',
+                            'twitter' => 'Twitter / X',
+                            'instagram' => 'Instagram',
+                            'linkedin' => 'LinkedIn',
+                            'pinterest' => 'Pinterest',
+                            'tiktok' => 'TikTok',
+                            'whatsapp' => 'WhatsApp',
+                            'telegram' => 'Telegram',
+                            'reddit' => 'Reddit',
+                            'email' => 'Email',
+                        ];
+                        $enabled = json_decode($settings['social_share_enabled_platforms'] ?? '[]', true);
+                        if (empty($enabled)) {
+                            $enabled = ['facebook', 'twitter', 'whatsapp', 'linkedin', 'pinterest'];
+                        }
+                    @endphp
+                    
+                    @foreach($platforms as $key => $label)
+                        <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" name="settings[social_share_enabled_platforms][]" value="{{ $key }}" 
+                                {{ in_array($key, $enabled) ? 'checked' : '' }}
+                                class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <span class="text-sm font-medium text-gray-700">
+                                <i class="fab fa-{{ $key }} mr-1 w-5 text-center"></i>{{ $label }}
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Share Settings</button>
+                </div>
+            </form>
+        </div>
+        
         <!-- Preview Card -->
         <div class="bg-white rounded-lg shadow p-6 mt-6">
             <h2 class="text-lg font-semibold mb-4">Current Social Links</h2>

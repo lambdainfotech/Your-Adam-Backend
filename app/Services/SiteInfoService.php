@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Setting;
+use App\Services\SocialShareService;
 
 class SiteInfoService
 {
@@ -18,6 +19,7 @@ class SiteInfoService
             'site' => $this->getSiteSettings($settings),
             'contact' => $this->getContactSettings($settings),
             'social' => $this->getSocialSettings($settings),
+            'socialShare' => app(SocialShareService::class)->getShareConfig(),
             'announcement' => $this->getAnnouncementSettings($settings),
             'features' => $this->getFeatureSettings($settings),
             'payment' => $this->getPaymentSettings($settings),

@@ -74,6 +74,10 @@ Route::post('/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentC
 // Sliders / Banners (Frontend)
 Route::get('/sliders', [SliderController::class, 'index']);
 
+// Social Share (Frontend)
+Route::get('/social-share', [\App\Http\Controllers\Frontend\SocialShareController::class, 'config']);
+Route::get('/products/{product}/share', [\App\Http\Controllers\Frontend\SocialShareController::class, 'productShare']);
+
 // Products API (Enhanced)
 Route::get('/products', [\App\Http\Controllers\Api\ProductController::class, 'index']);
 Route::get('/products/slug/{slug}', [\App\Http\Controllers\Api\ProductController::class, 'bySlug']);

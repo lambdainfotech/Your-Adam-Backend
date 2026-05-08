@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\PricingService;
 use App\Services\ProductApiTransformer;
+use App\Services\SocialShareService;
 use App\Services\StockManagerService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,14 @@ class ProductController extends Controller
     protected PricingService $pricingService;
     protected StockManagerService $stockManager;
     protected ProductApiTransformer $transformer;
+    protected SocialShareService $socialShareService;
 
-    public function __construct(PricingService $pricingService, StockManagerService $stockManager, ProductApiTransformer $transformer)
+    public function __construct(PricingService $pricingService, StockManagerService $stockManager, ProductApiTransformer $transformer, SocialShareService $socialShareService)
     {
         $this->pricingService = $pricingService;
         $this->stockManager = $stockManager;
         $this->transformer = $transformer;
+        $this->socialShareService = $socialShareService;
     }
 
     /**
@@ -84,7 +87,10 @@ class ProductController extends Controller
     {
         $product->load(['category', 'images', 'variants.attributeValues.attribute', 'variants.images', 'sizeChart']);
 
-        return $this->success($this->transformer->transform($product, true), 'Product retrieved successfully');
+        $data = $this->transformer->transform($product, true);
+        $data['social_share'] = $this->socialShareService->getProductShareLinks($product);
+
+        return $this->success($data, 'Product retrieved successfully');
     }
 
     /**
@@ -108,7 +114,10 @@ class ProductController extends Controller
             ])
             ->firstOrFail();
 
-        return $this->success($this->transformer->transform($product, true), 'Product retrieved successfully');
+        $data = $this->transformer->transform($product, true);
+        $data['social_share'] = $this->socialShareService->getProductShareLinks($product);
+
+        return $this->success($data, 'Product retrieved successfully');
     }
 
     /**
