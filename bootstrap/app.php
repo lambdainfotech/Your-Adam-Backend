@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\JWTAuthMiddleware;
 use App\Http\Middleware\JWTRefreshMiddleware;
+use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.auth' => JWTAuthMiddleware::class,
             'jwt.refresh' => JWTRefreshMiddleware::class,
             'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
         ]);
 
         // Configure session middleware for web routes
