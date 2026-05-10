@@ -235,6 +235,10 @@
                     <i class="nav-icon fas fa-users text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Customers</span>
                 </a>
+                <a href="{{ route('admin.guests.index') }}" title=">Guests" class="nav-item {{ request()->routeIs('admin.guests.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-user-clock text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Guests</span>
+                </a>
                 <a href="{{ route('admin.roles.index') }}" title=">Roles" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-user-shield text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Roles</span>

@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\BrandValueController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\GuestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -169,6 +170,10 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     // Users
     Route::resource('users', UserController::class)->names('admin.users');
     Route::post('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+
+    // Guests
+    Route::get('guests', [GuestController::class, 'index'])->name('admin.guests.index');
+    Route::get('guests/{guest}', [GuestController::class, 'show'])->name('admin.guests.show');
 
     // Roles & Permissions
     Route::resource('roles', RoleController::class)->names('admin.roles');
