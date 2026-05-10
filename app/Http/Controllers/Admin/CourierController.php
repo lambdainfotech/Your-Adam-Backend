@@ -8,18 +8,8 @@ use Illuminate\Http\Request;
 
 class CourierController extends Controller
 {
-    protected ?string $permissionModule = 'couriers';
-
-    protected array $customActionMap = [
-        'toggleStatus' => 'edit',
-    ];
-
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $query = Courier::withCount('assignments');
         
         if ($request->filled('search')) {
@@ -40,19 +30,11 @@ class CourierController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         return view('admin.couriers.create');
     }
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:20|unique:couriers',
@@ -76,29 +58,17 @@ class CourierController extends Controller
 
     public function show(Courier $courier)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $courier->load(['assignments.order']);
         return view('admin.couriers.show', compact('courier'));
     }
 
     public function edit(Courier $courier)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         return view('admin.couriers.edit', compact('courier'));
     }
 
     public function update(Request $request, Courier $courier)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|string|max:20|unique:couriers,code,' . $courier->id,
@@ -122,10 +92,6 @@ class CourierController extends Controller
 
     public function destroy(Courier $courier)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         if ($courier->assignments()->count() > 0) {
             return redirect()->back()
                 ->with('error', 'Cannot delete courier with existing assignments.');
@@ -139,10 +105,6 @@ class CourierController extends Controller
 
     public function toggleStatus(Courier $courier)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $courier->update(['is_active' => !$courier->is_active]);
         
         $status = $courier->is_active ? 'activated' : 'deactivated';

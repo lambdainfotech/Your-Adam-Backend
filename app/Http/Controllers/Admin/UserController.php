@@ -10,18 +10,8 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    protected ?string $permissionModule = 'users';
-
-    protected array $customActionMap = [
-        'toggleStatus' => 'edit',
-    ];
-
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $query = User::with('role');
         
         if ($request->filled('search')) {
@@ -46,10 +36,6 @@ class UserController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Get Customer role first, then other roles
         $roles = Role::where('name', '!=', 'Super Admin')
             ->orderByRaw("CASE WHEN name = 'Customer' THEN 0 ELSE 1 END")
@@ -60,10 +46,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         try {
         $validated = $request->validate([
@@ -120,30 +102,18 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $user->load('role', 'addresses', 'orders');
         return view('admin.users.show', compact('user'));
     }
 
     public function edit(User $user)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $roles = Role::where('name', '!=', 'Super Admin')->orderBy('name')->get();
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -174,10 +144,6 @@ class UserController extends Controller
     
     public function toggleStatus(User $user)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $user->status = $user->status === 1 ? 0 : 1;
         $user->save();
@@ -190,10 +156,6 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         
         try {

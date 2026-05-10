@@ -92,8 +92,7 @@ class JWTAuthMiddleware
             $user = JWTAuth::authenticate();
 
             if ($user) {
-                // Explicitly set user on jwt guard so auth()->user() works in controllers
-                auth('jwt')->setUser($user);
+                auth()->setUser($user);
                 $request->setUserResolver(function () use ($user) {
                     return $user;
                 });

@@ -12,20 +12,8 @@ use Illuminate\Support\Facades\Storage;
 
 class CampaignController extends Controller
 {
-    protected ?string $permissionModule = 'campaigns';
-
-    protected array $customActionMap = [
-        'manageProducts' => 'edit',
-        'updateProducts' => 'edit',
-        'toggleStatus' => 'edit',
-    ];
-
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $query = Campaign::with('creator')->withCount(['products', 'categories']);
         
         if ($request->filled('search')) {
@@ -55,10 +43,6 @@ class CampaignController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $discountTypes = ['percentage' => 'Percentage', 'fixed' => 'Fixed Amount'];
         $products = Product::active()->select('id', 'name', 'base_price')->get();
         $categories = Category::active()->select('id', 'name')->get();
@@ -68,10 +52,6 @@ class CampaignController extends Controller
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -125,20 +105,12 @@ class CampaignController extends Controller
 
     public function show(Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $campaign->load(['products', 'categories', 'creator']);
         return view('admin.campaigns.show', compact('campaign'));
     }
 
     public function edit(Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $campaign->load(['products', 'categories']);
         $discountTypes = ['percentage' => 'Percentage', 'fixed' => 'Fixed Amount'];
         $products = Product::active()->select('id', 'name', 'base_price')->get();
@@ -152,10 +124,6 @@ class CampaignController extends Controller
 
     public function update(Request $request, Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         try {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -215,10 +183,6 @@ class CampaignController extends Controller
 
     public function destroy(Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Delete banner image if exists
         if ($campaign->banner_image) {
             Storage::disk('public')->delete($campaign->banner_image);
@@ -232,10 +196,6 @@ class CampaignController extends Controller
 
     public function manageProducts(Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $campaign->load('products');
         $products = Product::active()->select('id', 'name', 'base_price')->get();
         
@@ -244,10 +204,6 @@ class CampaignController extends Controller
 
     public function updateProducts(Request $request, Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'products' => 'required|array',
             'products.*.id' => 'required|exists:products,id',
@@ -269,10 +225,6 @@ class CampaignController extends Controller
 
     public function toggleStatus(Campaign $campaign)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $campaign->update(['is_active' => !$campaign->is_active]);
         
         $status = $campaign->is_active ? 'activated' : 'deactivated';

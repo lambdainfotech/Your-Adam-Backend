@@ -10,13 +10,6 @@ use Illuminate\Http\Request;
 
 class ProductImageController extends Controller
 {
-    protected ?string $permissionModule = 'product-images';
-
-    protected array $customActionMap = [
-        'setMain' => 'edit',
-        'reorder' => 'edit',
-    ];
-
     protected ImageUploadService $imageService;
 
     public function __construct(ImageUploadService $imageService)
@@ -29,10 +22,6 @@ class ProductImageController extends Controller
      */
     public function index(Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $images = $this->imageService->getProductImages($product->id);
         
         return view('admin.products.images', compact('product', 'images'));
@@ -43,10 +32,6 @@ class ProductImageController extends Controller
      */
     public function store(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'images' => 'required|array',
             'images.*' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -93,10 +78,6 @@ class ProductImageController extends Controller
      */
     public function update(Request $request, Product $product, ProductImage $image)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Ensure image belongs to product
         if ($image->product_id !== $product->id) {
             abort(404);
@@ -125,10 +106,6 @@ class ProductImageController extends Controller
      */
     public function destroy(Request $request, Product $product, ProductImage $image)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Ensure image belongs to product
         if ($image->product_id !== $product->id) {
             abort(404);
@@ -166,10 +143,6 @@ class ProductImageController extends Controller
      */
     public function setMain(Request $request, Product $product, ProductImage $image)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Ensure image belongs to product
         if ($image->product_id !== $product->id) {
             abort(404);
@@ -194,10 +167,6 @@ class ProductImageController extends Controller
      */
     public function reorder(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'order' => 'required|array',
             'order.*' => 'integer|exists:product_images,id',

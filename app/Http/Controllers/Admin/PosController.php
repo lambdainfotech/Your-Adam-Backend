@@ -14,21 +14,6 @@ use Illuminate\Support\Facades\Log;
 
 class PosController extends Controller
 {
-    protected ?string $permissionModule = 'pos';
-
-    protected array $customActionMap = [
-        'searchProducts' => 'view',
-        'findByBarcode' => 'view',
-        'createOrder' => 'create',
-        'showOrder' => 'view',
-        'getReceipt' => 'view',
-        'printReceipt' => 'view',
-        'searchCustomers' => 'view',
-        'dailyReport' => 'view',
-        'updateDeliveryStatus' => 'edit',
-        'getTrackingTimeline' => 'view',
-    ];
-
     protected PosOrderService $posOrderService;
 
     public function __construct(PosOrderService $posOrderService)
@@ -40,10 +25,6 @@ class PosController extends Controller
      */
     public function index()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Get categories for filtering
         $categories = \App\Models\Category::active()->select('id', 'name')->get();
 
@@ -55,10 +36,6 @@ class PosController extends Controller
      */
     public function searchProducts(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'category_id' => 'nullable|integer|exists:categories,id',
@@ -116,10 +93,6 @@ class PosController extends Controller
      */
     public function findByBarcode($barcode)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Try product first — wrap OR conditions to ensure is_active is always applied
         $product = Product::where(function ($q) use ($barcode) {
                 $q->where('barcode', $barcode)
@@ -181,10 +154,6 @@ class PosController extends Controller
      */
     public function createOrder(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -255,10 +224,6 @@ class PosController extends Controller
      */
     public function showOrder($id)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order = PosOrder::with(['items', 'payments', 'user', 'courier', 'statusHistory.changedBy'])->findOrFail($id);
         
         return view('admin.pos.show', compact('order'));
@@ -269,10 +234,6 @@ class PosController extends Controller
      */
     public function getReceipt($id)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order = PosOrder::with(['items', 'payments', 'user'])->findOrFail($id);
 
         return view('admin.pos.receipt', compact('order'));
@@ -283,10 +244,6 @@ class PosController extends Controller
      */
     public function printReceipt($id)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order = PosOrder::with(['items', 'payments', 'user'])->findOrFail($id);
 
         return view('admin.pos.print', compact('order'));
@@ -297,10 +254,6 @@ class PosController extends Controller
      */
     public function searchCustomers(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'query' => 'nullable|string|max:255',
         ]);
@@ -337,10 +290,6 @@ class PosController extends Controller
      */
     public function dailyReport(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'date' => 'nullable|date',
         ]);
@@ -381,10 +330,6 @@ class PosController extends Controller
      */
     public function updateDeliveryStatus(Request $request, $id)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'delivery_status' => 'required|in:pending,processing,ready,shipped,delivered,cancelled',
             'notes' => 'nullable|string|max:500',
@@ -431,10 +376,6 @@ class PosController extends Controller
      */
     public function getTrackingTimeline($id)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order = PosOrder::with(['statusHistory.changedBy', 'courier'])->findOrFail($id);
 
         return response()->json([

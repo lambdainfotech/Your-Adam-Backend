@@ -94,8 +94,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
-            // Redirect without flash — login form already handles expired tokens
-            return redirect()->guest(route('admin.login'));
+            return redirect()->guest(route('admin.login'))
+                ->with('error', 'Your session has expired. Please login again.');
         });
 
         // Handle JWT Token Invalid
@@ -113,7 +113,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
-            return redirect()->guest(route('admin.login'));
+            return redirect()->guest(route('admin.login'))
+                ->with('error', 'Invalid authentication. Please login again.');
         });
 
         // Handle General JWT Exceptions
@@ -131,6 +132,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
-            return redirect()->guest(route('admin.login'));
+            return redirect()->guest(route('admin.login'))
+                ->with('error', 'Authentication error. Please login again.');
         });
     })->create();

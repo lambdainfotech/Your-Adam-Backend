@@ -9,19 +9,8 @@ use Illuminate\Support\Str;
 
 class PredefinedDescriptionController extends Controller
 {
-    protected ?string $permissionModule = 'predefined-descriptions';
-
-    protected array $customActionMap = [
-        'reorder' => 'edit',
-        'getByType' => 'view',
-    ];
-
     public function index()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $descriptions = PredefinedDescription::descriptions()
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -37,19 +26,11 @@ class PredefinedDescriptionController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         return view('admin.predefined-descriptions.form');
     }
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'type' => 'required|in:description,short_description',
             'name' => 'required|string|max:100|unique:predefined_descriptions',
@@ -68,19 +49,11 @@ class PredefinedDescriptionController extends Controller
 
     public function edit(PredefinedDescription $predefinedDescription)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         return view('admin.predefined-descriptions.form', compact('predefinedDescription'));
     }
 
     public function update(Request $request, PredefinedDescription $predefinedDescription)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'type' => 'required|in:description,short_description',
             'name' => 'required|string|max:100|unique:predefined_descriptions,name,' . $predefinedDescription->id,
@@ -98,10 +71,6 @@ class PredefinedDescriptionController extends Controller
 
     public function destroy(PredefinedDescription $predefinedDescription)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         // Check if any products are using this description
         $productsCount = $predefinedDescription->products_count;
         
@@ -118,10 +87,6 @@ class PredefinedDescriptionController extends Controller
 
     public function reorder(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:predefined_descriptions,id',
@@ -137,10 +102,6 @@ class PredefinedDescriptionController extends Controller
 
     public function getByType(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $type = $request->get('type', 'description');
         
         $descriptions = PredefinedDescription::byType($type)

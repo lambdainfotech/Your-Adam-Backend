@@ -12,22 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class ProductVariantController extends Controller
 {
-    protected ?string $permissionModule = 'variants';
-
-    protected array $customActionMap = [
-        'generate' => 'manage',
-        'previewCombinations' => 'manage',
-        'getVariant' => 'view',
-        'updateVariant' => 'edit',
-        'quickUpdate' => 'edit',
-        'deleteVariant' => 'delete',
-        'updateAttributes' => 'edit',
-        'toggleStatus' => 'edit',
-        'reorder' => 'edit',
-        'addVariant' => 'create',
-        'updateImage' => 'edit',
-    ];
-
     protected VariantGeneratorService $variantGenerator;
     protected PricingService $pricingService;
 
@@ -42,10 +26,6 @@ class ProductVariantController extends Controller
      */
     public function index(Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $product->load(['variants.attributeValues.attribute', 'variants.mainImage', 'productAttributes.attribute']);
         
         // Get all attributes that can be used for variations
@@ -84,10 +64,6 @@ class ProductVariantController extends Controller
      */
     public function generate(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'attributes' => 'required|array|min:1',
             'attributes.*' => 'exists:attributes,id',
@@ -149,10 +125,6 @@ class ProductVariantController extends Controller
      */
     public function previewCombinations(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $attributeData = [];
         
         foreach ($request->input('attributes', []) as $attributeId) {
@@ -172,10 +144,6 @@ class ProductVariantController extends Controller
      */
     public function getVariant($variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::with(['attributeValues.attribute', 'product', 'mainImage'])->find($variantId);
 
         if (!$variant) {
@@ -215,10 +183,6 @@ class ProductVariantController extends Controller
      */
     public function updateVariant(Request $request, $variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::findOrFail($variantId);
 
         $validated = $request->validate([
@@ -289,10 +253,6 @@ class ProductVariantController extends Controller
      */
     public function quickUpdate(Request $request, $variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::findOrFail($variantId);
 
         $validated = $request->validate([
@@ -358,10 +318,6 @@ class ProductVariantController extends Controller
      */
     public function deleteVariant($variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::findOrFail($variantId);
 
         $result = $this->variantGenerator->deleteVariant($variant);
@@ -380,10 +336,6 @@ class ProductVariantController extends Controller
      */
     public function updateAttributes(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'attributes' => 'nullable|array',
             'attributes.*' => 'exists:attributes,id',
@@ -417,10 +369,6 @@ class ProductVariantController extends Controller
      */
     public function toggleStatus($variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::findOrFail($variantId);
         $variant->is_active = !$variant->is_active;
         $variant->save();
@@ -436,10 +384,6 @@ class ProductVariantController extends Controller
      */
     public function reorder(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'variants' => 'required|array',
             'variants.*' => 'exists:variants,id',
@@ -455,10 +399,6 @@ class ProductVariantController extends Controller
      */
     public function addVariant(Request $request, Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'sku' => 'nullable|string|max:50|unique:variants',
             'attribute_values' => 'required|array|min:1',
@@ -556,10 +496,6 @@ class ProductVariantController extends Controller
      */
     public function updateImage(Request $request, $variantId)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variant = Variant::findOrFail($variantId);
 
         $request->validate([

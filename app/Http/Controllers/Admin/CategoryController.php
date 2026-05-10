@@ -14,10 +14,6 @@ class CategoryController extends Controller
     protected CategoryService $categoryService;
     protected FileUploadService $fileUploadService;
 
-    protected array $customActionMap = [
-        'toggleStatus' => 'edit',
-    ];
-
     public function __construct(CategoryService $categoryService, FileUploadService $fileUploadService)
     {
         $this->categoryService = $categoryService;
@@ -26,9 +22,6 @@ class CategoryController extends Controller
 
     public function index()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $categories = Category::withCount(['products', 'subCategoryProducts'])
             ->with(['parent', 'children'])
             ->orderByRaw('COALESCE(parent_id, id)')
@@ -42,9 +35,6 @@ class CategoryController extends Controller
 
     public function create(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $parentCategories = $this->categoryService->getHierarchicalCategories();
         $preselectedParent = $request->get('parent_id');
         return view('admin.categories.create', compact('parentCategories', 'preselectedParent'));
@@ -52,9 +42,6 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:categories',
@@ -101,9 +88,6 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $excludeIds = $this->categoryService->getDescendantIds($category);
         $excludeIds[] = $category->id;
 
@@ -113,9 +97,6 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:categories,slug,' . $category->id,
@@ -171,9 +152,6 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         if ($category->products()->count() > 0) {
             return redirect()->route('admin.categories.index')
                 ->with('error', 'Cannot delete category with associated products.');
@@ -196,9 +174,6 @@ class CategoryController extends Controller
     
     public function toggleStatus(Category $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
         $category->is_active = !$category->is_active;
         $category->save();
         

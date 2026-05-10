@@ -11,19 +11,6 @@ use Illuminate\Http\Request;
 
 class BulkOperationsController extends Controller
 {
-    protected ?string $permissionModule = 'bulk-operations';
-
-    protected array $customActionMap = [
-        'bulkStock' => 'manage',
-        'processBulkStock' => 'manage',
-        'bulkPrice' => 'manage',
-        'processBulkPrice' => 'manage',
-        'bulkToggleStatus' => 'manage',
-        'bulkDelete' => 'manage',
-        'exportVariants' => 'manage',
-        'importVariants' => 'manage',
-    ];
-
     protected StockManagerService $stockManager;
     protected PricingService $pricingService;
 
@@ -38,10 +25,6 @@ class BulkOperationsController extends Controller
      */
     public function bulkStock()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $products = Product::with(['variants.attributeValues.attribute'])
             ->where('product_type', 'variable')
             ->orWhere(function($q) {
@@ -57,10 +40,6 @@ class BulkOperationsController extends Controller
      */
     public function processBulkStock(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'operation' => 'required|in:add,subtract,set',
             'updates' => 'required|array',
@@ -152,10 +131,6 @@ class BulkOperationsController extends Controller
      */
     public function bulkPrice()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $products = Product::with(['variants.attributeValues.attribute'])
             ->get();
 
@@ -167,10 +142,6 @@ class BulkOperationsController extends Controller
      */
     public function processBulkPrice(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'operation' => 'required|in:increase,decrease,set',
             'value' => 'required|numeric|min:0',
@@ -261,10 +232,6 @@ class BulkOperationsController extends Controller
      */
     public function bulkToggleStatus(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|integer',
@@ -295,10 +262,6 @@ class BulkOperationsController extends Controller
      */
     public function bulkDelete(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|integer',
@@ -344,10 +307,6 @@ class BulkOperationsController extends Controller
      */
     public function exportVariants(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variants = Variant::with(['product', 'attributeValues.attribute'])
             ->when($request->filled('product_id'), function($q) use ($request) {
                 $q->where('product_id', $request->product_id);
@@ -393,10 +352,6 @@ class BulkOperationsController extends Controller
      */
     public function importVariants(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $request->validate([
             'file' => 'required|file|mimes:csv,txt|max:10240',
         ]);

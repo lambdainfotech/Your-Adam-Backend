@@ -12,25 +12,12 @@ use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
-    protected ?string $permissionModule = 'expenses';
-
-    protected array $customActionMap = [
-        'categories' => 'view',
-        'storeCategory' => 'create',
-        'updateCategory' => 'edit',
-        'destroyCategory' => 'delete',
-    ];
-
     public function __construct(
         protected ExpenseReportService $reportService,
     ) {}
 
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $startDate = $request->get('start_date', Carbon::now()->subDays(30)->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
         $categoryId = $request->get('category_id');
@@ -52,20 +39,12 @@ class ExpenseController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $categories = ExpenseCategory::active()->ordered()->get();
         return view('admin.expenses.create', compact('categories'));
     }
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         try {
         $validated = $request->validate([
             'category_id' => ['required', 'exists:expense_categories,id'],
@@ -98,20 +77,12 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $categories = ExpenseCategory::active()->ordered()->get();
         return view('admin.expenses.edit', compact('expense', 'categories'));
     }
 
     public function update(Request $request, Expense $expense)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         try {
         $validated = $request->validate([
             'category_id' => ['required', 'exists:expense_categories,id'],
@@ -145,10 +116,6 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         if ($expense->receipt_image) {
             Storage::disk('public')->delete($expense->receipt_image);
         }
@@ -161,20 +128,12 @@ class ExpenseController extends Controller
 
     public function categories()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $categories = ExpenseCategory::ordered()->get();
         return view('admin.expenses.categories', compact('categories'));
     }
 
     public function storeCategory(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', 'unique:expense_categories,name'],
             'description' => ['nullable', 'string', 'max:255'],
@@ -191,10 +150,6 @@ class ExpenseController extends Controller
 
     public function updateCategory(Request $request, ExpenseCategory $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', 'unique:expense_categories,name,' . $category->id],
             'description' => ['nullable', 'string', 'max:255'],
@@ -214,10 +169,6 @@ class ExpenseController extends Controller
 
     public function destroyCategory(ExpenseCategory $category)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         if ($category->expenses()->count() > 0) {
             return redirect()->route('admin.expenses.categories')
                 ->with('error', 'Cannot delete category with existing expenses.');

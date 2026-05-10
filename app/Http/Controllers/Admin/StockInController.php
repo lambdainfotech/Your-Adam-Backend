@@ -11,23 +11,11 @@ use Illuminate\Support\Facades\DB;
 
 class StockInController extends Controller
 {
-    protected ?string $permissionModule = 'stock-in';
-
-    protected array $customActionMap = [
-        'bulkCreate' => 'manage',
-        'bulkStore' => 'manage',
-        'getVariants' => 'view',
-    ];
-
     /**
      * Show bulk stock in form
      */
     public function bulkCreate()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $products = Product::where('is_active', true)
             ->with(['variants' => function($query) {
                 $query->select('id', 'product_id', 'sku', 'stock_quantity');
@@ -43,10 +31,6 @@ class StockInController extends Controller
      */
     public function bulkStore(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'date' => 'required|date',
             'reference_no' => 'nullable|string|max:50',
@@ -142,10 +126,6 @@ class StockInController extends Controller
      */
     public function getVariants(Product $product)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $variants = $product->variants()
             ->select('id', 'sku', 'stock_quantity', 'price')
             ->get();

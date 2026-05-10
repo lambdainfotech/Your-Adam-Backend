@@ -165,31 +165,19 @@ class PermissionSeeder extends Seeder
             );
         }
 
-        // Create super-admin role if not exists (assign all permissions)
-        $superAdminRole = Role::firstOrCreate(
-            ['slug' => 'super-admin'],
+        // Create admin role if not exists
+        $adminRole = Role::firstOrCreate(
+            ['slug' => 'admin'],
             [
-                'name' => 'Super Admin',
+                'name' => 'Administrator',
                 'description' => 'Full system access',
                 'level' => 100,
                 'is_system' => true,
             ]
         );
 
-        // Create admin role if not exists (assign all permissions)
-        $adminRole = Role::firstOrCreate(
-            ['slug' => 'admin'],
-            [
-                'name' => 'Administrator',
-                'description' => 'Full system access',
-                'level' => 90,
-                'is_system' => true,
-            ]
-        );
-
-        // Assign ALL permissions to both super-admin and admin
+        // Assign ALL permissions to admin
         $allPermissions = Permission::pluck('id')->toArray();
-        $superAdminRole->permissions()->sync($allPermissions);
         $adminRole->permissions()->sync($allPermissions);
 
         // Create manager role

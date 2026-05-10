@@ -9,12 +9,6 @@ use Illuminate\Http\Request;
 
 class SizeChartController extends Controller
 {
-    protected ?string $permissionModule = 'size-charts';
-
-    protected array $customActionMap = [
-        'toggleStatus' => 'edit',
-    ];
-
     protected CategoryService $categoryService;
 
     public function __construct(CategoryService $categoryService)
@@ -23,10 +17,6 @@ class SizeChartController extends Controller
     }
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $query = SizeChart::with(['category', 'subCategory']);
         
         if ($request->filled('category_id')) {
@@ -48,10 +38,6 @@ class SizeChartController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $categories = $this->categoryService->getHierarchicalCategories();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
         $sizeTypes = ['asian' => 'Asian Size', 'european' => 'European Size'];
@@ -61,10 +47,6 @@ class SizeChartController extends Controller
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:100',
@@ -97,20 +79,12 @@ class SizeChartController extends Controller
 
     public function show(SizeChart $sizeChart)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $sizeChart->load(['category', 'rows']);
         return view('admin.size-charts.show', compact('sizeChart'));
     }
 
     public function edit(SizeChart $sizeChart)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $sizeChart->load('rows');
         $categories = $this->categoryService->getHierarchicalCategories();
         $units = ['inch' => 'Inch', 'cm' => 'Centimeter'];
@@ -121,10 +95,6 @@ class SizeChartController extends Controller
 
     public function update(Request $request, SizeChart $sizeChart)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:100',
@@ -158,10 +128,6 @@ class SizeChartController extends Controller
 
     public function destroy(SizeChart $sizeChart)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $sizeChart->delete();
         
         return redirect()->route('admin.size-charts.index')
@@ -170,10 +136,6 @@ class SizeChartController extends Controller
 
     public function toggleStatus(SizeChart $sizeChart)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $sizeChart->update(['is_active' => !$sizeChart->is_active]);
         
         $status = $sizeChart->is_active ? 'activated' : 'deactivated';

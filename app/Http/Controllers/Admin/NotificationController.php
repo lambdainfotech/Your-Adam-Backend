@@ -9,18 +9,8 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    protected ?string $permissionModule = 'notifications';
-
-    protected array $customActionMap = [
-        'logs' => 'view',
-    ];
-
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $query = Notification::with('user');
         
         if ($request->filled('user_id')) {
@@ -42,10 +32,6 @@ class NotificationController extends Controller
 
     public function create()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $users = User::active()->select('id', 'name', 'email')->get();
         $types = ['system', 'order', 'promotion', 'alert'];
         
@@ -54,10 +40,6 @@ class NotificationController extends Controller
 
     public function store(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         try {
         $validated = $request->validate([
             'user_ids' => 'required_without:send_to_all|array',
@@ -108,20 +90,12 @@ class NotificationController extends Controller
 
     public function show(Notification $notification)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $notification->load('user');
         return view('admin.notifications.show', compact('notification'));
     }
 
     public function destroy(Notification $notification)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $notification->delete();
         
         return redirect()->route('admin.notifications.index')
@@ -130,10 +104,6 @@ class NotificationController extends Controller
 
     public function logs()
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $emailLogs = \App\Models\EmailLog::recent()->limit(50)->get();
         $smsLogs = \App\Models\SmsLog::recent()->limit(50)->get();
         

@@ -11,21 +11,8 @@ use Illuminate\Support\Collection;
 
 class OrderController extends Controller
 {
-    protected ?string $permissionModule = 'orders';
-
-    protected array $customActionMap = [
-        'updateStatus' => 'edit',
-        'updatePaymentStatus' => 'edit',
-        'invoice' => 'view',
-        'print' => 'view',
-    ];
-
     public function index(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'status' => 'nullable|in:pending,processing,shipped,delivered,completed,cancelled',
             'from_date' => 'nullable|date',
@@ -127,20 +114,12 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.show', compact('order'));
     }
 
     public function updateStatus(Request $request, Order $order)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled',
             'notes' => 'nullable|string',
@@ -181,10 +160,6 @@ class OrderController extends Controller
 
     public function updatePaymentStatus(Request $request, Order $order)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'payment_status' => 'required|in:pending,paid,failed,refunded',
             'notes' => 'nullable|string',
@@ -198,30 +173,18 @@ class OrderController extends Controller
     
     public function invoice(Order $order)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.invoice', compact('order'));
     }
 
     public function print(Order $order)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $order->load('user', 'guest', 'items.variant.product.mainImage', 'items.variant.mainImage');
         return view('admin.orders.print', compact('order'));
     }
 
     public function destroy(Request $request)
     {
-        if ($redirect = $this->authorizeAction()) {
-            return $redirect;
-        }
-
         $validated = $request->validate([
             'order_id' => 'required|integer',
             'order_type' => 'required|in:online,pos',
