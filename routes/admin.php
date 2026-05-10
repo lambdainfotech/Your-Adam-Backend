@@ -173,7 +173,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
 
     // Guests
     Route::get('guests', [GuestController::class, 'index'])->name('admin.guests.index');
-    Route::get('guests/{guest}', [GuestController::class, 'show'])->name('admin.guests.show');
+    Route::get('guests/{email}', [GuestController::class, 'show'])->name('admin.guests.show');
 
     // Roles & Permissions
     Route::resource('roles', RoleController::class)->names('admin.roles');

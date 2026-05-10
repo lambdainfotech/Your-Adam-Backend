@@ -12,7 +12,7 @@
         </a>
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Guest Details</h2>
-            <p class="text-gray-500 mt-1">#{{ $guest->id }} — {{ $guest->name }}</p>
+            <p class="text-gray-500 mt-1">{{ $email }}</p>
         </div>
     </div>
 
@@ -22,10 +22,10 @@
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <div class="flex items-center gap-4 mb-6">
                     <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-2xl font-bold">
-                        {{ substr($guest->name, 0, 1) }}
+                        {{ substr($primaryGuest->name, 0, 1) }}
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-800">{{ $guest->name }}</h3>
+                        <h3 class="text-xl font-bold text-gray-800">{{ $primaryGuest->name }}</h3>
                         <span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
                             <i class="fas fa-user-clock mr-1"></i>Guest Customer
                         </span>
@@ -37,30 +37,25 @@
                         <i class="fas fa-envelope text-gray-400 mt-1 w-5"></i>
                         <div>
                             <p class="text-sm text-gray-500">Email</p>
-                            <p class="text-gray-800">{{ $guest->email ?? 'N/A' }}</p>
+                            <p class="text-gray-800">{{ $primaryGuest->email ?? 'N/A' }}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
                         <i class="fas fa-phone text-gray-400 mt-1 w-5"></i>
                         <div>
                             <p class="text-sm text-gray-500">Phone</p>
-                            <p class="text-gray-800">{{ $guest->phone ?? 'N/A' }}</p>
+                            <p class="text-gray-800">{{ $primaryGuest->phone ?? 'N/A' }}</p>
                         </div>
                     </div>
+                    @if($guestRecords->count() > 1)
                     <div class="flex items-start gap-3">
-                        <i class="fas fa-globe text-gray-400 mt-1 w-5"></i>
+                        <i class="fas fa-layer-group text-gray-400 mt-1 w-5"></i>
                         <div>
-                            <p class="text-sm text-gray-500">IP Address</p>
-                            <p class="text-gray-800">{{ $guest->ip_address ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-500">Guest Records</p>
+                            <p class="text-gray-800">{{ $guestRecords->count() }} duplicate entries found</p>
                         </div>
                     </div>
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-calendar text-gray-400 mt-1 w-5"></i>
-                        <div>
-                            <p class="text-sm text-gray-500">Registered On</p>
-                            <p class="text-gray-800">{{ $guest->created_at->format('F d, Y \a\t h:i A') }}</p>
-                        </div>
-                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -69,12 +64,12 @@
                 <h3 class="font-semibold text-gray-800 mb-4">Order Statistics</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-blue-50 rounded-lg p-4 text-center">
-                        <p class="text-2xl font-bold text-blue-600">{{ $guest->orders->count() }}</p>
+                        <p class="text-2xl font-bold text-blue-600">{{ $totalOrders }}</p>
                         <p class="text-sm text-gray-600">Total Orders</p>
                     </div>
                     <div class="bg-green-50 rounded-lg p-4 text-center">
                         <p class="text-2xl font-bold text-green-600">
-                            ৳{{ number_format($guest->orders->sum('total_amount'), 2) }}
+                            ৳{{ number_format($totalSpent, 2) }}
                         </p>
                         <p class="text-sm text-gray-600">Total Spent</p>
                     </div>
@@ -102,7 +97,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            @forelse($guest->orders as $order)
+                            @forelse($orders as $order)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 font-medium text-blue-600">
                                         {{ $order->order_number }}
