@@ -10,6 +10,24 @@ use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
+    protected ?string $permissionModule = 'settings';
+
+    protected array $customActionMap = [
+        'general' => 'view',
+        'store' => 'view',
+        'email' => 'view',
+        'sms' => 'view',
+        'payment' => 'view',
+        'shipping' => 'view',
+        'seo' => 'view',
+        'social' => 'view',
+        'footer' => 'view',
+        'testSms' => 'edit',
+        'uploadLogo' => 'edit',
+        'uploadFavicon' => 'edit',
+        'clearCache' => 'edit',
+    ];
+
     protected FileUploadService $fileUploadService;
 
     public function __construct(FileUploadService $fileUploadService)
@@ -18,6 +36,10 @@ class SettingController extends Controller
     }
     public function index()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         
         $groups = [
@@ -37,6 +59,10 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'settings' => 'required|array',
             'settings.*' => 'nullable',
@@ -59,48 +85,80 @@ class SettingController extends Controller
 
     public function general()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.general', compact('settings'));
     }
 
     public function store()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.store', compact('settings'));
     }
 
     public function email()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.email', compact('settings'));
     }
 
     public function sms()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.sms', compact('settings'));
     }
 
     public function payment()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.payment', compact('settings'));
     }
 
     public function shipping()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.shipping', compact('settings'));
     }
 
     public function seo()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('admin.settings.seo', compact('settings'));
     }
 
     public function social()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         
         // Get all social links from settings
@@ -117,6 +175,10 @@ class SettingController extends Controller
 
     public function footer()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         
         // Parse footer links from settings (stored as JSON)
@@ -139,6 +201,10 @@ class SettingController extends Controller
      */
     public function testSms(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'mobile' => 'required|string|min:10|max:15',
             'message' => 'required|string|max:255',
@@ -163,6 +229,10 @@ class SettingController extends Controller
 
     public function uploadLogo(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $request->validate([
             'logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -178,6 +248,10 @@ class SettingController extends Controller
 
     public function uploadFavicon(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $request->validate([
             'favicon' => 'required|mimes:ico,png,jpg,webp|max:512',
         ]);
@@ -193,6 +267,10 @@ class SettingController extends Controller
 
     public function clearCache()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         Cache::forget('app_settings');
         
         return redirect()->back()->with('success', 'Cache cleared successfully.');

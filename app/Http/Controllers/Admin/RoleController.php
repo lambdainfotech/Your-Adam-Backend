@@ -10,8 +10,14 @@ use Illuminate\Support\Str;
 
 class RoleController extends Controller
 {
+    protected ?string $permissionModule = 'roles';
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = Role::withCount('users');
         
         if ($request->filled('search')) {
@@ -28,6 +34,10 @@ class RoleController extends Controller
 
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $permissions = Permission::orderBy('module')->orderBy('name')->get();
         $modules = $permissions->groupBy('module');
         
@@ -36,6 +46,10 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:roles',
@@ -61,12 +75,20 @@ class RoleController extends Controller
 
     public function show(Role $role)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $role->load(['permissions', 'users']);
         return view('admin.roles.show', compact('role'));
     }
 
     public function edit(Role $role)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         if ($role->is_system) {
             return redirect()->route('admin.roles.index')
                 ->with('error', 'System roles cannot be edited.');
@@ -81,6 +103,10 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($role->is_system) {
             return redirect()->route('admin.roles.index')
@@ -110,6 +136,10 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($role->is_system) {
             return redirect()->route('admin.roles.index')

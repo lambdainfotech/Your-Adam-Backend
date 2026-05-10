@@ -27,8 +27,18 @@ class ProductController extends Controller
         $this->pricingService = $pricingService;
     }
 
+    protected array $customActionMap = [
+        'toggleStatus'     => 'edit',
+        'toggleBestSeller' => 'edit',
+        'quickUpdateStock' => 'edit',
+        'duplicate'        => 'create',
+    ];
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
             'category' => 'nullable|integer|exists:categories,id',
@@ -121,6 +131,9 @@ class ProductController extends Controller
 
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         $categories = $this->categoryService->getHierarchicalCategories();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
         $predefinedDescriptions = \App\Models\PredefinedDescription::descriptions()->active()->orderBy('sort_order')->get();
@@ -130,6 +143,9 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -200,6 +216,9 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         $product->load(['variants.attributeValues', 'variationAttributes']);
         $categories = $this->categoryService->getHierarchicalCategories();
         $attributes = \App\Models\Attribute::with('values')->where('is_variation', true)->get();
@@ -212,6 +231,9 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         try {
             $rules = [
                 'name' => 'required|string|max:255',
@@ -260,6 +282,9 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         try {
             // Check if product has orders (via variants or direct order items)
             if ($product->variants()->whereHas('orderItems')->exists() || $product->orderItems()->exists()) {
@@ -279,6 +304,9 @@ class ProductController extends Controller
     
     public function toggleStatus(Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         $product->is_active = !$product->is_active;
         $product->save();
         
@@ -304,6 +332,9 @@ class ProductController extends Controller
      */
     public function quickUpdateStock(Request $request, Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         if ($product->product_type !== 'simple') {
             return response()->json(['error' => 'Can only update stock for simple products'], 400);
         }
@@ -348,6 +379,9 @@ class ProductController extends Controller
      */
     public function duplicate(Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
         $newProduct = $this->productService->duplicateProduct($product);
 
         return redirect()->route('admin.products.edit', $newProduct)

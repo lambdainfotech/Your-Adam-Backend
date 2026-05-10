@@ -14,8 +14,14 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    protected ?string $permissionModule = 'dashboard';
+
     public function index()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $today = now()->startOfDay();
         $weekAgo = now()->subDays(6)->startOfDay();
         $monthAgo = now()->subDays(29)->startOfDay();

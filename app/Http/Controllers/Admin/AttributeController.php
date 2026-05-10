@@ -8,11 +8,23 @@ use Illuminate\Support\Facades\DB;
 
 class AttributeController extends Controller
 {
+    protected ?string $permissionModule = 'attributes';
+
+    protected array $customActionMap = [
+        'addValue' => 'edit',
+        'updateValue' => 'edit',
+        'deleteValue' => 'edit',
+    ];
+
     /**
      * Display a listing of attributes
      */
     public function index()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $attributes = DB::table('attributes')
             ->leftJoin('attribute_values', 'attributes.id', '=', 'attribute_values.attribute_id')
             ->select(
@@ -37,6 +49,10 @@ class AttributeController extends Controller
      */
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         return view('admin.attributes.create');
     }
 
@@ -45,6 +61,10 @@ class AttributeController extends Controller
      */
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:attributes',
@@ -97,6 +117,10 @@ class AttributeController extends Controller
      */
     public function show($id)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $attribute = DB::table('attributes')->find($id);
         
         if (!$attribute) {
@@ -117,6 +141,10 @@ class AttributeController extends Controller
      */
     public function edit($id)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $attribute = DB::table('attributes')->find($id);
         
         if (!$attribute) {
@@ -137,6 +165,10 @@ class AttributeController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $attribute = DB::table('attributes')->find($id);
         
         if (!$attribute) {
@@ -229,6 +261,10 @@ class AttributeController extends Controller
      */
     public function destroy($id)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         // Check if attribute is used by any products
         $productCount = DB::table('product_attributes')
             ->where('attribute_id', $id)
@@ -254,6 +290,10 @@ class AttributeController extends Controller
      */
     public function addValue(Request $request, $attributeId)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'value' => 'required|string|max:255',
             'color_code' => 'nullable|string|max:7',
@@ -278,6 +318,10 @@ class AttributeController extends Controller
      */
     public function updateValue(Request $request, $valueId)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'value' => 'required|string|max:255',
             'color_code' => 'nullable|string|max:7',
@@ -302,6 +346,10 @@ class AttributeController extends Controller
      */
     public function deleteValue($valueId)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         // Check if value is used in any variant combinations
         // This would require a variant_attribute_values table
         

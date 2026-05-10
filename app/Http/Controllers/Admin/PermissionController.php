@@ -9,8 +9,14 @@ use Illuminate\Support\Str;
 
 class PermissionController extends Controller
 {
+    protected ?string $permissionModule = 'permissions';
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = Permission::withCount('roles');
         
         if ($request->filled('search')) {
@@ -32,6 +38,10 @@ class PermissionController extends Controller
 
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $modules = Permission::select('module')->distinct()->pluck('module');
         $actions = ['view', 'create', 'edit', 'delete', 'manage', 'export', 'import'];
         
@@ -40,6 +50,10 @@ class PermissionController extends Controller
 
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:permissions',
@@ -58,6 +72,10 @@ class PermissionController extends Controller
 
     public function edit(Permission $permission)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $modules = Permission::select('module')->distinct()->pluck('module');
         $actions = ['view', 'create', 'edit', 'delete', 'manage', 'export', 'import'];
         
@@ -66,6 +84,10 @@ class PermissionController extends Controller
 
     public function update(Request $request, Permission $permission)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:permissions,name,' . $permission->id,
@@ -84,6 +106,10 @@ class PermissionController extends Controller
 
     public function destroy(Permission $permission)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
         if ($permission->roles()->count() > 0) {
             return redirect()->route('admin.permissions.index')

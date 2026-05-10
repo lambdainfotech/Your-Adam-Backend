@@ -9,19 +9,38 @@ use Illuminate\Support\Facades\Storage;
 
 class SliderController extends Controller
 {
+    protected ?string $permissionModule = 'sliders';
+
+    protected array $customActionMap = [
+        'toggleStatus' => 'edit',
+        'reorder' => 'edit',
+    ];
+
     public function index()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $sliders = Slider::ordered()->paginate(20);
         return view('admin.sliders.index', compact('sliders'));
     }
 
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         return view('admin.sliders.form');
     }
 
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -70,11 +89,19 @@ class SliderController extends Controller
 
     public function edit(Slider $slider)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         return view('admin.sliders.form', compact('slider'));
     }
 
     public function update(Request $request, Slider $slider)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -130,6 +157,10 @@ class SliderController extends Controller
 
     public function destroy(Slider $slider)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         // Delete banner image
         if ($slider->banner_image) {
             Storage::disk('public')->delete($slider->banner_image);
@@ -148,6 +179,10 @@ class SliderController extends Controller
 
     public function toggleStatus(Slider $slider)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $slider->update(['is_active' => !$slider->is_active]);
 
         $status = $slider->is_active ? 'activated' : 'deactivated';
@@ -158,6 +193,10 @@ class SliderController extends Controller
 
     public function reorder(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:sliders,id',

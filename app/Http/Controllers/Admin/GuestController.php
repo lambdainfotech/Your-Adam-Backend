@@ -10,8 +10,14 @@ use Illuminate\Support\Facades\DB;
 
 class GuestController extends Controller
 {
+    protected ?string $permissionModule = 'guests';
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $search = $request->input('search');
 
         // Subquery: aggregate guest data grouped by email
@@ -49,6 +55,10 @@ class GuestController extends Controller
 
     public function show(Request $request, string $email)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         // Find all guest records with this email
         $guestRecords = Guest::where('email', $email)
             ->orWhere(function ($q) use ($email) {
@@ -85,6 +95,10 @@ class GuestController extends Controller
 
     public function destroy(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'email' => 'required|email',
         ]);

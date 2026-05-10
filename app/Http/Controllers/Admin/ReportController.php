@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\ProfitReportService;
@@ -13,8 +14,23 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    protected ?string $permissionModule = 'reports';
+
+    protected array $customActionMap = [
+        'sales'     => 'view',
+        'products'  => 'view',
+        'customers' => 'view',
+        'inventory' => 'view',
+        'expenses'  => 'view',
+        'profit'    => 'view',
+    ];
+
     public function sales(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -43,6 +59,10 @@ class ReportController extends Controller
 
     public function products(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $topProducts = OrderItem::topSelling(50)->get();
         
         $lowStockProducts = Product::whereHas('variants', function($query) {
@@ -56,6 +76,10 @@ class ReportController extends Controller
 
     public function customers(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $topCustomers = User::withCount(['orders' => function($query) {
                 $query->where('status', 'completed');
             }])
@@ -74,6 +98,10 @@ class ReportController extends Controller
 
     public function inventory(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $products = Product::with(['variants', 'category'])
             ->whereHas('variants', function($query) {
                 $query->where('stock_quantity', '<=', 20);
@@ -94,6 +122,10 @@ class ReportController extends Controller
 
     public function expenses(Request $request, \App\Services\ExpenseReportService $service)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
@@ -122,6 +154,10 @@ class ReportController extends Controller
 
     public function profit(Request $request, ProfitReportService $service)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',

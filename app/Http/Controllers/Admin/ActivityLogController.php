@@ -8,8 +8,19 @@ use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
 {
+    protected ?string $permissionModule = 'activity-logs';
+
+    protected array $customActionMap = [
+        'userLogs' => 'view',
+        'entityLogs' => 'view',
+    ];
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'user_id' => 'nullable|integer|exists:users,id',
             'action' => 'nullable|string|max:50',
@@ -52,12 +63,20 @@ class ActivityLogController extends Controller
 
     public function show(ActivityLog $activityLog)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $activityLog->load('user');
         return view('admin.activity-logs.show', compact('activityLog'));
     }
 
     public function userLogs(Request $request, $userId)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $logs = ActivityLog::with('user')
             ->forUser($userId)
             ->recent()
@@ -69,6 +88,10 @@ class ActivityLogController extends Controller
 
     public function entityLogs(Request $request, $entityType, $entityId = null)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = ActivityLog::with('user')->forEntity($entityType, $entityId);
 
         $logs = $query->recent()->paginate(50)->withQueryString();

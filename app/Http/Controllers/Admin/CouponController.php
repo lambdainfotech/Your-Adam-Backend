@@ -9,8 +9,18 @@ use Illuminate\Support\Str;
 
 class CouponController extends Controller
 {
+    protected ?string $permissionModule = 'coupons';
+
+    protected array $customActionMap = [
+        'toggleStatus' => 'edit',
+    ];
+
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = Coupon::with('creator')->withCount('usages');
         
         if ($request->filled('search')) {
@@ -46,12 +56,20 @@ class CouponController extends Controller
 
     public function create()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $types = ['percentage' => 'Percentage', 'fixed' => 'Fixed Amount'];
         return view('admin.coupons.create', compact('types'));
     }
 
     public function store(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:coupons',
             'description' => 'nullable|string|max:255',
@@ -78,18 +96,30 @@ class CouponController extends Controller
 
     public function show(Coupon $coupon)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $coupon->load(['usages.user', 'creator']);
         return view('admin.coupons.show', compact('coupon'));
     }
 
     public function edit(Coupon $coupon)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $types = ['percentage' => 'Percentage', 'fixed' => 'Fixed Amount'];
         return view('admin.coupons.edit', compact('coupon', 'types'));
     }
 
     public function update(Request $request, Coupon $coupon)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'code' => 'required|string|max:50|unique:coupons,code,' . $coupon->id,
             'description' => 'nullable|string|max:255',
@@ -115,6 +145,10 @@ class CouponController extends Controller
 
     public function destroy(Coupon $coupon)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $coupon->delete();
         
         return redirect()->route('admin.coupons.index')
@@ -123,6 +157,10 @@ class CouponController extends Controller
 
     public function toggleStatus(Coupon $coupon)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $coupon->update(['is_active' => !$coupon->is_active]);
         
         $status = $coupon->is_active ? 'activated' : 'deactivated';

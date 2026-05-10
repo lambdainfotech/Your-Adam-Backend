@@ -29,9 +29,28 @@ class RoleMiddleware
         }
 
         $user = auth()->user();
+
+        // Dynamic role check: if no specific roles provided, allow any role with level >= 1
+        if (empty($roles)) {
+            if ($user->role && $user->role->level >= 1) {
+                return $next($request);
+            }
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden. You do not have the required role to access this resource.',
+                    'error_code' => 'FORBIDDEN',
+                ], 403);
+            }
+
+            abort(403, 'Unauthorized access.');
+        }
+
+        // Specific role slug check (for restricted routes)
         $userRole = $user->role?->slug;
 
-        if (empty($roles) || !in_array($userRole, $roles, true)) {
+        if (!in_array($userRole, $roles, true)) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'success' => false,

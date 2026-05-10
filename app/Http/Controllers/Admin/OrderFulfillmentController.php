@@ -11,8 +11,23 @@ use Illuminate\Http\Request;
 
 class OrderFulfillmentController extends Controller
 {
+    protected ?string $permissionModule = 'orders';
+
+    protected array $customActionMap = [
+        'assignCourier' => 'edit',
+        'updateTracking' => 'edit',
+        'markShipped' => 'edit',
+        'markDelivered' => 'edit',
+        'getTrackingTimeline' => 'view',
+        'couriers' => 'view',
+    ];
+
     public function assignCourier(Request $request, Order $order)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'courier_id' => 'required|exists:couriers,id',
             'tracking_number' => 'required|string|max:100',
@@ -61,6 +76,10 @@ class OrderFulfillmentController extends Controller
 
     public function updateTracking(Request $request, CourierAssignment $assignment)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'status' => 'required|string|max:50',
             'location' => 'nullable|string|max:255',
@@ -100,6 +119,10 @@ class OrderFulfillmentController extends Controller
 
     public function markShipped(Request $request, Order $order)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'notes' => 'nullable|string',
         ]);
@@ -118,6 +141,10 @@ class OrderFulfillmentController extends Controller
 
     public function markDelivered(Request $request, Order $order)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'notes' => 'nullable|string',
         ]);
@@ -154,6 +181,10 @@ class OrderFulfillmentController extends Controller
 
     public function getTrackingTimeline(Order $order)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $order->load(['courierAssignment.trackingHistory', 'courierAssignment.courier', 'statusHistory.changedBy']);
         
         return view('admin.orders.tracking', compact('order'));
@@ -161,6 +192,10 @@ class OrderFulfillmentController extends Controller
 
     public function couriers()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $couriers = Courier::active()->ordered()->get();
         
         return response()->json($couriers);

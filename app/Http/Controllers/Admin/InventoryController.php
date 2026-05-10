@@ -10,6 +10,16 @@ use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
+    protected ?string $permissionModule = 'inventory';
+
+    protected array $customActionMap = [
+        'adjustStock' => 'edit',
+        'history' => 'view',
+        'lowStockAlerts' => 'view',
+        'valuation' => 'view',
+        'movements' => 'view',
+    ];
+
     protected StockManagerService $stockManager;
 
     public function __construct(StockManagerService $stockManager)
@@ -19,6 +29,10 @@ class InventoryController extends Controller
 
     public function index(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = Product::with(['variants', 'category']);
         
         // Search
@@ -89,6 +103,10 @@ class InventoryController extends Controller
     
     public function edit(Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $product->load(['variants.attributeValues.attribute', 'inventoryMovements' => function($q) {
             $q->with('creator')->latest()->limit(20);
         }]);
@@ -98,6 +116,10 @@ class InventoryController extends Controller
     
     public function update(Request $request, Product $product)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         if ($product->product_type === 'simple') {
             $validated = $request->validate([
                 'stock_quantity' => 'required|integer|min:0',
@@ -167,6 +189,10 @@ class InventoryController extends Controller
     
     public function adjustStock(Request $request, Variant $variant)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'adjustment' => 'required|integer',
             'reason' => 'required|string|max:255',
@@ -192,6 +218,10 @@ class InventoryController extends Controller
      */
     public function history(Request $request, Variant $variant)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $movements = $variant->inventoryMovements()
             ->with('creator')
             ->latest()
@@ -211,6 +241,10 @@ class InventoryController extends Controller
      */
     public function lowStockAlerts()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $lowStockItems = $this->stockManager->getLowStockItems(100);
         
         return view('admin.inventory.low-stock', compact('lowStockItems'));
@@ -221,6 +255,10 @@ class InventoryController extends Controller
      */
     public function valuation()
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $valuation = $this->stockManager->getInventoryValuation();
         $categoryValuation = $this->stockManager->getCategoryValuation();
 
@@ -232,6 +270,10 @@ class InventoryController extends Controller
      */
     public function movements(Request $request)
     {
+        if ($redirect = $this->authorizeAction()) {
+            return $redirect;
+        }
+
         $query = \App\Models\InventoryMovement::with(['product', 'variant', 'creator']);
 
         if ($request->filled('type')) {
