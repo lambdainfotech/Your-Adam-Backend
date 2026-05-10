@@ -103,7 +103,7 @@ class HomepageService
      */
     private function getNewArrivals(): array
     {
-        $products = Product::with(['category', 'images'])
+        $products = Product::with(['category', 'images', 'variants'])
             ->where('status', 1)
             ->latest()
             ->take(8)
@@ -122,7 +122,7 @@ class HomepageService
      */
     private function getBestSellers(): array
     {
-        $products = Product::with(['category', 'images'])
+        $products = Product::with(['category', 'images', 'variants'])
             ->where('status', 1)
             ->where('is_bestseller', true)
             ->take(8)

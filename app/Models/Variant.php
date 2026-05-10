@@ -346,6 +346,11 @@ class Variant extends Model
         $this->stock_quantity = $newStock;
         $this->updateStockStatus();
         $this->saveQuietly();
+
+        // Sync parent product stock for simple products
+        if ($this->relationLoaded('product') && $this->product) {
+            $this->product->syncStockFromVariants();
+        }
     }
 
     public function setStock(int $newStock, string $reason = '', ?int $referenceId = null, ?string $referenceType = null): void
@@ -370,6 +375,11 @@ class Variant extends Model
         $this->stock_quantity = $newStock;
         $this->updateStockStatus();
         $this->saveQuietly();
+
+        // Sync parent product stock for simple products
+        if ($this->relationLoaded('product') && $this->product) {
+            $this->product->syncStockFromVariants();
+        }
     }
 
     public function canPurchase(int $quantity = 1): bool

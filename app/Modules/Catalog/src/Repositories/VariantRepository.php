@@ -53,6 +53,7 @@ class VariantRepository extends BaseRepository implements VariantRepositoryInter
             $variant = $this->model->find($variantId);
             if ($variant) {
                 $variant->updateStockStatus();
+                $variant->product?->syncStockFromVariants();
             }
         }
 
@@ -69,6 +70,7 @@ class VariantRepository extends BaseRepository implements VariantRepositoryInter
 
         $variant->increment('stock_quantity', $quantity);
         $variant->updateStockStatus();
+        $variant->product?->syncStockFromVariants();
         
         return true;
     }

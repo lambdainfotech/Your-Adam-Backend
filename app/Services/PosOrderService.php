@@ -91,8 +91,11 @@ class PosOrderService
             // Deduct stock
             if ($variant) {
                 $variant->decrement('stock_quantity', $item['quantity']);
+                $variant->updateStockStatus();
+                $variant->product?->syncStockFromVariants();
             } else {
                 $product->decrement('stock_quantity', $item['quantity']);
+                $product->updateStockStatus();
             }
         }
     }

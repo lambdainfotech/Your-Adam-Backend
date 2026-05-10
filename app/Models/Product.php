@@ -458,6 +458,25 @@ class Product extends Model
         }
     }
 
+    /**
+     * Sync product stock from its variants.
+     * For simple products, copies the single variant's stock_quantity to the product.
+     * For variable products, updates the total_stock sum.
+     */
+    public function syncStockFromVariants(): void
+    {
+        if ($this->product_type === 'simple') {
+            $variantStock = $this->variants()->value('stock_quantity');
+            if ($variantStock !== null && $this->stock_quantity !== $variantStock) {
+                $this->stock_quantity = $variantStock;
+                $this->updateStockStatus();
+            }
+        } else {
+            $totalStock = $this->variants()->sum('stock_quantity');
+            $this->update(['total_stock' => $totalStock]);
+        }
+    }
+
     public function hasVariantWithAttributes(array $attributeValueIds): ?Variant
     {
         foreach ($this->variants as $variant) {
