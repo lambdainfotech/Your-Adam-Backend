@@ -231,9 +231,9 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Users</span>
                 </div>
-                <a href="{{ route('admin.users.index') }}" title=">Customers" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.users.index') }}" title=">Users" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-users text-slate-500 w-5 text-center transition-colors"></i>
-                    <span class="sidebar-text whitespace-nowrap">Customers</span>
+                    <span class="sidebar-text whitespace-nowrap">Users</span>
                 </a>
                 <a href="{{ route('admin.guests.index') }}" title=">Guests" class="nav-item {{ request()->routeIs('admin.guests.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-user-clock text-slate-500 w-5 text-center transition-colors"></i>
