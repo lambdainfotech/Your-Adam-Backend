@@ -30,6 +30,7 @@ class Order extends Model
         'coupon_discount',
         'tax_amount',
         'shipping_amount',
+        'shipping_zone',
         'total_amount',
         'currency',
         'notes',

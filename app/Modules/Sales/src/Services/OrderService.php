@@ -209,6 +209,7 @@ class OrderService implements OrderServiceInterface
                 'tax_amount' => $financials['tax'],
                 'shipping_amount' => $financials['shipping'],
                 'total_amount' => $financials['total'],
+                'shipping_zone' => $data['shipping_zone'],
                 'currency' => config('app.currency', 'BDT'),
                 'notes' => $data['note'] ?? null,
                 'delivery_address' => $deliveryAddress,
