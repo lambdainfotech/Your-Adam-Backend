@@ -56,7 +56,7 @@ class Order extends Model
 
     /**
      * Calculate shipping amount from shipping_zone for legacy orders
-     * where shipping_amount was not stored.
+     * where shipping_amount was not stored properly.
      */
     public function getShippingAmountAttribute($value): float
     {
@@ -66,12 +66,6 @@ class Order extends Model
         }
 
         $settings = Setting::allSettings();
-        $subtotal = (float) ($this->getAttributes()['subtotal'] ?? 0);
-        $freeThreshold = (float) ($settings['free_shipping_threshold'] ?? 1000);
-
-        if ($subtotal >= $freeThreshold) {
-            return 0;
-        }
 
         return match ($this->shipping_zone) {
             'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
