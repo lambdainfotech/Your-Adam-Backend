@@ -113,12 +113,9 @@
                 </div>
             </div>
             
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input type="checkbox" name="remember" id="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
-                </div>
-                <a href="#" class="text-sm text-blue-600 hover:text-blue-500">Forgot password?</a>
+            <div class="flex items-center">
+                <input type="checkbox" name="remember" id="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
             </div>
             
             <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium flex items-center justify-center">
