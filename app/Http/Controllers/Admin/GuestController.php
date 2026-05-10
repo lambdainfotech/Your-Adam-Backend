@@ -82,4 +82,22 @@ class GuestController extends Controller
             'email'
         ));
     }
+
+    public function destroy(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        try {
+            // Delete all guest records with this email
+            $deleted = Guest::where('email', $validated['email'])->delete();
+
+            return redirect()->route('admin.guests.index')
+                ->with('success', "Guest and {$deleted} associated records deleted successfully.");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete guest: ' . $e->getMessage());
+        }
+    }
 }

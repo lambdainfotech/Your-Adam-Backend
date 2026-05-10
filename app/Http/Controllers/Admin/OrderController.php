@@ -183,4 +183,28 @@ class OrderController extends Controller
         return view('admin.orders.print', compact('order'));
     }
 
+    public function destroy(Request $request)
+    {
+        $validated = $request->validate([
+            'order_id' => 'required|integer',
+            'order_type' => 'required|in:online,pos',
+        ]);
+
+        try {
+            if ($validated['order_type'] === 'pos') {
+                $order = PosOrder::findOrFail($validated['order_id']);
+            } else {
+                $order = Order::findOrFail($validated['order_id']);
+            }
+
+            $order->delete();
+
+            return redirect()->route('admin.orders.index')
+                ->with('success', 'Order deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete order: ' . $e->getMessage());
+        }
+    }
+
 }

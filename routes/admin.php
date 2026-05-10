@@ -174,6 +174,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     // Guests
     Route::get('guests', [GuestController::class, 'index'])->name('admin.guests.index');
     Route::get('guests/{email}', [GuestController::class, 'show'])->name('admin.guests.show');
+    Route::delete('guests', [GuestController::class, 'destroy'])->name('admin.guests.destroy');
 
     // Roles & Permissions
     Route::resource('roles', RoleController::class)->names('admin.roles');

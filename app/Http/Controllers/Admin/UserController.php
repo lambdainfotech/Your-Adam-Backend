@@ -154,4 +154,18 @@ class UserController extends Controller
             ->with('success', "User {$status} successfully.");
     }
 
+    public function destroy(User $user)
+    {
+        abort_unless(auth()->user()->isAdmin(), 403, 'Unauthorized action.');
+        
+        try {
+            $user->delete();
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Customer deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete customer: ' . $e->getMessage());
+        }
+    }
+
 }
