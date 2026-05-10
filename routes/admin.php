@@ -44,12 +44,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web'])->group(function () {
     Route::get('/login', [JWTAuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('/login', [JWTAuthController::class, 'login'])->name('admin.login.post');
+    Route::post('/logout', [JWTAuthController::class, 'logout'])->name('admin.logout');
     Route::post('/refresh', [JWTAuthController::class, 'refresh'])->name('admin.refresh');
 });
 
 // Protected routes (JWT auth + admin role required)
 Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function () {
-    Route::post('/logout', [JWTAuthController::class, 'logout'])->name('admin.logout');
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');

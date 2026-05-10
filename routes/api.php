@@ -109,9 +109,11 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', [JWTAuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/refresh', [JWTAuthController::class, 'refresh'])->middleware('throttle:10,1');
 
+    // Logout route - accessible without auth (so users can logout even with expired tokens)
+    Route::post('/logout', [JWTAuthController::class, 'logout']);
+
     // Protected auth routes
     Route::middleware('jwt.auth')->group(function () {
-        Route::post('/logout', [JWTAuthController::class, 'logout']);
         Route::get('/me', [JWTAuthController::class, 'me']);
         Route::get('/check', [JWTAuthController::class, 'check']);
     });

@@ -24,6 +24,7 @@ class JWTAuthMiddleware
     protected array $excludedRoutes = [
         'admin.login',
         'admin.login.post',
+        'admin.logout',
     ];
 
     public function handle(Request $request, Closure $next): Response

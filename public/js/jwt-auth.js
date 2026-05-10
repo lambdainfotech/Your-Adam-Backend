@@ -262,22 +262,26 @@
          * Logout user
          */
         async logout() {
+            console.log('Logout clicked, CSRF token:', this.config.csrfToken ? 'present' : 'missing');
+            
             try {
                 const response = await fetch('/admin/logout', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': this.config.csrfToken,
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     },
                     credentials: 'same-origin',
                 });
 
-                if (response.ok || response.redirected) {
-                    window.location.href = '/admin/login';
-                }
+                console.log('Logout response status:', response.status);
+                
+                // Always redirect to login after logout, regardless of response
+                window.location.href = '/admin/login?logout=1';
             } catch (error) {
                 console.error('Logout failed:', error);
-                window.location.href = '/admin/login';
+                window.location.href = '/admin/login?logout=1';
             }
         },
 
