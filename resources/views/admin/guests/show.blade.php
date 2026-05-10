@@ -16,14 +16,7 @@
                 <p class="text-gray-500 mt-1">{{ $email }}</p>
             </div>
         </div>
-        <form method="POST" action="{{ route('admin.guests.destroy') }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this guest and all associated records?');">
-            @csrf
-            @method('DELETE')
-            <input type="hidden" name="email" value="{{ $email }}">
-            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
-                <i class="fas fa-trash-alt mr-2"></i>Delete Guest
-            </button>
-        </form>
+
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

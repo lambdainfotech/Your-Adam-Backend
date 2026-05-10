@@ -102,14 +102,7 @@
                                         class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                         <i class="fas fa-eye mr-1"></i> View
                                     </a>
-                                    <form method="POST" action="{{ route('admin.guests.destroy') }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this guest and all associated records?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="email" value="{{ $guest->email }}">
-                                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium" title="Delete">
-                                            <i class="fas fa-trash-alt mr-1"></i> Delete
-                                        </button>
-                                    </form>
+
                                 </div>
                             </td>
                         </tr>
