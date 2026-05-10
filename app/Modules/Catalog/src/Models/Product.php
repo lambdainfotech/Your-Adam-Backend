@@ -102,4 +102,21 @@ class Product extends Model
     {
         return $this->discount_price ?? $this->base_price;
     }
+
+    /**
+     * Sync product stock from its variants.
+     * For simple products, copies the single variant's stock_quantity to the product.
+     * For variable products, updates the total_stock sum.
+     */
+    public function syncStockFromVariants(): void
+    {
+        $variantStock = $this->variants()->value('stock_quantity');
+        if ($variantStock !== null) {
+            $this->stock_quantity = $variantStock;
+            $this->stock_status = $variantStock > 0 ? 'in_stock' : 'out_of_stock';
+        }
+
+        $this->total_stock = $this->variants()->sum('stock_quantity');
+        $this->saveQuietly();
+    }
 }
