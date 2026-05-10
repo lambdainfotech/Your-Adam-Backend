@@ -156,7 +156,7 @@ class OrderService implements OrderServiceInterface
 
             // Process items and calculate totals
             $processedItems = $this->processItemsDirect($data['items']);
-            $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? []);
+            $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone']);
 
             // Build delivery address from saved address or inline input
             if (!empty($data['address_id'])) {
@@ -506,7 +506,7 @@ class OrderService implements OrderServiceInterface
     /**
      * Calculate financial totals for direct order
      */
-    protected function calculateFinancialsDirect(array $processedItems, array $orderSummary): array
+    protected function calculateFinancialsDirect(array $processedItems, array $orderSummary, string $shippingZone): array
     {
         $settings = Setting::allSettings();
 
@@ -516,10 +516,19 @@ class OrderService implements OrderServiceInterface
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
         $tax = $subtotal * $taxRate;
 
-        $freeShippingThreshold = (float) ($settings['feature_free_shipping_threshold'] ?? 2000);
-        $baseShippingRate = (float) ($settings['shipping_base_rate'] ?? 100);
+        // Shipping calculation based on zone
+        $freeShippingThreshold = (float) ($settings['free_shipping_threshold'] ?? 1000);
+        $isFreeShipping = $subtotal >= $freeShippingThreshold;
 
-        $shipping = $subtotal >= $freeShippingThreshold ? 0 : $baseShippingRate;
+        if ($isFreeShipping) {
+            $shipping = 0;
+        } else {
+            $shipping = match ($shippingZone) {
+                'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+                'outside_dhaka' => (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+                default => (float) ($settings['shipping_base_rate'] ?? 100),
+            };
+        }
 
         $total = max(0, $subtotal - $discount + $tax + $shipping);
 

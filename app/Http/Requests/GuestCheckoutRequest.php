@@ -35,6 +35,9 @@ class GuestCheckoutRequest extends FormRequest
             'shippingAddress.district' => ['nullable', 'string', 'max:100'],
             'shippingAddress.postcode' => ['required', 'string', 'max:20'],
 
+            // Shipping Zone
+            'shipping_zone' => ['required', 'string', 'in:inside_dhaka,outside_dhaka'],
+
             // Payment
             'paymentMethod.id' => ['required', 'string', 'in:cod,aamarpay'],
             'paymentMethod.name' => ['nullable', 'string', 'max:100'],

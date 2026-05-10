@@ -34,7 +34,7 @@ class GuestCheckoutService
             $processedItems = $this->processItems($data['items']);
 
             // 3. Calculate financials
-            $financials = $this->calculateFinancials($processedItems, $data['orderSummary'] ?? []);
+            $financials = $this->calculateFinancials($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone']);
 
             // 4. Generate order number
             $orderNumber = $this->generateOrderNumber();
@@ -244,7 +244,7 @@ class GuestCheckoutService
     /**
      * Calculate financial totals
      */
-    protected function calculateFinancials(array $processedItems, array $orderSummary): array
+    protected function calculateFinancials(array $processedItems, array $orderSummary, string $shippingZone): array
     {
         $settings = Setting::allSettings();
 
@@ -254,12 +254,19 @@ class GuestCheckoutService
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
         $tax = $subtotal * $taxRate;
 
-        // Shipping calculation
-        $freeShippingThreshold = (float) ($settings['feature_free_shipping_threshold'] ?? 2000);
-        $baseShippingRate = (float) ($settings['shipping_base_rate'] ?? 100);
+        // Shipping calculation based on zone
+        $freeShippingThreshold = (float) ($settings['free_shipping_threshold'] ?? 1000);
+        $isFreeShipping = $subtotal >= $freeShippingThreshold;
 
-        // Always calculate shipping server-side — ignore frontend-provided value
-        $shipping = $subtotal >= $freeShippingThreshold ? 0 : $baseShippingRate;
+        if ($isFreeShipping) {
+            $shipping = 0;
+        } else {
+            $shipping = match ($shippingZone) {
+                'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+                'outside_dhaka' => (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+                default => (float) ($settings['shipping_base_rate'] ?? 100),
+            };
+        }
 
         $total = max(0, $subtotal - $discount + $tax + $shipping);
 

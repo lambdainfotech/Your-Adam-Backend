@@ -34,6 +34,9 @@ class CustomerOrderRequest extends FormRequest
             'shippingAddress.district' => ['nullable', 'string', 'max:100'],
             'shippingAddress.postcode' => [$hasAddressId ? 'nullable' : 'required', 'string', 'max:20'],
 
+            // Shipping Zone
+            'shipping_zone' => ['required', 'string', 'in:inside_dhaka,outside_dhaka'],
+
             // Payment
             'paymentMethod' => ['required', 'array'],
             'paymentMethod.id' => ['required', 'string', 'in:cod,aamarpay'],
