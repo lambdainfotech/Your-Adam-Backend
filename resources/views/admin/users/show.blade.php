@@ -10,12 +10,24 @@
         <a href="{{ route('admin.users.index') }}" class="text-gray-500 hover:text-gray-700">
             <i class="fas fa-arrow-left mr-2"></i>Back to Users
         </a>
-        <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" class="inline">
-            @csrf
-            <button type="submit" class="px-4 py-2 {{ $user->status === 1 ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600' }} text-white rounded-lg">
-                <i class="fas {{ $user->status === 1 ? 'fa-ban' : 'fa-check' }} mr-2"></i>{{ $user->status === 1 ? 'Deactivate' : 'Activate' }}
-            </button>
-        </form>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.users.edit', $user) }}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                <i class="fas fa-edit mr-2"></i>Edit
+            </a>
+            <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" class="inline">
+                @csrf
+                <button type="submit" class="px-4 py-2 {{ $user->status === 1 ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600' }} text-white rounded-lg">
+                    <i class="fas {{ $user->status === 1 ? 'fa-ban' : 'fa-check' }} mr-2"></i>{{ $user->status === 1 ? 'Deactivate' : 'Activate' }}
+                </button>
+            </form>
+            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                    <i class="fas fa-trash-alt mr-2"></i>Delete
+                </button>
+            </form>
+        </div>
     </div>
     
     <!-- User Info -->

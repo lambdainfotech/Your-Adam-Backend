@@ -130,6 +130,15 @@
                                             <i class="fas fa-print"></i>
                                         </a>
                                     @endif
+                                    <form method="POST" action="{{ route('admin.orders.destroy', $order['id']) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this order?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="order_id" value="{{ $order['id'] }}">
+                                        <input type="hidden" name="order_type" value="{{ $order['type'] }}">
+                                        <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
