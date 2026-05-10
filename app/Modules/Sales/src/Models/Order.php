@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Models;
 
+use App\Models\Setting;
 use App\Modules\Core\Models\User;
 use App\Modules\Sales\Enums\OrderStatus;
 use App\Modules\Sales\Enums\PaymentStatus;
@@ -52,6 +53,53 @@ class Order extends Model
         'total_amount' => 'float',
         'estimated_delivery_date' => 'datetime',
     ];
+
+    /**
+     * Calculate shipping amount from shipping_zone for legacy orders
+     * where shipping_amount was not stored.
+     */
+    public function getShippingAmountAttribute($value): float
+    {
+        $stored = (float) $value;
+        if ($stored > 0 || empty($this->shipping_zone)) {
+            return $stored;
+        }
+
+        $settings = Setting::allSettings();
+        $subtotal = (float) ($this->getAttributes()['subtotal'] ?? 0);
+        $freeThreshold = (float) ($settings['free_shipping_threshold'] ?? 1000);
+
+        if ($subtotal >= $freeThreshold) {
+            return 0;
+        }
+
+        return match ($this->shipping_zone) {
+            'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+            'outside_dhaka' => (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+            default => (float) ($settings['shipping_base_rate'] ?? 100),
+        };
+    }
+
+    /**
+     * Recalculate total_amount if shipping was missing from stored value.
+     */
+    public function getTotalAmountAttribute($value): float
+    {
+        $storedTotal = (float) $value;
+        $storedShipping = (float) ($this->getAttributes()['shipping_amount'] ?? 0);
+
+        if ($storedShipping > 0 || empty($this->shipping_zone)) {
+            return $storedTotal;
+        }
+
+        $subtotal = (float) ($this->getAttributes()['subtotal'] ?? 0);
+        $tax = (float) ($this->getAttributes()['tax_amount'] ?? 0);
+        $shipping = $this->shipping_amount;
+        $discount = (float) ($this->getAttributes()['discount_amount'] ?? 0);
+        $coupon = (float) ($this->getAttributes()['coupon_discount'] ?? 0);
+
+        return max(0, $subtotal + $tax + $shipping - $discount - $coupon);
+    }
 
     public function user(): BelongsTo
     {
