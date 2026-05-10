@@ -54,30 +54,60 @@ class DashboardController extends Controller
             'shipped_orders' => Order::where('status', 'shipped')->count() + PosOrder::where('delivery_status', 'shipped')->count(),
         ];
 
-        // Recent orders (both regular + POS)
+        // Recent orders (both regular + POS) — fetched separately and merged in PHP
+        // to preserve relationships and customer type info properly
         $recentRegularOrders = Order::with('user', 'guest')
-            ->select('id', 'order_number as number', 'customer_type', 'total_amount', 'status', 'created_at', DB::raw("'online' as type"))
-            ->orderBy('created_at', 'desc')
-            ->limit(5);
-
-        $recentPosOrders = PosOrder::with('user')
-            ->select('id', 'order_number as number', DB::raw("'pos' as customer_type"), 'total_amount', DB::raw("COALESCE(delivery_status, status) as status"), 'created_at', DB::raw("'pos' as type"))
-            ->orderBy('created_at', 'desc')
-            ->limit(5);
-
-        $recentOrders = $recentRegularOrders->union($recentPosOrders)
             ->orderBy('created_at', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return (object) [
+                    'id' => $order->id,
+                    'number' => $order->order_number,
+                    'type' => 'online',
+                    'customer_type' => $order->customer_type,
+                    'customer_name' => $order->customer_type === 'guest'
+                        ? ($order->guest?->name ?? 'Guest')
+                        : ($order->user?->name ?? 'Guest'),
+                    'customer_badge' => $order->customer_type === 'guest' ? 'Guest' : 'Registered',
+                    'total_amount' => $order->total_amount,
+                    'status' => $order->status,
+                    'created_at' => $order->created_at,
+                ];
+            });
 
-        // Low stock
+        $recentPosOrders = PosOrder::with('user', 'customer')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($order) {
+                return (object) [
+                    'id' => $order->id,
+                    'number' => $order->order_number,
+                    'type' => 'pos',
+                    'customer_type' => 'pos',
+                    'customer_name' => $order->customer_name ?? $order->customer?->name ?? $order->user?->name ?? 'Walk-in Customer',
+                    'customer_badge' => $order->customer_id ? 'Registered' : 'Walk-in',
+                    'total_amount' => $order->total_amount,
+                    'status' => $order->delivery_status ?? $order->status,
+                    'created_at' => $order->created_at,
+                ];
+            });
+
+        $recentOrders = collect($recentRegularOrders)
+            ->merge(collect($recentPosOrders))
+            ->sortByDesc('created_at')
+            ->take(5)
+            ->values();
+
+        // Low stock — use the per-variant threshold instead of a hardcoded value
         $lowStockItems = \App\Models\Variant::with('product')
-            ->where('stock_quantity', '<=', 5)
+            ->lowStock()
             ->where('is_active', true)
             ->limit(5)
             ->get();
 
-        $lowStockCount = \App\Models\Variant::where('stock_quantity', '<=', 5)->where('is_active', true)->count();
+        $lowStockCount = \App\Models\Variant::lowStock()->where('is_active', true)->count();
 
         // Sales chart (last 7 days, combined)
         $salesChart = $this->getSalesChartData();

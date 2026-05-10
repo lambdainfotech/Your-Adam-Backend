@@ -235,8 +235,13 @@
                                 <i class="fas fa-box text-red-400 text-xs"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-700 truncate">{{ $item->product?->name ?? 'Unknown' }}</p>
-                                <p class="text-[10px] text-slate-400">{{ $item->sku ?? 'N/A' }}</p>
+                                <p class="text-sm font-medium text-slate-700 truncate">
+                                    {{ $item->product?->name ?? 'Unknown' }}
+                                    @if($item->variant_name)
+                                        <span class="text-slate-400 font-normal">— {{ $item->variant_name }}</span>
+                                    @endif
+                                </p>
+                                <p class="text-[10px] text-slate-400">SKU: {{ $item->sku ?? 'N/A' }} • Threshold: {{ $item->low_stock_threshold }}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-sm font-bold text-red-600">{{ $item->stock_quantity }}</p>
@@ -295,8 +300,17 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3 text-slate-600">
-                                {{ $order->customer_type === 'guest' ? ($order->guest?->name ?? 'Guest') : ($order->user?->name ?? 'Guest') }}
+                            <td class="px-5 py-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-slate-600">{{ $order->customer_name }}</span>
+                                    @if($order->customer_badge === 'Guest')
+                                        <span class="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-medium">Guest</span>
+                                    @elseif($order->customer_badge === 'Registered')
+                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">Registered</span>
+                                    @elseif($order->customer_badge === 'Walk-in')
+                                        <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium">Walk-in</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-5 py-3 text-slate-500">
                                 {{ $order->created_at->format('M d, Y') }}
