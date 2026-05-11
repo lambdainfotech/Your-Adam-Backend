@@ -31,6 +31,7 @@ class ProductService
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['status'] = $validated['is_active'] ? 1 : 0;
         $validated['is_featured'] = $request->boolean('is_featured', false);
         $validated['manage_stock'] = $request->boolean('manage_stock', true);
 
@@ -93,6 +94,7 @@ class ProductService
         $validated = $this->categoryService->resolveCategoryIds($validated);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['status'] = $validated['is_active'] ? 1 : 0;
         $validated['is_featured'] = $request->boolean('is_featured', false);
 
         // Handle predefined descriptions

@@ -280,6 +280,7 @@ class ProductController extends Controller
     public function toggleStatus(Product $product)
     {
         $product->is_active = !$product->is_active;
+        $product->status = $product->is_active ? 1 : 0;
         $product->save();
         
         $status = $product->is_active ? 'activated' : 'deactivated';

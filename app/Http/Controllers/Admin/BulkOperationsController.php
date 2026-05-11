@@ -243,7 +243,10 @@ class BulkOperationsController extends Controller
 
         foreach ($validated['items'] as $item) {
             if ($item['type'] === 'product') {
-                Product::where('id', $item['id'])->update(['is_active' => $validated['status']]);
+                Product::where('id', $item['id'])->update([
+                    'is_active' => $validated['status'],
+                    'status' => $validated['status'] ? 1 : 0,
+                ]);
                 $results['products']++;
             } else {
                 Variant::where('id', $item['id'])->update(['is_active' => $validated['status']]);
