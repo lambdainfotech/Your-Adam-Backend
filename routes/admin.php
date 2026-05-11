@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\BrandValueController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\GuestController;
+use App\Http\Controllers\Admin\DistrictController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -175,6 +176,10 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('guests', [GuestController::class, 'index'])->name('admin.guests.index');
     Route::get('guests/{email}', [GuestController::class, 'show'])->name('admin.guests.show');
     Route::delete('guests', [GuestController::class, 'destroy'])->name('admin.guests.destroy');
+
+    // Districts
+    Route::resource('districts', DistrictController::class)->names('admin.districts');
+    Route::post('districts/{district}/toggle-status', [DistrictController::class, 'toggleStatus'])->name('admin.districts.toggle-status');
 
     // Roles & Permissions
     Route::resource('roles', RoleController::class)->names('admin.roles');

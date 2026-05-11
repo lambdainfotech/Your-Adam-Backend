@@ -226,6 +226,10 @@
                     <i class="nav-icon fas fa-shipping-fast text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Couriers</span>
                 </a>
+                <a href="{{ route('admin.districts.index') }}" title=">Districts" class="nav-item {{ request()->routeIs('admin.districts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-map-marker-alt text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Districts</span>
+                </a>
 
                 <!-- Users Section -->
                 <div class="mt-5 mb-2 px-3 sidebar-text">
