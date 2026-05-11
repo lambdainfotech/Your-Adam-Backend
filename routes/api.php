@@ -54,6 +54,9 @@ Route::post('/reviews/{reviewId}/helpful', [\App\Http\Controllers\Frontend\Revie
 Route::get('/products/{productId}/related', [\App\Http\Controllers\Frontend\RelatedProductController::class, 'index']);
 Route::get('/products/{productId}/frequently-bought', [\App\Http\Controllers\Frontend\RelatedProductController::class, 'frequentlyBoughtTogether']);
 
+// Districts (Public)
+Route::get('/districts', [\App\Http\Controllers\Api\DistrictController::class, 'index']);
+
 // Shipping Calculator (Public)
 Route::post('/shipping/calculate', [\App\Http\Controllers\Frontend\ShippingController::class, 'calculate']);
 Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingController::class, 'methods']);
