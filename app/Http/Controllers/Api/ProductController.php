@@ -34,7 +34,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Product::with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
-            ->active();
+            ->where('status', 1);
 
         // Filters
         if ($request->filled('category')) {
@@ -86,7 +86,7 @@ class ProductController extends Controller
      */
     public function show(Product $product): JsonResponse
     {
-        if (!$product->is_active) {
+        if ($product->status != 1) {
             return $this->error('Product not found', 404);
         }
 
@@ -104,7 +104,7 @@ class ProductController extends Controller
     public function bySlug(string $slug): JsonResponse
     {
         $product = Product::where('slug', $slug)
-            ->active()
+            ->where('status', 1)
             ->with([
                 'category',
                 'subCategory',
@@ -141,7 +141,7 @@ class ProductController extends Controller
         $results = [];
 
         foreach ($request->items as $item) {
-            $product = Product::active()->find($item['product_id']);
+            $product = Product::where('status', 1)->find($item['product_id']);
             $variant = isset($item['variant_id']) ? \App\Models\Variant::find($item['variant_id']) : null;
 
             if ($variant) {
@@ -177,7 +177,7 @@ class ProductController extends Controller
      */
     public function getPrice(Request $request, Product $product): JsonResponse
     {
-        if (!$product->is_active) {
+        if ($product->status != 1) {
             return $this->error('Product not found', 404);
         }
 
@@ -216,7 +216,7 @@ class ProductController extends Controller
      */
     public function findVariant(Request $request, Product $product): JsonResponse
     {
-        if (!$product->is_active) {
+        if ($product->status != 1) {
             return $this->error('Product not found', 404);
         }
 

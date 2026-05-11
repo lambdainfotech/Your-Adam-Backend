@@ -222,7 +222,7 @@ class GuestCheckoutService
         if (!empty($item['product_id'])) {
             $product = Product::find($item['product_id']);
 
-            if (!$product || !$product->is_active) {
+            if (!$product || $product->status != 1) {
                 return null;
             }
 

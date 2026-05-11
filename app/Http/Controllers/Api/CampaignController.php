@@ -66,14 +66,14 @@ class CampaignController extends Controller
 
         // Load products based on campaign apply type
         if ($campaign->apply_to_all || $campaign->apply_type === 'all') {
-            $products = Product::where('is_active', true)
+            $products = Product::where('status', 1)
                 ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
                 ->get();
             $campaign->setRelation('products', $products);
         } elseif ($campaign->apply_type === 'categories') {
             $categoryIds = $campaign->categories->pluck('id');
             if ($categoryIds->isNotEmpty()) {
-                $products = Product::where('is_active', true)
+                $products = Product::where('status', 1)
                     ->where(function ($query) use ($categoryIds) {
                         $query->whereIn('category_id', $categoryIds)
                             ->orWhereHas('categories', function ($q) use ($categoryIds) {
@@ -89,7 +89,7 @@ class CampaignController extends Controller
         } else {
             // Explicitly attached products
             $products = $campaign->products()
-                ->where('is_active', true)
+                ->where('status', 1)
                 ->with(['category', 'mainImage', 'variants.attributeValues.attribute', 'variants.mainImage'])
                 ->get();
             $campaign->setRelation('products', $products);
