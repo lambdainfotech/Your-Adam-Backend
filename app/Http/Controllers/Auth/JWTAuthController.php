@@ -56,9 +56,10 @@ class JWTAuthController extends Controller
      */
     public function login(Request $request): JsonResponse|RedirectResponse
     {
-        // Validate request
+        // Validate request - accept either email or mobile
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required_without:mobile|nullable|email',
+            'mobile' => 'required_without:email|nullable|string|min:10|max:15',
             'password' => 'required|string|min:8',
         ]);
 
@@ -74,7 +75,22 @@ class JWTAuthController extends Controller
             throw new ValidationException($validator);
         }
 
-        $credentials = $request->only('email', 'password');
+        // Build credentials based on provided identifier
+        $password = $request->input('password');
+
+        if ($request->has('email') && $request->input('email')) {
+            $credentials = ['email' => $request->input('email'), 'password' => $password];
+        } else {
+            $mobile = $request->input('mobile');
+            // Normalize mobile to 880 format for DB lookup
+            $mobile = preg_replace('/[^0-9]/', '', $mobile);
+            if (str_starts_with($mobile, '0')) {
+                $mobile = '88' . $mobile;
+            } elseif (!str_starts_with($mobile, '880')) {
+                $mobile = '880' . $mobile;
+            }
+            $credentials = ['mobile' => $mobile, 'password' => $password];
+        }
 
         // Attempt login
         $tokenData = $this->attemptLogin($credentials);
