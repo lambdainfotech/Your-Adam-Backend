@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Coupon;
 use App\Services\CouponService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -53,5 +54,39 @@ class CouponController extends Controller
         $coupons = $this->couponService->getAvailableCoupons($userId);
 
         return $this->success($coupons, 'Available coupons retrieved successfully');
+    }
+
+    /**
+     * Get coupon details by code
+     */
+    public function show(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $coupon = Coupon::where('code', strtoupper($request->code))->first();
+
+        if (!$coupon) {
+            return $this->error('Coupon not found', 404);
+        }
+
+        return $this->success([
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'description' => $coupon->description,
+            'type' => $coupon->type,
+            'value' => $coupon->value,
+            'minPurchaseAmount' => $coupon->min_purchase_amount,
+            'maxDiscountAmount' => $coupon->max_discount_amount,
+            'usageLimitPerUser' => $coupon->usage_limit_per_user,
+            'totalUsageLimit' => $coupon->total_usage_limit,
+            'usageCount' => $coupon->usage_count,
+            'startsAt' => $coupon->starts_at?->toIso8601String(),
+            'expiresAt' => $coupon->expires_at?->toIso8601String(),
+            'isActive' => $coupon->is_active,
+            'isValid' => $coupon->is_valid,
+            'isExpired' => $coupon->is_expired,
+        ], 'Coupon details retrieved successfully');
     }
 }

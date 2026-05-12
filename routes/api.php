@@ -61,8 +61,9 @@ Route::get('/districts', [\App\Http\Controllers\Api\DistrictController::class, '
 Route::post('/shipping/calculate', [\App\Http\Controllers\Frontend\ShippingController::class, 'calculate']);
 Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingController::class, 'methods']);
 
-// Coupon Validation (Public)
+// Coupon APIs (Public)
 Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponController::class, 'validate']);
+Route::get('/coupons/details', [\App\Http\Controllers\Frontend\CouponController::class, 'show']);
 
 // Guest Checkout (Public)
 Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout')->middleware('throttle:5,1');
