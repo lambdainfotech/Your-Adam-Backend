@@ -60,14 +60,59 @@ class CartController extends Controller
 
     public function applyCoupon(ApplyCouponRequest $request): JsonResponse
     {
+        $userId = $request->user()?->id;
+
+        // Guest checkout: accept subtotal for discount calculation
+        if ($userId === null) {
+            $couponCode = $request->input('coupon_code');
+            $subtotal = (float) $request->input('subtotal', 0);
+
+            $coupon = \App\Models\Coupon::where('code', strtoupper($couponCode))
+                ->where('is_active', true)
+                ->first();
+
+            if (!$coupon) {
+                return $this->errorResponse('Invalid coupon code.', 422);
+            }
+
+            if ($coupon->expires_at && now()->gt($coupon->expires_at)) {
+                return $this->errorResponse('Coupon has expired.', 422);
+            }
+
+            if ($coupon->starts_at && now()->lt($coupon->starts_at)) {
+                return $this->errorResponse('Coupon is not active yet.', 422);
+            }
+
+            if ($coupon->min_purchase_amount && $subtotal < $coupon->min_purchase_amount) {
+                return $this->errorResponse(
+                    'Minimum purchase amount of ৳' . $coupon->min_purchase_amount . ' required.',
+                    422
+                );
+            }
+
+            $discount = $coupon->calculateDiscount($subtotal);
+
+            return $this->successResponse([
+                'coupon' => [
+                    'code' => $coupon->code,
+                    'type' => $coupon->type,
+                    'value' => $coupon->value,
+                    'discountAmount' => $discount,
+                    'subtotal' => $subtotal,
+                    'finalAmount' => max(0, $subtotal - $discount),
+                ],
+            ]);
+        }
+
+        // Authenticated user
         $cart = $this->service->applyCoupon(
-            $request->user()->id,
+            $userId,
             ApplyCouponDTO::fromRequest($request->validated())
         );
 
         return $this->successResponse([
             'cart' => $cart,
-            'summary' => $this->service->getCartSummary($request->user()->id),
+            'summary' => $this->service->getCartSummary($userId),
         ]);
     }
 

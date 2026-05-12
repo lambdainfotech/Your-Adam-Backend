@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Public / Guest Coupon Apply (No Auth Required)
+Route::post('/v1/cart/apply-coupon', [CartController::class, 'applyCoupon']);
+
 Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
     // Cart Routes
     Route::get('/cart', [CartController::class, 'index']);
@@ -20,7 +23,6 @@ Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
     Route::post('/cart/items', [CartController::class, 'store']);
     Route::put('/cart/items/{id}', [CartController::class, 'update']);
     Route::delete('/cart/items/{id}', [CartController::class, 'destroy']);
-    Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon']);
     Route::delete('/cart/coupon', [CartController::class, 'removeCoupon']);
     Route::delete('/cart', [CartController::class, 'clear']);
 

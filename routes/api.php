@@ -144,7 +144,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/cart/items', [\App\Modules\Sales\Http\Controllers\CartController::class, 'store']);
     Route::put('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'update']);
     Route::delete('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'destroy']);
-    Route::post('/cart/apply-coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'applyCoupon']);
     Route::delete('/cart/coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'removeCoupon']);
     Route::get('/cart/summary', [\App\Modules\Sales\Http\Controllers\CartController::class, 'summary']);
     Route::delete('/cart/clear', [\App\Modules\Sales\Http\Controllers\CartController::class, 'clear']);
