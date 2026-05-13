@@ -26,6 +26,7 @@ class SiteInfoService
             'shipping' => $this->getShippingSettings($settings),
             'header' => $this->getHeaderSettings(),
             'footer' => $this->getFooterSettings($settings),
+            'contactPage' => $this->getContactPageSettings($settings),
         ];
     }
 
@@ -344,6 +345,56 @@ class SiteInfoService
             'brand' => [
                 'description' => $settings['footer_brand_description'] ?? 'Premium fashion meets custom expression. Design your own or choose from our curated collections.',
                 'copyright' => $copyright,
+            ],
+        ];
+    }
+
+    /**
+     * Get contact page settings for frontend display
+     */
+    private function getContactPageSettings(array $settings): array
+    {
+        $locations = json_decode($settings['contact_page_locations'] ?? '[]', true);
+        $faqs = json_decode($settings['contact_page_faqs'] ?? '[]', true);
+
+        if (empty($locations)) {
+            $locations = [
+                [
+                    'name' => 'Head Office',
+                    'address' => 'House 12, Road 5, Dhanmondi, Dhaka 1205',
+                    'phone' => $settings['contact_phone'] ?? '+880 1234-567890',
+                    'email' => $settings['contact_email'] ?? 'support@youradam.com',
+                    'hours' => 'Sat - Thu: 9:00 AM - 8:00 PM',
+                ],
+            ];
+        }
+
+        if (empty($faqs)) {
+            $faqs = [
+                [
+                    'question' => 'What are your business hours?',
+                    'answer' => 'We are open Saturday to Thursday from 9:00 AM to 8:00 PM. Our online store is open 24/7.',
+                ],
+                [
+                    'question' => 'How can I track my order?',
+                    'answer' => 'You can track your order using the tracking number sent to your email or by visiting the Track Order page.',
+                ],
+            ];
+        }
+
+        return [
+            'title' => $settings['contact_page_title'] ?? 'Contact Us',
+            'subtitle' => $settings['contact_page_subtitle'] ?? "We'd love to hear from you",
+            'description' => $settings['contact_page_description'] ?? 'Have a question, feedback, or just want to say hello? Reach out to us and our team will get back to you as soon as possible.',
+            'heroImage' => $this->resolveAssetUrl($settings['contact_page_hero_image'] ?? null, ''),
+            'showMap' => filter_var($settings['contact_page_show_map'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'mapEmbedUrl' => $settings['contact_page_map_embed_url'] ?? '',
+            'locations' => $locations,
+            'faqs' => $faqs,
+            'formEnabled' => filter_var($settings['contact_page_form_enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'meta' => [
+                'title' => $settings['contact_page_meta_title'] ?? 'Contact Us | Your Adam',
+                'description' => $settings['contact_page_meta_description'] ?? 'Get in touch with Your Adam. We are here to help you with any questions or concerns.',
             ],
         ];
     }

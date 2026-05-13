@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactSubmission;
 use App\Models\Setting;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
@@ -134,6 +135,20 @@ class SettingController extends Controller
         ));
     }
 
+    public function contact()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        $contactPageLocations = json_decode($settings['contact_page_locations'] ?? '[]', true);
+        $contactPageFaqs = json_decode($settings['contact_page_faqs'] ?? '[]', true);
+        
+        return view('admin.settings.contact', compact(
+            'settings',
+            'contactPageLocations',
+            'contactPageFaqs'
+        ));
+    }
+
     /**
      * Send test SMS from admin panel
      */
@@ -196,5 +211,51 @@ class SettingController extends Controller
         Cache::forget('app_settings');
         
         return redirect()->back()->with('success', 'Cache cleared successfully.');
+    }
+
+    public function contactSubmissions(Request $request)
+    {
+        $submissions = ContactSubmission::latest()
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('subject', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->input('status') === 'unread', function ($query) {
+                $query->whereNull('read_at');
+            })
+            ->when($request->input('status') === 'read', function ($query) {
+                $query->whereNotNull('read_at');
+            })
+            ->paginate(20)
+            ->withQueryString();
+
+        $stats = [
+            'total' => ContactSubmission::count(),
+            'unread' => ContactSubmission::whereNull('read_at')->count(),
+            'read' => ContactSubmission::whereNotNull('read_at')->count(),
+        ];
+
+        return view('admin.contact-submissions.index', compact('submissions', 'stats'));
+    }
+
+    public function showContactSubmission(ContactSubmission $submission)
+    {
+        $submission->markAsRead();
+        return view('admin.contact-submissions.show', compact('submission'));
+    }
+
+    public function deleteContactSubmission(ContactSubmission $submission)
+    {
+        $submission->delete();
+        return redirect()->route('admin.contact-submissions.index')->with('success', 'Submission deleted successfully.');
+    }
+
+    public function markContactSubmissionRead(ContactSubmission $submission)
+    {
+        $submission->markAsRead();
+        return redirect()->back()->with('success', 'Marked as read.');
     }
 }

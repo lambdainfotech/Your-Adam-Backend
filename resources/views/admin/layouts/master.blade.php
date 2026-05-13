@@ -268,6 +268,10 @@
                     <i class="nav-icon fas fa-cog text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Settings</span>
                 </a>
+                <a href="{{ route('admin.contact-submissions.index') }}" title=">Contact Submissions" class="nav-item {{ request()->routeIs('admin.contact-submissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-address-book text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Contact Submissions</span>
+                </a>
 
                 <!-- Reports Section -->
                 <div class="mt-5 mb-2 px-3 sidebar-text">

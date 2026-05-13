@@ -37,6 +37,9 @@
                 <a href="{{ route('admin.settings.footer') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-shoe-prints w-6"></i> Footer Settings
                 </a>
+                <a href="{{ route('admin.settings.contact') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-address-book w-6"></i> Contact Page
+                </a>
             </nav>
         </div>
     </div>

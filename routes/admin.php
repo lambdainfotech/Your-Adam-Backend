@@ -208,7 +208,14 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('settings/seo', [SettingController::class, 'seo'])->name('admin.settings.seo');
     Route::get('settings/social', [SettingController::class, 'social'])->name('admin.settings.social');
     Route::get('settings/footer', [SettingController::class, 'footer'])->name('admin.settings.footer');
+    Route::get('settings/contact', [SettingController::class, 'contact'])->name('admin.settings.contact');
     Route::post('settings/logo', [SettingController::class, 'uploadLogo'])->name('admin.settings.logo');
+
+    // Contact Submissions
+    Route::get('contact-submissions', [SettingController::class, 'contactSubmissions'])->name('admin.contact-submissions.index');
+    Route::get('contact-submissions/{submission}', [SettingController::class, 'showContactSubmission'])->name('admin.contact-submissions.show');
+    Route::delete('contact-submissions/{submission}', [SettingController::class, 'deleteContactSubmission'])->name('admin.contact-submissions.destroy');
+    Route::post('contact-submissions/{submission}/mark-read', [SettingController::class, 'markContactSubmissionRead'])->name('admin.contact-submissions.mark-read');
     Route::post('settings/favicon', [SettingController::class, 'uploadFavicon'])->name('admin.settings.favicon');
     Route::post('settings/clear-cache', [SettingController::class, 'clearCache'])->name('admin.settings.clear-cache');
 

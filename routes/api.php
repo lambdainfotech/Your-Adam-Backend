@@ -29,6 +29,8 @@ Route::get('/health', function (): JsonResponse {
 // Public Site Info (no authentication required)
 Route::get('/site/info', [SiteInfoController::class, 'index']);
 Route::get('/site/navigation', [\App\Http\Controllers\Frontend\NavigationController::class, 'index']);
+Route::get('/contact-page', [\App\Http\Controllers\Frontend\ContactPageController::class, 'index']);
+Route::post('/contact/submit', [\App\Http\Controllers\Frontend\ContactPageController::class, 'submit'])->middleware('throttle:5,1');
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);
