@@ -43,6 +43,7 @@ Route::post('/returns/submit', [\App\Http\Controllers\Frontend\ReturnsPageContro
 // About Us (Public)
 Route::get('/about-page', [\App\Http\Controllers\Frontend\AboutPageController::class, 'index']);
 Route::get('/terms-page', [\App\Http\Controllers\Frontend\TermsPageController::class, 'index']);
+Route::get('/privacy-page', [\App\Http\Controllers\Frontend\PrivacyPageController::class, 'index']);
 
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);

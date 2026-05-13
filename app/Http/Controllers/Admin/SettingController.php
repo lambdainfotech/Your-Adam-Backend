@@ -294,6 +294,18 @@ class SettingController extends Controller
         ));
     }
 
+    public function privacy()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        $privacyPageSections = json_decode($settings['privacy_page_sections'] ?? '[]', true);
+        
+        return view('admin.settings.privacy', compact(
+            'settings',
+            'privacyPageSections'
+        ));
+    }
+
     public function returns()
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();

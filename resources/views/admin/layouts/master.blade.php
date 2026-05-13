@@ -288,6 +288,10 @@
                     <i class="nav-icon fas fa-file-contract text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Terms & Conditions</span>
                 </a>
+                <a href="{{ route('admin.settings.privacy') }}" title=">Privacy Policy" class="nav-item {{ request()->routeIs('admin.settings.privacy') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-shield-alt text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Privacy Policy</span>
+                </a>
 
                 <!-- Reports Section -->
                 <div class="mt-5 mb-2 px-3 sidebar-text">

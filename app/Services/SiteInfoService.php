@@ -31,6 +31,7 @@ class SiteInfoService
             'returnsPage' => $this->getReturnsPageSettings($settings),
             'aboutPage' => $this->getAboutPageSettings($settings),
             'termsPage' => $this->getTermsPageSettings($settings),
+            'privacyPage' => $this->getPrivacyPageSettings($settings),
         ];
     }
 
@@ -464,6 +465,47 @@ class SiteInfoService
             'meta' => [
                 'title' => $settings['terms_page_meta_title'] ?? 'Terms & Conditions | Your Adam',
                 'description' => $settings['terms_page_meta_description'] ?? 'Read our Terms and Conditions to understand the rules and guidelines for using our website and services.',
+            ],
+        ];
+    }
+
+    /**
+     * Get privacy policy page settings for frontend display
+     */
+    private function getPrivacyPageSettings(array $settings): array
+    {
+        $sections = json_decode($settings['privacy_page_sections'] ?? '[]', true);
+
+        if (empty($sections)) {
+            $sections = [
+                [
+                    'title' => 'Introduction',
+                    'content' => 'Your Adam is committed to protecting your privacy.',
+                ],
+                [
+                    'title' => 'Information We Collect',
+                    'content' => 'We collect information that you provide directly to us.',
+                ],
+            ];
+        }
+
+        return [
+            'title' => $settings['privacy_page_title'] ?? 'Privacy Policy',
+            'subtitle' => $settings['privacy_page_subtitle'] ?? 'We value your privacy and are committed to protecting your personal data.',
+            'description' => $settings['privacy_page_description'] ?? '',
+            'heroImage' => $this->resolveAssetUrl($settings['privacy_page_hero_image'] ?? null, ''),
+            'lastUpdated' => $settings['privacy_page_last_updated'] ?? now()->format('F d, Y'),
+            'showLastUpdated' => filter_var($settings['privacy_page_show_last_updated'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'sections' => $sections,
+            'showContactCta' => filter_var($settings['privacy_page_show_contact_cta'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'contactCta' => [
+                'text' => $settings['privacy_page_contact_cta_text'] ?? 'Have questions about our privacy practices? Contact our team.',
+                'button' => $settings['privacy_page_contact_cta_button'] ?? 'Contact Us',
+                'link' => $settings['privacy_page_contact_cta_link'] ?? '/contact',
+            ],
+            'meta' => [
+                'title' => $settings['privacy_page_meta_title'] ?? 'Privacy Policy | Your Adam',
+                'description' => $settings['privacy_page_meta_description'] ?? 'Learn how Your Adam collects, uses, and protects your personal information.',
             ],
         ];
     }

@@ -49,7 +49,8 @@
                 <a href="{{ route('admin.settings.terms') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-file-contract w-6"></i> Terms & Conditions
                 </a>
-                    <i class="fas fa-info-circle w-6"></i> About Page
+                <a href="{{ route('admin.settings.privacy') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-shield-alt w-6"></i> Privacy Policy
                 </a>
             </nav>
         </div>
