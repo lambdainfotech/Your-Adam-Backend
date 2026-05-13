@@ -31,6 +31,10 @@ Route::get('/site/info', [SiteInfoController::class, 'index']);
 Route::get('/site/navigation', [\App\Http\Controllers\Frontend\NavigationController::class, 'index']);
 Route::get('/contact-page', [\App\Http\Controllers\Frontend\ContactPageController::class, 'index']);
 Route::post('/contact/submit', [\App\Http\Controllers\Frontend\ContactPageController::class, 'submit'])->middleware('throttle:5,1');
+
+// FAQs (Public)
+Route::get('/faqs', [\App\Http\Controllers\Frontend\FaqController::class, 'index']);
+Route::get('/faqs/categories', [\App\Http\Controllers\Frontend\FaqController::class, 'categories']);
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);

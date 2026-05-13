@@ -272,6 +272,14 @@
                     <i class="nav-icon fas fa-address-book text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Contact Submissions</span>
                 </a>
+                <a href="{{ route('admin.faqs.index') }}" title=">FAQs" class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-question-circle text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">FAQs</span>
+                </a>
+                <a href="{{ route('admin.faq-categories.index') }}" title=">FAQ Categories" class="nav-item {{ request()->routeIs('admin.faq-categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium pl-10">
+                    <i class="nav-icon fas fa-folder text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">FAQ Categories</span>
+                </a>
 
                 <!-- Reports Section -->
                 <div class="mt-5 mb-2 px-3 sidebar-text">

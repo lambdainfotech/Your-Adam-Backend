@@ -27,6 +27,7 @@ class SiteInfoService
             'header' => $this->getHeaderSettings(),
             'footer' => $this->getFooterSettings($settings),
             'contactPage' => $this->getContactPageSettings($settings),
+            'faqPage' => $this->getFaqPageSettings($settings),
         ];
     }
 
@@ -395,6 +396,30 @@ class SiteInfoService
             'meta' => [
                 'title' => $settings['contact_page_meta_title'] ?? 'Contact Us | Your Adam',
                 'description' => $settings['contact_page_meta_description'] ?? 'Get in touch with Your Adam. We are here to help you with any questions or concerns.',
+            ],
+        ];
+    }
+
+    /**
+     * Get FAQ page settings for frontend display
+     */
+    private function getFaqPageSettings(array $settings): array
+    {
+        return [
+            'title' => $settings['faq_page_title'] ?? 'Frequently Asked Questions',
+            'subtitle' => $settings['faq_page_subtitle'] ?? 'Find answers to common questions about our products, shipping, returns, and more.',
+            'description' => $settings['faq_page_description'] ?? "Can't find what you're looking for? Feel free to contact our support team for personalized assistance.",
+            'heroImage' => $this->resolveAssetUrl($settings['faq_page_hero_image'] ?? null, ''),
+            'showSearch' => filter_var($settings['faq_page_show_search'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'showContactCta' => filter_var($settings['faq_page_show_contact_cta'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'contactCta' => [
+                'text' => $settings['faq_page_contact_cta_text'] ?? 'Still have questions? Contact our support team.',
+                'button' => $settings['faq_page_contact_cta_button'] ?? 'Contact Us',
+                'link' => $settings['faq_page_contact_cta_link'] ?? '/contact',
+            ],
+            'meta' => [
+                'title' => $settings['faq_page_meta_title'] ?? 'FAQs | Your Adam',
+                'description' => $settings['faq_page_meta_description'] ?? 'Find answers to frequently asked questions about Your Adam products, orders, shipping, returns, and more.',
             ],
         ];
     }

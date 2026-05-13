@@ -149,6 +149,13 @@ class SettingController extends Controller
         ));
     }
 
+    public function faq()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        return view('admin.settings.faq', compact('settings'));
+    }
+
     /**
      * Send test SMS from admin panel
      */

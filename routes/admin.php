@@ -209,6 +209,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('settings/social', [SettingController::class, 'social'])->name('admin.settings.social');
     Route::get('settings/footer', [SettingController::class, 'footer'])->name('admin.settings.footer');
     Route::get('settings/contact', [SettingController::class, 'contact'])->name('admin.settings.contact');
+    Route::get('settings/faq', [SettingController::class, 'faq'])->name('admin.settings.faq');
     Route::post('settings/logo', [SettingController::class, 'uploadLogo'])->name('admin.settings.logo');
 
     // Contact Submissions
@@ -216,6 +217,16 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('contact-submissions/{submission}', [SettingController::class, 'showContactSubmission'])->name('admin.contact-submissions.show');
     Route::delete('contact-submissions/{submission}', [SettingController::class, 'deleteContactSubmission'])->name('admin.contact-submissions.destroy');
     Route::post('contact-submissions/{submission}/mark-read', [SettingController::class, 'markContactSubmissionRead'])->name('admin.contact-submissions.mark-read');
+
+    // FAQ Categories
+    Route::resource('faq-categories', \App\Http\Controllers\Admin\FaqCategoryController::class)->names('admin.faq-categories');
+    Route::post('faq-categories/{faqCategory}/toggle-status', [\App\Http\Controllers\Admin\FaqCategoryController::class, 'toggleStatus'])->name('admin.faq-categories.toggle-status');
+    Route::post('faq-categories/reorder', [\App\Http\Controllers\Admin\FaqCategoryController::class, 'reorder'])->name('admin.faq-categories.reorder');
+
+    // FAQs
+    Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->names('admin.faqs');
+    Route::post('faqs/{faq}/toggle-status', [\App\Http\Controllers\Admin\FaqController::class, 'toggleStatus'])->name('admin.faqs.toggle-status');
+    Route::post('faqs/reorder', [\App\Http\Controllers\Admin\FaqController::class, 'reorder'])->name('admin.faqs.reorder');
     Route::post('settings/favicon', [SettingController::class, 'uploadFavicon'])->name('admin.settings.favicon');
     Route::post('settings/clear-cache', [SettingController::class, 'clearCache'])->name('admin.settings.clear-cache');
 
