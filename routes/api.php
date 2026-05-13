@@ -35,6 +35,14 @@ Route::post('/contact/submit', [\App\Http\Controllers\Frontend\ContactPageContro
 // FAQs (Public)
 Route::get('/faqs', [\App\Http\Controllers\Frontend\FaqController::class, 'index']);
 Route::get('/faqs/categories', [\App\Http\Controllers\Frontend\FaqController::class, 'categories']);
+
+// Returns (Public)
+Route::get('/returns-page', [\App\Http\Controllers\Frontend\ReturnsPageController::class, 'index']);
+Route::post('/returns/submit', [\App\Http\Controllers\Frontend\ReturnsPageController::class, 'submit'])->middleware('throttle:5,1');
+
+// About Us (Public)
+Route::get('/about-page', [\App\Http\Controllers\Frontend\AboutPageController::class, 'index']);
+
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);

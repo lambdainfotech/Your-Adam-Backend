@@ -28,6 +28,8 @@ class SiteInfoService
             'footer' => $this->getFooterSettings($settings),
             'contactPage' => $this->getContactPageSettings($settings),
             'faqPage' => $this->getFaqPageSettings($settings),
+            'returnsPage' => $this->getReturnsPageSettings($settings),
+            'aboutPage' => $this->getAboutPageSettings($settings),
         ];
     }
 
@@ -420,6 +422,142 @@ class SiteInfoService
             'meta' => [
                 'title' => $settings['faq_page_meta_title'] ?? 'FAQs | Your Adam',
                 'description' => $settings['faq_page_meta_description'] ?? 'Find answers to frequently asked questions about Your Adam products, orders, shipping, returns, and more.',
+            ],
+        ];
+    }
+
+    /**
+     * Get returns page settings for frontend display
+     */
+    private function getReturnsPageSettings(array $settings): array
+    {
+        $eligibility = json_decode($settings['returns_page_eligibility'] ?? '[]', true);
+        $steps = json_decode($settings['returns_page_steps'] ?? '[]', true);
+        $conditions = json_decode($settings['returns_page_conditions'] ?? '[]', true);
+
+        if (empty($eligibility)) {
+            $eligibility = [
+                ['icon' => 'CheckCircle', 'title' => 'Unused & Unwashed', 'description' => 'Items must be in original condition with no signs of wear.'],
+                ['icon' => 'Package', 'title' => 'Original Packaging', 'description' => 'All original packaging, tags, and labels must be intact.'],
+                ['icon' => 'Clock', 'title' => 'Within 7 Days', 'description' => 'Return requests must be initiated within 7 days of delivery.'],
+                ['icon' => 'Receipt', 'title' => 'Proof of Purchase', 'description' => 'A valid order number or receipt is required.'],
+            ];
+        }
+
+        if (empty($steps)) {
+            $steps = [
+                ['step' => 1, 'title' => 'Request a Return', 'description' => 'Fill out the return form below or contact our support team with your order number.'],
+                ['step' => 2, 'title' => 'Pack Your Items', 'description' => 'Place the items in original packaging with all tags attached. Include a copy of your invoice.'],
+                ['step' => 3, 'title' => 'Ship to Us', 'description' => 'Send the package to our return address using a trackable shipping method.'],
+                ['step' => 4, 'title' => 'Get Refunded', 'description' => 'Once we receive and inspect your return, we will process your refund within 5-7 business days.'],
+            ];
+        }
+
+        if (empty($conditions)) {
+            $conditions = [
+                ['type' => 'allowed', 'text' => 'Items in original condition with tags attached.'],
+                ['type' => 'allowed', 'text' => 'Defective or damaged items (with photo proof).'],
+                ['type' => 'allowed', 'text' => 'Wrong item delivered.'],
+                ['type' => 'not_allowed', 'text' => 'Items washed, worn, or altered.'],
+                ['type' => 'not_allowed', 'text' => 'Customized or personalized products.'],
+                ['type' => 'not_allowed', 'text' => 'Items without original packaging or tags.'],
+                ['type' => 'not_allowed', 'text' => 'Items returned after 7 days of delivery.'],
+            ];
+        }
+
+        return [
+            'title' => $settings['returns_page_title'] ?? 'Returns & Exchanges',
+            'subtitle' => $settings['returns_page_subtitle'] ?? 'Easy returns within 7 days of delivery',
+            'description' => $settings['returns_page_description'] ?? 'We want you to love your purchase. If you are not completely satisfied, you can return your items within 7 days for a full refund or exchange.',
+            'heroImage' => $this->resolveAssetUrl($settings['returns_page_hero_image'] ?? null, ''),
+            'policySummary' => $settings['returns_page_policy_summary'] ?? '',
+            'eligibility' => $eligibility,
+            'steps' => $steps,
+            'conditions' => $conditions,
+            'refundInfo' => $settings['returns_page_refund_info'] ?? 'Refunds will be processed to your original payment method within 5-7 business days after we receive your returned items.',
+            'returnAddress' => $settings['returns_page_return_address'] ?? "Your Adam Returns Department\nDhaka, Bangladesh",
+            'formEnabled' => filter_var($settings['returns_page_form_enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'showContactCta' => filter_var($settings['returns_page_show_contact_cta'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'contactCta' => [
+                'text' => $settings['returns_page_contact_cta_text'] ?? 'Need help with your return? Contact our support team.',
+                'button' => $settings['returns_page_contact_cta_button'] ?? 'Contact Support',
+                'link' => $settings['returns_page_contact_cta_link'] ?? '/contact',
+            ],
+            'meta' => [
+                'title' => $settings['returns_page_meta_title'] ?? 'Returns & Exchanges | Your Adam',
+                'description' => $settings['returns_page_meta_description'] ?? 'Learn about our easy return and exchange policy. Hassle-free returns within 7 days of delivery.',
+            ],
+        ];
+    }
+
+    /**
+     * Get about page settings for frontend display
+     */
+    private function getAboutPageSettings(array $settings): array
+    {
+        $values = json_decode($settings['about_page_values'] ?? '[]', true);
+        $stats = json_decode($settings['about_page_stats'] ?? '[]', true);
+        $milestones = json_decode($settings['about_page_milestones'] ?? '[]', true);
+
+        if (empty($values)) {
+            $values = [
+                ['icon' => 'Gem', 'title' => 'Quality First', 'description' => 'We never compromise on the quality of our products.'],
+                ['icon' => 'Palette', 'title' => 'Creative Freedom', 'description' => 'Everyone should have tools to express their unique style.'],
+                ['icon' => 'Heart', 'title' => 'Customer Obsessed', 'description' => 'Your satisfaction is our top priority.'],
+                ['icon' => 'Leaf', 'title' => 'Sustainability', 'description' => 'Committed to reducing our environmental footprint.'],
+            ];
+        }
+
+        if (empty($stats)) {
+            $stats = [
+                ['value' => '50K+', 'label' => 'Happy Customers'],
+                ['value' => '100+', 'label' => 'Products'],
+                ['value' => '4', 'label' => 'Years of Service'],
+                ['value' => '99%', 'label' => 'Satisfaction Rate'],
+            ];
+        }
+
+        if (empty($milestones)) {
+            $milestones = [
+                ['year' => '2020', 'title' => 'Founded', 'description' => 'Your Adam was founded in Dhaka.'],
+                ['year' => '2021', 'title' => 'First 10K Customers', 'description' => 'Reached 10,000 happy customers.'],
+                ['year' => '2022', 'title' => 'Expanded Product Line', 'description' => 'Launched corporate merchandise services.'],
+                ['year' => '2023', 'title' => 'Nationwide Shipping', 'description' => 'Coverage to all 64 districts.'],
+            ];
+        }
+
+        return [
+            'title' => $settings['about_page_title'] ?? 'About Us',
+            'subtitle' => $settings['about_page_subtitle'] ?? 'Premium fashion meets custom expression',
+            'description' => $settings['about_page_description'] ?? '',
+            'heroImage' => $this->resolveAssetUrl($settings['about_page_hero_image'] ?? null, ''),
+            'story' => [
+                'title' => $settings['about_page_story_title'] ?? 'Our Story',
+                'content' => $settings['about_page_story_content'] ?? '',
+            ],
+            'mission' => [
+                'title' => $settings['about_page_mission_title'] ?? 'Our Mission',
+                'content' => $settings['about_page_mission_content'] ?? '',
+            ],
+            'vision' => [
+                'title' => $settings['about_page_vision_title'] ?? 'Our Vision',
+                'content' => $settings['about_page_vision_content'] ?? '',
+            ],
+            'values' => $values,
+            'stats' => $stats,
+            'showTeam' => filter_var($settings['about_page_show_team'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'showMilestones' => filter_var($settings['about_page_show_milestones'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'milestones' => $milestones,
+            'cta' => [
+                'enabled' => filter_var($settings['about_page_cta_enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'title' => $settings['about_page_cta_title'] ?? 'Want to work with us?',
+                'text' => $settings['about_page_cta_text'] ?? '',
+                'button' => $settings['about_page_cta_button'] ?? 'Get in Touch',
+                'link' => $settings['about_page_cta_link'] ?? '/contact',
+            ],
+            'meta' => [
+                'title' => $settings['about_page_meta_title'] ?? 'About Us | Your Adam',
+                'description' => $settings['about_page_meta_description'] ?? 'Learn about Your Adam - Bangladesh\'s leading custom fashion brand.',
             ],
         ];
     }

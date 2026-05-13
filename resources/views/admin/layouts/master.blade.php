@@ -280,6 +280,10 @@
                     <i class="nav-icon fas fa-folder text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">FAQ Categories</span>
                 </a>
+                <a href="{{ route('admin.settings.about') }}" title=">About" class="nav-item {{ request()->routeIs('admin.settings.about') || request()->routeIs('admin.team-members.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-info-circle text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">About</span>
+                </a>
 
                 <!-- Reports Section -->
                 <div class="mt-5 mb-2 px-3 sidebar-text">

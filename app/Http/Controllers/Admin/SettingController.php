@@ -265,4 +265,96 @@ class SettingController extends Controller
         $submission->markAsRead();
         return redirect()->back()->with('success', 'Marked as read.');
     }
+
+    public function about()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        $aboutPageValues = json_decode($settings['about_page_values'] ?? '[]', true);
+        $aboutPageStats = json_decode($settings['about_page_stats'] ?? '[]', true);
+        $aboutPageMilestones = json_decode($settings['about_page_milestones'] ?? '[]', true);
+        
+        return view('admin.settings.about', compact(
+            'settings',
+            'aboutPageValues',
+            'aboutPageStats',
+            'aboutPageMilestones'
+        ));
+    }
+
+    public function returns()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        $returnsPageEligibility = json_decode($settings['returns_page_eligibility'] ?? '[]', true);
+        $returnsPageSteps = json_decode($settings['returns_page_steps'] ?? '[]', true);
+        $returnsPageConditions = json_decode($settings['returns_page_conditions'] ?? '[]', true);
+        
+        return view('admin.settings.returns', compact(
+            'settings',
+            'returnsPageEligibility',
+            'returnsPageSteps',
+            'returnsPageConditions'
+        ));
+    }
+
+    public function returnRequests(Request $request)
+    {
+        $query = ReturnRequest::latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $returnRequests = $query->paginate(20)->withQueryString();
+
+        $stats = [
+            'total' => ReturnRequest::count(),
+            'pending' => ReturnRequest::where('status', 'pending')->count(),
+            'approved' => ReturnRequest::where('status', 'approved')->count(),
+            'received' => ReturnRequest::where('status', 'received')->count(),
+            'refunded' => ReturnRequest::where('status', 'refunded')->count(),
+            'rejected' => ReturnRequest::where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.return-requests.index', compact('returnRequests', 'stats'));
+    }
+
+    public function showReturnRequest(ReturnRequest $returnRequest)
+    {
+        return view('admin.return-requests.show', compact('returnRequest'));
+    }
+
+    public function updateReturnRequest(Request $request, ReturnRequest $returnRequest)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,approved,rejected,received,refunded',
+            'admin_notes' => 'nullable|string|max:5000',
+        ]);
+
+        if ($returnRequest->status !== $validated['status']) {
+            $validated['processed_at'] = now();
+        }
+
+        $returnRequest->update($validated);
+
+        return redirect()->route('admin.return-requests.index')
+            ->with('success', 'Return request updated successfully.');
+    }
+
+    public function deleteReturnRequest(ReturnRequest $returnRequest)
+    {
+        $returnRequest->delete();
+        return redirect()->route('admin.return-requests.index')
+            ->with('success', 'Return request deleted successfully.');
+    }
 }

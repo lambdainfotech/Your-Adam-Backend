@@ -52,7 +52,7 @@ Route::middleware(['web'])->group(function () {
 
 // Protected routes (JWT auth + admin role required)
 Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function () {
-    
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/', function () {
@@ -83,7 +83,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::post('products/{product}/variants/add', [ProductVariantController::class, 'addVariant'])->name('admin.products.variants.add');
     Route::post('products/{product}/variants/reorder', [ProductVariantController::class, 'reorder'])->name('admin.products.variants.reorder');
     Route::post('products/{product}/attributes', [ProductVariantController::class, 'updateAttributes'])->name('admin.products.attributes.update');
-    
+
     // Individual Variant Actions
     Route::get('variants/{variant}/edit', [ProductVariantController::class, 'getVariant'])->name('admin.variants.edit');
     Route::put('variants/{variant}', [ProductVariantController::class, 'updateVariant'])->name('admin.variants.update');
@@ -115,7 +115,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('orders/{order}/print', [OrderController::class, 'print'])->name('admin.orders.print');
     Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
     Route::post('orders/{order}/update-payment-status', [OrderController::class, 'updatePaymentStatus'])->name('admin.orders.update-payment-status');
-    
+
     // Order Fulfillment
     Route::post('orders/{order}/assign-courier', [OrderFulfillmentController::class, 'assignCourier'])->name('admin.orders.assign-courier');
     Route::post('orders/{order}/mark-shipped', [OrderFulfillmentController::class, 'markShipped'])->name('admin.orders.mark-shipped');
@@ -210,6 +210,8 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('settings/footer', [SettingController::class, 'footer'])->name('admin.settings.footer');
     Route::get('settings/contact', [SettingController::class, 'contact'])->name('admin.settings.contact');
     Route::get('settings/faq', [SettingController::class, 'faq'])->name('admin.settings.faq');
+    Route::get('settings/returns', [SettingController::class, 'returns'])->name('admin.settings.returns');
+    Route::get('settings/about', [SettingController::class, 'about'])->name('admin.settings.about');
     Route::post('settings/logo', [SettingController::class, 'uploadLogo'])->name('admin.settings.logo');
 
     // Contact Submissions
@@ -218,10 +220,21 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::delete('contact-submissions/{submission}', [SettingController::class, 'deleteContactSubmission'])->name('admin.contact-submissions.destroy');
     Route::post('contact-submissions/{submission}/mark-read', [SettingController::class, 'markContactSubmissionRead'])->name('admin.contact-submissions.mark-read');
 
+    // Return Requests
+    Route::get('return-requests', [SettingController::class, 'returnRequests'])->name('admin.return-requests.index');
+    Route::get('return-requests/{returnRequest}', [SettingController::class, 'showReturnRequest'])->name('admin.return-requests.show');
+    Route::put('return-requests/{returnRequest}', [SettingController::class, 'updateReturnRequest'])->name('admin.return-requests.update');
+    Route::delete('return-requests/{returnRequest}', [SettingController::class, 'deleteReturnRequest'])->name('admin.return-requests.destroy');
+
     // FAQ Categories
     Route::resource('faq-categories', \App\Http\Controllers\Admin\FaqCategoryController::class)->names('admin.faq-categories');
     Route::post('faq-categories/{faqCategory}/toggle-status', [\App\Http\Controllers\Admin\FaqCategoryController::class, 'toggleStatus'])->name('admin.faq-categories.toggle-status');
     Route::post('faq-categories/reorder', [\App\Http\Controllers\Admin\FaqCategoryController::class, 'reorder'])->name('admin.faq-categories.reorder');
+
+    // Team Members
+    Route::resource('team-members', \App\Http\Controllers\Admin\TeamMemberController::class)->names('admin.team-members');
+    Route::post('team-members/{teamMember}/toggle-status', [\App\Http\Controllers\Admin\TeamMemberController::class, 'toggleStatus'])->name('admin.team-members.toggle-status');
+    Route::post('team-members/reorder', [\App\Http\Controllers\Admin\TeamMemberController::class, 'reorder'])->name('admin.team-members.reorder');
 
     // FAQs
     Route::resource('faqs', \App\Http\Controllers\Admin\FaqController::class)->names('admin.faqs');
@@ -258,19 +271,19 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     // Homepage Management
     Route::resource('testimonials', TestimonialController::class)->names('admin.testimonials');
     Route::post('testimonials/{testimonial}/toggle-status', [TestimonialController::class, 'toggleStatus'])->name('admin.testimonials.toggle-status');
-    
+
     Route::resource('brand-values', BrandValueController::class)->names('admin.brand-values');
     Route::post('brand-values/{brand_value}/toggle-status', [BrandValueController::class, 'toggleStatus'])->name('admin.brand-values.toggle-status');
 
     // POS System
     Route::prefix('pos')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('admin.pos.index');
-        
+
         // Product Search
         Route::get('/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
         Route::get('/products/barcode/{barcode}', [PosController::class, 'findByBarcode'])->name('admin.pos.products.barcode');
         Route::get('/customers/search', [PosController::class, 'searchCustomers'])->name('admin.pos.customers.search');
-        
+
         // Order Processing
         Route::post('/order', [PosController::class, 'createOrder'])->name('admin.pos.order.store');
         Route::get('/order/{id}', [PosController::class, 'showOrder'])->name('admin.pos.order.show');
@@ -278,7 +291,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
         Route::get('/order/{id}/print', [PosController::class, 'printReceipt'])->name('admin.pos.order.print');
         Route::post('/order/{id}/delivery-status', [PosController::class, 'updateDeliveryStatus'])->name('admin.pos.order.delivery-status');
         Route::get('/order/{id}/tracking', [PosController::class, 'getTrackingTimeline'])->name('admin.pos.order.tracking');
-        
+
         // Reports
         Route::get('/reports/daily', [PosController::class, 'dailyReport'])->name('admin.pos.reports.daily');
     });
