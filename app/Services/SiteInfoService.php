@@ -30,6 +30,7 @@ class SiteInfoService
             'faqPage' => $this->getFaqPageSettings($settings),
             'returnsPage' => $this->getReturnsPageSettings($settings),
             'aboutPage' => $this->getAboutPageSettings($settings),
+            'termsPage' => $this->getTermsPageSettings($settings),
         ];
     }
 
@@ -422,6 +423,47 @@ class SiteInfoService
             'meta' => [
                 'title' => $settings['faq_page_meta_title'] ?? 'FAQs | Your Adam',
                 'description' => $settings['faq_page_meta_description'] ?? 'Find answers to frequently asked questions about Your Adam products, orders, shipping, returns, and more.',
+            ],
+        ];
+    }
+
+    /**
+     * Get terms & conditions page settings for frontend display
+     */
+    private function getTermsPageSettings(array $settings): array
+    {
+        $sections = json_decode($settings['terms_page_sections'] ?? '[]', true);
+
+        if (empty($sections)) {
+            $sections = [
+                [
+                    'title' => 'Introduction',
+                    'content' => 'Welcome to Your Adam. These Terms and Conditions govern your use of our website.',
+                ],
+                [
+                    'title' => 'Use of Our Website',
+                    'content' => 'You agree to use our Website only for lawful purposes.',
+                ],
+            ];
+        }
+
+        return [
+            'title' => $settings['terms_page_title'] ?? 'Terms & Conditions',
+            'subtitle' => $settings['terms_page_subtitle'] ?? 'Please read these terms carefully before using our website',
+            'description' => $settings['terms_page_description'] ?? '',
+            'heroImage' => $this->resolveAssetUrl($settings['terms_page_hero_image'] ?? null, ''),
+            'lastUpdated' => $settings['terms_page_last_updated'] ?? now()->format('F d, Y'),
+            'showLastUpdated' => filter_var($settings['terms_page_show_last_updated'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'sections' => $sections,
+            'showContactCta' => filter_var($settings['terms_page_show_contact_cta'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'contactCta' => [
+                'text' => $settings['terms_page_contact_cta_text'] ?? 'Have questions about our terms? Contact our support team.',
+                'button' => $settings['terms_page_contact_cta_button'] ?? 'Contact Us',
+                'link' => $settings['terms_page_contact_cta_link'] ?? '/contact',
+            ],
+            'meta' => [
+                'title' => $settings['terms_page_meta_title'] ?? 'Terms & Conditions | Your Adam',
+                'description' => $settings['terms_page_meta_description'] ?? 'Read our Terms and Conditions to understand the rules and guidelines for using our website and services.',
             ],
         ];
     }

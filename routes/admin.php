@@ -212,6 +212,7 @@ Route::middleware(['web', 'jwt.auth', 'role:admin,super-admin'])->group(function
     Route::get('settings/faq', [SettingController::class, 'faq'])->name('admin.settings.faq');
     Route::get('settings/returns', [SettingController::class, 'returns'])->name('admin.settings.returns');
     Route::get('settings/about', [SettingController::class, 'about'])->name('admin.settings.about');
+Route::get('settings/terms', [SettingController::class, 'terms'])->name('admin.settings.terms');
     Route::post('settings/logo', [SettingController::class, 'uploadLogo'])->name('admin.settings.logo');
 
     // Contact Submissions

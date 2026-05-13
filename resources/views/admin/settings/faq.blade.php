@@ -43,9 +43,12 @@
                 <a href="{{ route('admin.settings.faq') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 bg-blue-50 text-blue-600">
                     <i class="fas fa-question-circle w-6"></i> FAQ Page
                 </a>
-                <a href="{{ route('admin.settings.returns') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
-                </a>
                 <a href="{{ route('admin.settings.about') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-info-circle w-6"></i> About Page
+                </a>
+                <a href="{{ route('admin.settings.terms') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                    <i class="fas fa-file-contract w-6"></i> Terms & Conditions
+                </a>
                     <i class="fas fa-info-circle w-6"></i> About Page
                 </a>
             </nav>

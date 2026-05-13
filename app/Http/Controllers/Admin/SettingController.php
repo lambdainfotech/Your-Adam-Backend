@@ -282,6 +282,18 @@ class SettingController extends Controller
         ));
     }
 
+    public function terms()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        
+        $termsPageSections = json_decode($settings['terms_page_sections'] ?? '[]', true);
+        
+        return view('admin.settings.terms', compact(
+            'settings',
+            'termsPageSections'
+        ));
+    }
+
     public function returns()
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
