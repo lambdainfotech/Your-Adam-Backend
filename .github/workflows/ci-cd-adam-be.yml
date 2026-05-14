@@ -38,6 +38,10 @@ jobs:
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
+            php artisan optimize:clear
+            php artisan event:clear
+            # Restart PHP-FPM to clear OPcache (optional, may require sudo)
+            # sudo systemctl restart php8.2-fpm || true
             chown -R www:www /www/wwwroot/Your-Adam-Backend
             find . -type d -exec chmod 755 {} \; && find . -type f -exec chmod 644 {} \;
             chmod -R 775 /www/wwwroot/Your-Adam-Backend/storage /www/wwwroot/Your-Adam-Backend/bootstrap/cache
