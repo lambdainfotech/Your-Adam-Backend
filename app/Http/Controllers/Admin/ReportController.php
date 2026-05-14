@@ -25,7 +25,7 @@ class ReportController extends Controller
         $endDate = $validated['end_date'] ?? Carbon::now()->format('Y-m-d');
         
         $sales = Order::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', 'completed')
+            ->where('status', '!=', 'cancelled')
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as orders'),
@@ -34,10 +34,34 @@ class ReportController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+
+        $posSales = \App\Models\PosOrder::whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as orders'),
+                DB::raw('SUM(total_amount) as revenue')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Merge online and POS sales by date
+        $mergedDates = $sales->pluck('date')->merge($posSales->pluck('date'))->unique()->sort()->values();
+        $mergedSales = $mergedDates->map(function ($date) use ($sales, $posSales) {
+            $online = $sales->firstWhere('date', $date);
+            $pos = $posSales->firstWhere('date', $date);
+            return (object) [
+                'date' => $date,
+                'orders' => ($online->orders ?? 0) + ($pos->orders ?? 0),
+                'revenue' => ($online->revenue ?? 0) + ($pos->revenue ?? 0),
+            ];
+        });
         
-        $totalRevenue = $sales->sum('revenue');
-        $totalOrders = $sales->sum('orders');
+        $totalRevenue = $mergedSales->sum('revenue');
+        $totalOrders = $mergedSales->sum('orders');
         $averageOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+        
+        $sales = $mergedSales;
         
         return view('admin.reports.sales', compact('sales', 'totalRevenue', 'totalOrders', 'averageOrderValue', 'startDate', 'endDate'));
     }
@@ -58,10 +82,10 @@ class ReportController extends Controller
     public function customers(Request $request)
     {
         $topCustomers = User::withCount(['orders' => function($query) {
-                $query->where('status', 'completed');
+                $query->where('status', '!=', 'cancelled');
             }])
             ->withSum(['orders' => function($query) {
-                $query->where('status', 'completed');
+                $query->where('status', '!=', 'cancelled');
             }], 'total_amount')
             ->orderBy('orders_sum_total_amount', 'desc')
             ->limit(50)
