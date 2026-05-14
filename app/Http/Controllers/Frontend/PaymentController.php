@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Order as LegacyOrder;
+use App\Modules\Sales\Models\Order as ModuleOrder;
 use App\Services\AamarPayService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -33,9 +34,15 @@ class PaymentController extends Controller
                 return $this->error('Authentication required', 401);
             }
 
-            $order = Order::where('id', $orderId)
+            $order = LegacyOrder::where('id', $orderId)
                 ->where('user_id', $user->id)
                 ->first();
+
+            if (!$order) {
+                $order = ModuleOrder::where('id', $orderId)
+                    ->where('user_id', $user->id)
+                    ->first();
+            }
 
             if (!$order) {
                 return $this->error('Order not found', 404);
@@ -117,7 +124,10 @@ class PaymentController extends Controller
         
         if ($orderNumber) {
             $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
-            $order = Order::where('order_number', $searchOrderNumber)->first();
+            $order = LegacyOrder::where('order_number', $searchOrderNumber)->first();
+            if (!$order) {
+                $order = ModuleOrder::where('order_number', $searchOrderNumber)->first();
+            }
             
             if ($order) {
                 // Only update if not already paid
@@ -146,9 +156,15 @@ class PaymentController extends Controller
             return $this->error('Unauthorized. Please login to view payment status.', 401);
         }
 
-        $order = Order::where('id', $orderId)
+        $order = LegacyOrder::where('id', $orderId)
             ->where('user_id', $user->id)
             ->first();
+
+        if (!$order) {
+            $order = ModuleOrder::where('id', $orderId)
+                ->where('user_id', $user->id)
+                ->first();
+        }
 
         if (!$order) {
             return $this->error('Order not found', 404);

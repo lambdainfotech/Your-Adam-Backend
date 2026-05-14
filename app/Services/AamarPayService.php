@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Order;
+use App\Models\Order as LegacyOrder;
+use App\Modules\Sales\Models\Order as ModuleOrder;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,7 @@ class AamarPayService
     /**
      * Initiate payment
      */
-    public function initiatePayment(Order $order, array $customerInfo): array
+    public function initiatePayment($order, array $customerInfo): array
     {
         try {
             $settings = Setting::allSettings();
@@ -59,9 +60,9 @@ class AamarPayService
                 'opt_b' => '',
                 'opt_c' => '',
                 'opt_d' => '',
-                'success_url' => route('api.payment.aamarpay.success'),
-                'fail_url' => route('api.payment.aamarpay.fail'),
-                'cancel_url' => route('api.payment.aamarpay.cancel'),
+                'success_url' => $this->getCallbackUrl('success'),
+                'fail_url' => $this->getCallbackUrl('fail'),
+                'cancel_url' => $this->getCallbackUrl('cancel'),
                 'type' => 'json',
             ];
 
@@ -181,7 +182,7 @@ class AamarPayService
         // Aamarpay returns mer_txnid = tran_id. We now use exact order_number as tran_id,
         // but for backward compatibility also handle the old format (order_number + '-' + suffix).
         $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
-        $order = Order::where('order_number', $searchOrderNumber)->first();
+        $order = $this->findOrder($searchOrderNumber);
         
         if (!$order) {
             return [
@@ -260,7 +261,7 @@ class AamarPayService
         
         if ($orderNumber) {
             $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
-            $order = Order::where('order_number', $searchOrderNumber)->first();
+            $order = $this->findOrder($searchOrderNumber);
             
             if ($order) {
                 $order->update([
@@ -283,9 +284,38 @@ class AamarPayService
     }
 
     /**
+     * Build frontend callback URL for aamarpay redirects.
+     * Falls back to API endpoint if no frontend URL is configured.
+     */
+    private function getCallbackUrl(string $type): string
+    {
+        $settings = Setting::allSettings();
+        $frontendUrl = $settings["aamarpay_{$type}_url"] ?? null;
+
+        if ($frontendUrl) {
+            return $frontendUrl;
+        }
+
+        return route("api.payment.aamarpay.{$type}");
+    }
+
+    /**
+     * Find an order by order_number across both legacy and module tables.
+     */
+    private function findOrder(string $orderNumber)
+    {
+        $order = LegacyOrder::where('order_number', $orderNumber)->first();
+        if ($order) {
+            return $order;
+        }
+
+        return ModuleOrder::where('order_number', $orderNumber)->first();
+    }
+
+    /**
      * Get payment status
      */
-    public function getPaymentStatus(Order $order): array
+    public function getPaymentStatus($order): array
     {
         return [
             'orderNumber' => $order->order_number,
