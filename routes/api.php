@@ -45,6 +45,9 @@ Route::get('/about-page', [\App\Http\Controllers\Frontend\AboutPageController::c
 Route::get('/terms-page', [\App\Http\Controllers\Frontend\TermsPageController::class, 'index']);
 Route::get('/privacy-page', [\App\Http\Controllers\Frontend\PrivacyPageController::class, 'index']);
 
+// Newsletter
+Route::post('/newsletter/subscribe', [\App\Http\Controllers\Frontend\NewsletterController::class, 'subscribe'])->middleware('throttle:5,1');
+
 Route::get('/homepage', [\App\Http\Controllers\Frontend\HomepageController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Frontend\CategoryController::class, 'index']);
 Route::get('/categories/{slug}', [\App\Http\Controllers\Frontend\CategoryController::class, 'show']);

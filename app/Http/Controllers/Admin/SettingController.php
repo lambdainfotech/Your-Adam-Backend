@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactSubmission;
+use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
@@ -380,5 +381,38 @@ class SettingController extends Controller
         $returnRequest->delete();
         return redirect()->route('admin.return-requests.index')
             ->with('success', 'Return request deleted successfully.');
+    }
+
+    public function newsletterSubscribers(Request $request)
+    {
+        $subscribers = NewsletterSubscriber::latest()
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where('email', 'like', "%{$search}%");
+            })
+            ->when($request->input('date_from'), function ($query, $date) {
+                $query->whereDate('subscribed_at', '>=', $date);
+            })
+            ->when($request->input('date_to'), function ($query, $date) {
+                $query->whereDate('subscribed_at', '<=', $date);
+            })
+            ->paginate(20)
+            ->withQueryString();
+
+        $stats = [
+            'total' => NewsletterSubscriber::count(),
+            'today' => NewsletterSubscriber::whereDate('subscribed_at', today())->count(),
+            'this_month' => NewsletterSubscriber::whereMonth('subscribed_at', now()->month)
+                ->whereYear('subscribed_at', now()->year)
+                ->count(),
+        ];
+
+        return view('admin.newsletter-subscribers.index', compact('subscribers', 'stats'));
+    }
+
+    public function deleteNewsletterSubscriber(NewsletterSubscriber $subscriber)
+    {
+        $subscriber->delete();
+        return redirect()->route('admin.newsletter-subscribers.index')
+            ->with('success', 'Subscriber removed successfully.');
     }
 }

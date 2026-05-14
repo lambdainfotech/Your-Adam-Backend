@@ -222,6 +222,10 @@ Route::get('settings/privacy', [SettingController::class, 'privacy'])->name('adm
     Route::delete('contact-submissions/{submission}', [SettingController::class, 'deleteContactSubmission'])->name('admin.contact-submissions.destroy');
     Route::post('contact-submissions/{submission}/mark-read', [SettingController::class, 'markContactSubmissionRead'])->name('admin.contact-submissions.mark-read');
 
+    // Newsletter Subscribers
+    Route::get('newsletter-subscribers', [SettingController::class, 'newsletterSubscribers'])->name('admin.newsletter-subscribers.index');
+    Route::delete('newsletter-subscribers/{subscriber}', [SettingController::class, 'deleteNewsletterSubscriber'])->name('admin.newsletter-subscribers.destroy');
+
     // Return Requests
     Route::get('return-requests', [SettingController::class, 'returnRequests'])->name('admin.return-requests.index');
     Route::get('return-requests/{returnRequest}', [SettingController::class, 'showReturnRequest'])->name('admin.return-requests.show');

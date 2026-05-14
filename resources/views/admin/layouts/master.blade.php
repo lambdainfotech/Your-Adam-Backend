@@ -272,6 +272,10 @@
                     <i class="nav-icon fas fa-address-book text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Contact Submissions</span>
                 </a>
+                <a href="{{ route('admin.newsletter-subscribers.index') }}" title="Newsletter Subscribers" class="nav-item {{ request()->routeIs('admin.newsletter-subscribers.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                    <i class="nav-icon fas fa-paper-plane text-slate-500 w-5 text-center transition-colors"></i>
+                    <span class="sidebar-text whitespace-nowrap">Newsletter Subscribers</span>
+                </a>
                 <a href="{{ route('admin.faqs.index') }}" title=">FAQs" class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-question-circle text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">FAQs</span>
