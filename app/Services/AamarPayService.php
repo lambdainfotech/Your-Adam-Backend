@@ -80,12 +80,6 @@ class AamarPayService
                         'orderId' => $order->order_number,
                         'amount' => $order->total_amount,
                         'gateway' => 'aamarpay',
-                        'debug' => [
-                            'success_url' => $payload['success_url'],
-                            'fail_url' => $payload['fail_url'],
-                            'cancel_url' => $payload['cancel_url'],
-                            'frontend_url_setting' => $settings['frontend_url'] ?? null,
-                        ],
                     ];
                 }
             }
@@ -290,19 +284,12 @@ class AamarPayService
     }
 
     /**
-     * Build frontend callback URL for aamarpay redirects.
-     * Reads frontend_url from settings and appends the callback path.
-     * Falls back to backend API endpoint if frontend_url is not set.
+     * Build backend callback URL for aamarpay redirects.
+     * Aamarpay redirects directly to the backend, and the backend
+     * then redirects the browser to the frontend success/fail/cancel pages.
      */
     private function getCallbackUrl(string $type): string
     {
-        $settings = Setting::allSettings();
-        $frontendDomain = $settings['frontend_url'] ?? null;
-
-        if ($frontendDomain) {
-            return rtrim($frontendDomain, '/') . "/api/payment/aamarpay/{$type}";
-        }
-
         return route("api.payment.aamarpay.{$type}");
     }
 

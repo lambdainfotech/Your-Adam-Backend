@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order as LegacyOrder;
+use App\Models\Setting;
 use App\Modules\Sales\Models\Order as ModuleOrder;
 use App\Services\AamarPayService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -82,9 +84,11 @@ class PaymentController extends Controller
     }
 
     /**
-     * Handle aamarPay success callback
+     * Handle aamarPay success callback.
+     * Aamarpay redirects the browser here (POST). We process the payment
+     * and then redirect the user to the frontend checkout/success page.
      */
-    public function aamarPaySuccess(Request $request): JsonResponse
+    public function aamarPaySuccess(Request $request): RedirectResponse|JsonResponse
     {
         Log::info('AamarPay success callback', $request->all());
 
@@ -102,7 +106,10 @@ class PaymentController extends Controller
         }
 
         if (!$order) {
-            return $this->error('Order not found', 400);
+            if ($request->expectsJson()) {
+                return $this->error('Order not found', 400);
+            }
+            return $this->redirectToFrontend('fail', null, 'Order not found');
         }
 
         $payStatus = $data['pay_status'] ?? null;
@@ -110,12 +117,23 @@ class PaymentController extends Controller
 
         // Idempotency
         if ($order->payment_status === 'paid') {
-            return $this->success($order, 'Payment already processed');
+            if ($request->expectsJson()) {
+                return $this->success($order, 'Payment already processed');
+            }
+            return $this->redirectToFrontend('success', $order);
         }
 
         // Amount check
         if (abs((float) $amount - (float) $order->total_amount) > 0.01) {
-            return $this->error('Amount mismatch', 400);
+            Log::warning('AamarPay amount mismatch', [
+                'order' => $orderNumber,
+                'expected' => $order->total_amount,
+                'received' => $amount,
+            ]);
+            if ($request->expectsJson()) {
+                return $this->error('Amount mismatch', 400);
+            }
+            return $this->redirectToFrontend('fail', $order, 'Amount mismatch');
         }
 
         // Update order
@@ -125,16 +143,24 @@ class PaymentController extends Controller
                 'payment_method' => $data['payment_type'] ?? 'aamarpay',
                 'transaction_id' => $data['pg_txnid'] ?? null,
             ]);
-            return $this->success($order, 'Payment successful');
+
+            if ($request->expectsJson()) {
+                return $this->success($order, 'Payment successful');
+            }
+            return $this->redirectToFrontend('success', $order);
         }
 
-        return $this->error('Payment not successful: ' . $payStatus, 400);
+        if ($request->expectsJson()) {
+            return $this->error('Payment not successful: ' . $payStatus, 400);
+        }
+        return $this->redirectToFrontend('fail', $order, 'Payment not successful: ' . $payStatus);
     }
 
     /**
-     * Handle aamarPay failure callback
+     * Handle aamarPay failure callback.
+     * Redirects browser to frontend checkout/fail page.
      */
-    public function aamarPayFail(Request $request): JsonResponse
+    public function aamarPayFail(Request $request): RedirectResponse|JsonResponse
     {
         Log::info('AamarPay fail callback', $request->all());
 
@@ -157,24 +183,29 @@ class PaymentController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Payment failed',
-            'data' => $order ?? null,
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment failed',
+                'data' => $order ?? null,
+            ], 200);
+        }
+
+        return $this->redirectToFrontend('fail', $order);
     }
 
     /**
-     * Handle aamarPay cancel callback
+     * Handle aamarPay cancel callback.
+     * Redirects browser to frontend checkout/cancel page.
      */
-    public function aamarPayCancel(Request $request): JsonResponse
+    public function aamarPayCancel(Request $request): RedirectResponse|JsonResponse
     {
         Log::info('AamarPay cancel callback', $request->all());
 
         $orderNumber = $request->get('mer_txnid');
+        $order = null;
         
         if ($orderNumber) {
-            // Try exact match first, then old 4-char suffix backward compatibility
             $order = LegacyOrder::where('order_number', $orderNumber)->first();
             if (!$order) {
                 $order = ModuleOrder::where('order_number', $orderNumber)->first();
@@ -190,7 +221,6 @@ class PaymentController extends Controller
             }
             
             if ($order) {
-                // Only update if not already paid
                 if ($order->payment_status !== 'paid') {
                     $order->update([
                         'payment_status' => 'cancelled',
@@ -199,10 +229,40 @@ class PaymentController extends Controller
             }
         }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Payment cancelled by user',
-        ], 200);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment cancelled by user',
+            ], 200);
+        }
+
+        return $this->redirectToFrontend('cancel', $order);
+    }
+
+    /**
+     * Redirect browser to frontend checkout page after aamarpay callback.
+     */
+    private function redirectToFrontend(string $type, $order = null, string $message = null): RedirectResponse
+    {
+        $settings = Setting::allSettings();
+        $frontendUrl = $settings['frontend_url'] ?? null;
+
+        if ($frontendUrl) {
+            $url = rtrim($frontendUrl, '/') . "/checkout/{$type}";
+        } else {
+            $url = route('api.payment.aamarpay.' . $type);
+        }
+
+        if ($order) {
+            $url .= '?order=' . urlencode($order->order_number);
+            if ($message) {
+                $url .= '&message=' . urlencode($message);
+            }
+        } elseif ($message) {
+            $url .= '?message=' . urlencode($message);
+        }
+
+        return redirect()->away($url);
     }
 
     /**
