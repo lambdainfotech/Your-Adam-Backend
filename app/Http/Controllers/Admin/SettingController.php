@@ -218,7 +218,7 @@ class SettingController extends Controller
     {
         try {
             $request->validate([
-                'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp',
             ]);
 
             $oldUrl = Setting::get('site_footer_logo_url');
