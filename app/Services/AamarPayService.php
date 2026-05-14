@@ -80,6 +80,12 @@ class AamarPayService
                         'orderId' => $order->order_number,
                         'amount' => $order->total_amount,
                         'gateway' => 'aamarpay',
+                        'debug' => [
+                            'success_url' => $payload['success_url'],
+                            'fail_url' => $payload['fail_url'],
+                            'cancel_url' => $payload['cancel_url'],
+                            'frontend_url_setting' => $settings['frontend_url'] ?? null,
+                        ],
                     ];
                 }
             }

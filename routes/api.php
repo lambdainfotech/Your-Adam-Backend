@@ -95,6 +95,25 @@ Route::match(['get', 'post'], '/payment/aamarpay/success', [\App\Http\Controller
 Route::match(['get', 'post'], '/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail')->middleware('throttle:20,1');
 Route::match(['get', 'post'], '/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayCancel'])->name('api.payment.aamarpay.cancel')->middleware('throttle:20,1');
 
+// Temporary debug endpoint for aamarpay configuration
+Route::get('/payment/aamarpay/debug', function () {
+    $settings = \App\Models\Setting::allSettings();
+    $service = app(\App\Services\AamarPayService::class);
+    $ref = new ReflectionClass($service);
+    $method = $ref->getMethod('getCallbackUrl');
+    $method->setAccessible(true);
+    return response()->json([
+        'frontend_url_setting' => $settings['frontend_url'] ?? null,
+        'aamarpay_store_id' => $settings['aamarpay_store_id'] ?? null,
+        'aamarpay_mode' => $settings['aamarpay_mode'] ?? null,
+        'success_url' => $method->invoke($service, 'success'),
+        'fail_url' => $method->invoke($service, 'fail'),
+        'cancel_url' => $method->invoke($service, 'cancel'),
+        'fallback_route_success' => route('api.payment.aamarpay.success'),
+        'app_url' => config('app.url'),
+    ]);
+});
+
 // Sliders / Banners (Frontend)
 Route::get('/sliders', [SliderController::class, 'index']);
 
