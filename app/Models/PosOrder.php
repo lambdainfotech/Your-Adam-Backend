@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,6 +23,8 @@ class PosOrder extends Model
         'subtotal',
         'discount_amount',
         'tax_amount',
+        'shipping_amount',
+        'shipping_zone',
         'total_amount',
         'status',
         'is_wholesale',
@@ -40,6 +43,7 @@ class PosOrder extends Model
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
+        'shipping_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'estimated_delivery_date' => 'date',
         'delivered_at' => 'datetime',
@@ -108,6 +112,22 @@ class PosOrder extends Model
         }
 
         return $summary;
+    }
+
+    public function getShippingAmountAttribute($value): float
+    {
+        $stored = (float) $value;
+        if ($stored > 0 || empty($this->shipping_zone)) {
+            return $stored;
+        }
+
+        $settings = Setting::allSettings();
+
+        return match ($this->shipping_zone) {
+            'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+            'outside_dhaka' => (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+            default => (float) ($settings['shipping_base_rate'] ?? 100),
+        };
     }
 
     public function getDeliveryStatusBadgeClassAttribute(): string

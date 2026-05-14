@@ -48,6 +48,8 @@ class PosOrderService
                 'subtotal' => $validated['subtotal'],
                 'discount_amount' => $validated['discount_amount'] ?? 0,
                 'tax_amount' => $validated['tax_amount'] ?? 0,
+                'shipping_amount' => $validated['shipping_amount'] ?? 0,
+                'shipping_zone' => $validated['shipping_zone'] ?? null,
                 'total_amount' => $validated['total_amount'],
                 'note' => $validated['note'] ?? null,
                 'status' => 'completed',

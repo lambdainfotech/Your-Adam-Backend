@@ -281,6 +281,42 @@
                     </button>
                 </div>
 
+                <!-- Delivery Charge -->
+                <div x-show="!deliveryCharge.active" class="mb-3">
+                    <button @click="deliveryCharge.active = true" 
+                        class="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors">
+                        <i class="fas fa-truck"></i>
+                        Add Delivery Charge
+                    </button>
+                </div>
+                <div x-show="deliveryCharge.active" class="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-truck text-blue-600 text-xs"></i>
+                            </div>
+                            <p class="text-xs font-medium text-blue-700">Delivery Charge</p>
+                        </div>
+                        <button @click="deliveryCharge.active = false" class="w-7 h-7 hover:bg-blue-100 rounded-lg flex items-center justify-center text-blue-500 transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="deliveryCharge.zone = 'inside_dhaka'" 
+                            :class="deliveryCharge.zone === 'inside_dhaka' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'"
+                            class="flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all">
+                            Inside Dhaka
+                            <span class="block font-bold text-sm mt-0.5">৳<span x-text="formatPrice(shippingCharges.inside_dhaka)"></span></span>
+                        </button>
+                        <button @click="deliveryCharge.zone = 'outside_dhaka'" 
+                            :class="deliveryCharge.zone === 'outside_dhaka' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'"
+                            class="flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all">
+                            Outside Dhaka
+                            <span class="block font-bold text-sm mt-0.5">৳<span x-text="formatPrice(shippingCharges.outside_dhaka)"></span></span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Totals -->
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between text-sm">
@@ -294,6 +330,10 @@
                     <div class="flex justify-between text-sm">
                         <span class="text-slate-500">Tax (5%)</span>
                         <span class="font-semibold text-slate-700">৳<span x-text="formatPrice(tax)"></span></span>
+                    </div>
+                    <div x-show="shipping > 0" class="flex justify-between text-sm">
+                        <span class="text-blue-600">Delivery <span class="text-xs text-slate-400" x-text="deliveryCharge.zone === 'inside_dhaka' ? '(Inside Dhaka)' : '(Outside Dhaka)'"></span></span>
+                        <span class="font-semibold text-blue-600">+৳<span x-text="formatPrice(shipping)"></span></span>
                     </div>
                     <div class="flex justify-between items-center pt-3 border-t border-slate-200">
                         <span class="text-base font-bold text-slate-800">Total</span>
@@ -326,6 +366,10 @@
                 <div class="text-center mb-6 p-4 bg-slate-50 rounded-xl">
                     <p class="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">Total Amount</p>
                     <p class="text-4xl font-bold text-indigo-600">৳<span x-text="formatPrice(total)"></span></p>
+                    <div x-show="shipping > 0" class="mt-1 text-xs text-blue-500">
+                        Includes delivery: ৳<span x-text="formatPrice(shipping)"></span>
+                        <span x-text="deliveryCharge.zone === 'inside_dhaka' ? '(Inside Dhaka)' : '(Outside Dhaka)'"></span>
+                    </div>
                 </div>
 
                 <!-- Payment Methods -->
@@ -501,6 +545,8 @@ function posSystem() {
         cart: [],
         isWholesale: false,
         customer: { name: '', phone: '', id: null },
+        shippingCharges: { inside_dhaka: {{ $shippingCharges['inside_dhaka'] }}, outside_dhaka: {{ $shippingCharges['outside_dhaka'] }} },
+        deliveryCharge: { active: false, zone: 'inside_dhaka' },
         customerSearch: '',
         customers: [],
         searchQuery: '',
@@ -558,8 +604,11 @@ function posSystem() {
         get tax() {
             return Math.max(0, (this.subtotal - this.discount) * 0.05);
         },
+        get shipping() {
+            return this.deliveryCharge.active ? (this.shippingCharges[this.deliveryCharge.zone] || 0) : 0;
+        },
         get total() {
-            return this.subtotal - this.discount + this.tax;
+            return this.subtotal - this.discount + this.tax + this.shipping;
         },
         
         // Methods
@@ -706,6 +755,7 @@ function posSystem() {
                 this.cart = [];
                 this.customer = { name: '', phone: '', id: null };
                 this.appliedDiscount = { active: false, type: 'fixed', value: 0 };
+                this.deliveryCharge = { active: false, zone: 'inside_dhaka' };
             }
         },
         
@@ -760,6 +810,8 @@ function posSystem() {
                     subtotal: this.subtotal,
                     discount_amount: this.discount,
                     tax_amount: this.tax,
+                    shipping_amount: this.shipping,
+                    shipping_zone: this.deliveryCharge.active ? this.deliveryCharge.zone : null,
                     total_amount: this.total,
                     is_wholesale: this.isWholesale,
                     payments: payments,
@@ -784,6 +836,7 @@ function posSystem() {
                     this.showPaymentModal = false;
                     this.payment = { method: 'cash', received: 0, change: 0, reference: '', split: [{ method: 'cash', amount: 0 }, { method: 'card', amount: 0 }] };
                     this.appliedDiscount = { active: false, type: 'fixed', value: 0 };
+                    this.deliveryCharge = { active: false, zone: 'inside_dhaka' };
                     this.customer = { name: '', phone: '', id: null };
                     
                     window.open(`/admin/pos/order/${data.data.order_id}/receipt`, '_blank');

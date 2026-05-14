@@ -28,7 +28,13 @@ class PosController extends Controller
         // Get categories for filtering
         $categories = \App\Models\Category::active()->select('id', 'name')->get();
 
-        return view('admin.pos.index', compact('categories'));
+        $settings = \App\Models\Setting::allSettings();
+        $shippingCharges = [
+            'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
+            'outside_dhaka' => (float) ($settings['shipping_cost_outside_dhaka'] ?? $settings['default_shipping_cost'] ?? 120),
+        ];
+
+        return view('admin.pos.index', compact('categories', 'shippingCharges'));
     }
 
     /**
@@ -164,6 +170,8 @@ class PosController extends Controller
             'discount_amount' => 'nullable|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
+            'shipping_amount' => 'nullable|numeric|min:0',
+            'shipping_zone' => 'nullable|in:inside_dhaka,outside_dhaka',
             'is_wholesale' => 'nullable|boolean',
             'payments' => 'required|array|min:1',
             'payments.*.method' => 'required|in:cash,card,bkash,nagad,other',

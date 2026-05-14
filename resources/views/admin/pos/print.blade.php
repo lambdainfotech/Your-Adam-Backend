@@ -369,6 +369,17 @@
                     <span class="total-value">৳{{ number_format($order->tax_amount, 2) }}</span>
                 </div>
                 @endif
+                @if($order->shipping_amount > 0)
+                <div class="total-row">
+                    <span class="total-label">
+                        Delivery
+                        @if($order->shipping_zone)
+                            <span class="text-xs text-gray-400">({{ $order->shipping_zone === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka' }})</span>
+                        @endif
+                    </span>
+                    <span class="total-value">৳{{ number_format($order->shipping_amount, 2) }}</span>
+                </div>
+                @endif
                 <div class="total-row grand-total">
                     <span class="total-label">TOTAL</span>
                     <span class="total-value">৳{{ number_format($order->total_amount, 2) }}</span>
