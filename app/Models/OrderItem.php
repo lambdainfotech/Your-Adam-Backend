@@ -27,7 +27,7 @@ class OrderItem extends Model
             ->join('variants', 'order_items.variant_id', '=', 'variants.id')
             ->join('products', 'variants.product_id', '=', 'products.id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->where('orders.status', 'completed')
+            ->where('orders.status', '!=', 'cancelled')
             ->groupBy('products.id', 'products.name', 'products.sku_prefix')
             ->orderBy('total_sold', 'desc')
             ->limit($limit);
