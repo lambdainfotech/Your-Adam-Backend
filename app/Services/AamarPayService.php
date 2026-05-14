@@ -285,15 +285,15 @@ class AamarPayService
 
     /**
      * Build frontend callback URL for aamarpay redirects.
-     * Falls back to API endpoint if no frontend URL is configured.
+     * Reads FRONTEND_URL from .env and appends the callback path.
+     * Falls back to backend API endpoint if FRONTEND_URL is not set.
      */
     private function getCallbackUrl(string $type): string
     {
-        $settings = Setting::allSettings();
-        $frontendUrl = $settings["aamarpay_{$type}_url"] ?? null;
+        $frontendDomain = env('FRONTEND_URL');
 
-        if ($frontendUrl) {
-            return $frontendUrl;
+        if ($frontendDomain) {
+            return rtrim($frontendDomain, '/') . "/api/payment/aamarpay/{$type}";
         }
 
         return route("api.payment.aamarpay.{$type}");
