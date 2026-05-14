@@ -48,6 +48,7 @@ class SiteInfoService
                 'url' => $this->resolveAssetUrl($settings['site_logo_url'] ?? null, 'https://cdn.youradam.com/logo.png'),
                 'darkUrl' => $this->resolveAssetUrl($settings['site_logo_dark_url'] ?? null, 'https://cdn.youradam.com/logo-dark.png'),
                 'favicon' => $this->resolveAssetUrl($settings['site_favicon'] ?? null, 'https://cdn.youradam.com/favicon.ico'),
+                'footerUrl' => $this->resolveAssetUrl($settings['site_footer_logo_url'] ?? null, ''),
                 'appleTouchIcon' => $this->resolveAssetUrl($settings['site_apple_touch_icon'] ?? null, 'https://cdn.youradam.com/apple-touch-icon.png'),
             ],
             'colors' => [

@@ -214,6 +214,21 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Favicon uploaded successfully.');
     }
 
+    public function uploadFooterLogo(Request $request)
+    {
+        $request->validate([
+            'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $oldUrl = Setting::get('site_footer_logo_url');
+        $this->fileUploadService->deleteByUrl($oldUrl);
+
+        $url = $this->fileUploadService->uploadPath($request->file('footer_logo'), 'settings');
+        Setting::set('site_footer_logo_url', $url, 'site');
+
+        return redirect()->back()->with('success', 'Footer logo uploaded successfully.');
+    }
+
     public function clearCache()
     {
         Cache::forget('app_settings');

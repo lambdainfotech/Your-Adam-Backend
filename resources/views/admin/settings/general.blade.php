@@ -86,7 +86,7 @@
                         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>
                     </div>
                 </form>
-                <form action="{{ route('admin.settings.favicon') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('admin.settings.favicon') }}" method="POST" enctype="multipart/form-data" class="mb-4">
                     @csrf
                     <label class="block text-sm font-medium text-gray-700 mb-2">Upload Favicon</label>
                     <div class="flex items-center gap-4">
@@ -94,6 +94,17 @@
                             <img src="{{ $settings['site_favicon'] }}" alt="Favicon" class="h-8 w-8">
                         @endif
                         <input type="file" name="favicon" accept=".ico,.png" class="flex-1">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>
+                    </div>
+                </form>
+                <form action="{{ route('admin.settings.footer-logo') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Footer Logo</label>
+                    <div class="flex items-center gap-4">
+                        @if($settings['site_footer_logo_url'] ?? false)
+                            <img src="{{ $settings['site_footer_logo_url'] }}" alt="Footer Logo" class="h-12">
+                        @endif
+                        <input type="file" name="footer_logo" accept="image/*" class="flex-1">
                         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>
                     </div>
                 </form>

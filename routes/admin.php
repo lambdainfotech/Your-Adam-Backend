@@ -248,6 +248,7 @@ Route::get('settings/chat', [SettingController::class, 'chat'])->name('admin.set
     Route::post('faqs/{faq}/toggle-status', [\App\Http\Controllers\Admin\FaqController::class, 'toggleStatus'])->name('admin.faqs.toggle-status');
     Route::post('faqs/reorder', [\App\Http\Controllers\Admin\FaqController::class, 'reorder'])->name('admin.faqs.reorder');
     Route::post('settings/favicon', [SettingController::class, 'uploadFavicon'])->name('admin.settings.favicon');
+    Route::post('settings/footer-logo', [SettingController::class, 'uploadFooterLogo'])->name('admin.settings.footer-logo');
     Route::post('settings/clear-cache', [SettingController::class, 'clearCache'])->name('admin.settings.clear-cache');
 
     // Reports
