@@ -138,12 +138,29 @@ class PaymentController extends Controller
     {
         Log::info('AamarPay fail callback', $request->all());
 
-        $result = $this->aamarPayService->handleFailure($request->all());
+        $data = $request->all();
+        $orderNumber = $data['mer_txnid'] ?? null;
+        $order = null;
+
+        if ($orderNumber) {
+            $search = preg_replace('/-[a-f0-9]{4}$/i', '', $orderNumber);
+            $order = LegacyOrder::where('order_number', $search)->first();
+            if (!$order) {
+                $order = ModuleOrder::where('order_number', $search)->first();
+            }
+        }
+
+        if ($order && $order->payment_status !== 'paid') {
+            $order->update([
+                'payment_status' => 'failed',
+                'admin_notes' => 'Payment failed: ' . ($data['pay_status'] ?? 'Unknown'),
+            ]);
+        }
 
         return response()->json([
             'success' => false,
-            'message' => $result['message'],
-            'data' => $result['order'] ?? null,
+            'message' => 'Payment failed',
+            'data' => $order ?? null,
         ], 200);
     }
 
