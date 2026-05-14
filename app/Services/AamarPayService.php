@@ -36,8 +36,8 @@ class AamarPayService
         try {
             $settings = Setting::allSettings();
             
-            // Generate unique transaction ID to allow retries
-            $tranId = $order->order_number . '-' . substr(uniqid(), -4);
+            // Use exact order_number as transaction ID so callbacks can find the order
+            $tranId = $order->order_number;
             
             $payload = [
                 'store_id' => $this->storeId,
@@ -72,7 +72,7 @@ class AamarPayService
             if ($response->successful()) {
                 $data = $response->json();
                 
-                if (isset($data['payment_url'])) {
+                if (isset($data['payment_url']) && ($data['result'] ?? '') === 'true') {
                     return [
                         'success' => true,
                         'paymentUrl' => $data['payment_url'],
@@ -178,7 +178,10 @@ class AamarPayService
             ];
         }
 
-        $order = Order::where('order_number', $orderNumber)->first();
+        // Aamarpay returns mer_txnid = tran_id. We now use exact order_number as tran_id,
+        // but for backward compatibility also handle the old format (order_number + '-' + suffix).
+        $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
+        $order = Order::where('order_number', $searchOrderNumber)->first();
         
         if (!$order) {
             return [
@@ -196,8 +199,8 @@ class AamarPayService
             ];
         }
 
-        // Verify amount matches order total
-        if ((float) $amount !== (float) $order->total_amount) {
+        // Verify amount matches order total (allow tiny float tolerance)
+        if (abs((float) $amount - (float) $order->total_amount) > 0.01) {
             Log::warning('AamarPay amount mismatch', [
                 'order' => $orderNumber,
                 'expected' => $order->total_amount,
@@ -256,7 +259,8 @@ class AamarPayService
         $orderNumber = $data['mer_txnid'] ?? null;
         
         if ($orderNumber) {
-            $order = Order::where('order_number', $orderNumber)->first();
+            $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
+            $order = Order::where('order_number', $searchOrderNumber)->first();
             
             if ($order) {
                 $order->update([

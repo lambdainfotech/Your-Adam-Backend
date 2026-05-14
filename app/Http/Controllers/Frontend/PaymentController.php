@@ -116,7 +116,8 @@ class PaymentController extends Controller
         $orderNumber = $request->get('mer_txnid');
         
         if ($orderNumber) {
-            $order = Order::where('order_number', $orderNumber)->first();
+            $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
+            $order = Order::where('order_number', $searchOrderNumber)->first();
             
             if ($order) {
                 // Only update if not already paid
