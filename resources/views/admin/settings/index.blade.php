@@ -52,7 +52,7 @@
                 <a href="{{ route('admin.settings.privacy') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 {{ request()->routeIs('admin.settings.privacy') ? 'bg-blue-50 text-blue-600' : 'text-gray-700' }}">
                     <i class="fas fa-shield-alt w-6"></i> Privacy Policy
                 </a>
-                <a href="{{ route('admin.settings.chat') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
+                <a href="{{ route('admin.settings.chat') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 {{ request()->routeIs('admin.settings.chat') ? 'bg-blue-50 text-blue-600' : 'text-gray-700' }}">
                     <i class="fas fa-comments w-6"></i> Chat Settings
                 </a>
             </nav>

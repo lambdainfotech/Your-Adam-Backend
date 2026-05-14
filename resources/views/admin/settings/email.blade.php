@@ -25,7 +25,7 @@
                 </a>
                 <a href="{{ route('admin.settings.terms') }}" class="block px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">
                     <i class="fas fa-file-contract w-6"></i> Terms & Conditions
-                </a><i class="fas fa-info-circle w-6"></i> About Page</a>
+                </a>
             </nav>
         </div>
     </div>

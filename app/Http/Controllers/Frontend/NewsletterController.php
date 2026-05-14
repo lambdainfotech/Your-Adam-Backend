@@ -29,7 +29,7 @@ class NewsletterController extends Controller
         }
 
         $subscriber = NewsletterSubscriber::create([
-            'email' => $request->input('email'),
+            'email' => strtolower(trim($request->input('email'))),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

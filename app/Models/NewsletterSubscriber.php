@@ -13,7 +13,6 @@ class NewsletterSubscriber extends Model
         'email',
         'ip_address',
         'user_agent',
-        'subscribed_at',
     ];
 
     protected $casts = [

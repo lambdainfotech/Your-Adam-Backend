@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
+use App\Models\ReturnRequest;
 use App\Models\Setting;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
@@ -218,7 +219,7 @@ class SettingController extends Controller
     {
         try {
             $request->validate([
-                'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp',
+                'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
             ]);
 
             $oldUrl = Setting::get('site_footer_logo_url');

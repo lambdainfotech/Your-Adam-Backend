@@ -944,7 +944,7 @@ Set these in Postman:
 ## Notes
 
 1. All timestamps are in ISO 8601 format
-2. Currency is in USD ($)
+2. Currency is in BDT (৳)
 3. Prices are in decimal format (e.g., 99.99)
 4. Pagination returns 20 items per page by default
 5. API version is v1 (prefix all endpoints with `/api/`)
