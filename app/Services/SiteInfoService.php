@@ -32,6 +32,7 @@ class SiteInfoService
             'aboutPage' => $this->getAboutPageSettings($settings),
             'termsPage' => $this->getTermsPageSettings($settings),
             'privacyPage' => $this->getPrivacyPageSettings($settings),
+            'chat' => $this->getChatSettings($settings),
         ];
     }
 
@@ -678,5 +679,40 @@ class SiteInfoService
         }
 
         return $links;
+    }
+
+    /**
+     * Get chat widget settings (WhatsApp & Messenger)
+     */
+    private function getChatSettings(array $settings): array
+    {
+        return [
+            'whatsapp' => [
+                'enabled' => filter_var($settings['chat_whatsapp_enabled'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'number' => $settings['chat_whatsapp_number'] ?? '+8801234567890',
+                'message' => $settings['chat_whatsapp_message'] ?? 'Hello! I have a question about your products.',
+                'position' => $settings['chat_whatsapp_position'] ?? 'right',
+                'label' => $settings['chat_whatsapp_label'] ?? 'Chat on WhatsApp',
+                'url' => $this->buildWhatsAppUrl(
+                    $settings['chat_whatsapp_number'] ?? '+8801234567890',
+                    $settings['chat_whatsapp_message'] ?? 'Hello! I have a question about your products.'
+                ),
+            ],
+            'messenger' => [
+                'enabled' => filter_var($settings['chat_messenger_enabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'pageId' => $settings['chat_messenger_page_id'] ?? '',
+                'appId' => $settings['chat_messenger_app_id'] ?? '',
+                'greeting' => $settings['chat_messenger_greeting'] ?? 'Hi! How can we help you today?',
+                'position' => $settings['chat_messenger_position'] ?? 'left',
+                'label' => $settings['chat_messenger_label'] ?? 'Chat on Messenger',
+            ],
+        ];
+    }
+
+    private function buildWhatsAppUrl(string $number, string $message): string
+    {
+        $cleanNumber = preg_replace('/[^0-9]/', '', $number);
+        $encodedMessage = urlencode($message);
+        return "https://wa.me/{$cleanNumber}?text={$encodedMessage}";
     }
 }

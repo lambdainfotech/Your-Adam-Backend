@@ -307,6 +307,12 @@ class SettingController extends Controller
         ));
     }
 
+    public function chat()
+    {
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
+        return view('admin.settings.chat', compact('settings'));
+    }
+
     public function returns()
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
