@@ -95,20 +95,6 @@ Route::match(['get', 'post'], '/payment/aamarpay/success', [\App\Http\Controller
 Route::match(['get', 'post'], '/payment/aamarpay/fail', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayFail'])->name('api.payment.aamarpay.fail')->middleware('throttle:20,1');
 Route::match(['get', 'post'], '/payment/aamarpay/cancel', [\App\Http\Controllers\Frontend\PaymentController::class, 'aamarPayCancel'])->name('api.payment.aamarpay.cancel')->middleware('throttle:20,1');
 
-// Debug: Order lookup test
-Route::get('/debug/order/{orderNumber}', function (string $orderNumber) {
-    $legacy = \App\Models\Order::where('order_number', $orderNumber)->first();
-    $module = \App\Modules\Sales\Models\Order::where('order_number', $orderNumber)->first();
-    return response()->json([
-        'orderNumber' => $orderNumber,
-        'legacy_found' => $legacy ? true : false,
-        'legacy_id' => $legacy?->id,
-        'module_found' => $module ? true : false,
-        'module_id' => $module?->id,
-        'table' => (new \App\Models\Order)->getTable(),
-    ]);
-})->middleware('throttle:30,1');
-
 // Sliders / Banners (Frontend)
 Route::get('/sliders', [SliderController::class, 'index']);
 
