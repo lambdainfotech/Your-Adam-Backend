@@ -132,10 +132,26 @@
                             <option value="live" {{ ($settings['aamarpay_mode'] ?? 'sandbox') == 'live' ? 'selected' : '' }}>Live (Production)</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Frontend Callback Domain -->
+                <div class="border-t pt-6 mb-6">
+                    <h3 class="font-medium mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
+                            <i class="fas fa-globe text-blue-600"></i>
+                        </span>
+                        Frontend Callback Domain
+                    </h3>
+                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Configure where payment gateways (aamarPay, SSLCommerz) should redirect users after payment.
+                        </p>
+                    </div>
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Frontend Domain URL</label>
                         <input type="url" name="settings[frontend_url]" value="{{ $settings['frontend_url'] ?? '' }}" placeholder="https://your-frontend-domain.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Aamarpay will redirect users to this domain after payment. Leave empty to use backend URLs.</p>
+                        <p class="text-xs text-gray-500 mt-1">Users will be redirected to this domain after completing payment. Leave empty to use backend URLs.</p>
                     </div>
                 </div>
 
