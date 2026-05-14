@@ -30,7 +30,7 @@
                             <td class="px-6 py-3">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $product->total_sold }}</span>
                             </td>
-                            <td class="px-6 py-3 font-medium">${{ number_format($product->total_revenue, 2) }}</td>
+                            <td class="px-6 py-3 font-medium">৳{{ number_format($product->total_revenue, 2) }}</td>
                         </tr>
                     @empty
                         <tr>

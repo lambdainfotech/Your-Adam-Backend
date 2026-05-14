@@ -106,7 +106,7 @@
                             <td class="px-6 py-3">
                                 <a href="{{ route('admin.orders.show', $order) }}" class="text-blue-600 hover:underline">#{{ $order->order_number }}</a>
                             </td>
-                            <td class="px-6 py-3">${{ number_format($order->total_amount, 2) }}</td>
+                            <td class="px-6 py-3">৳{{ number_format($order->total_amount, 2) }}</td>
                             <td class="px-6 py-3">
                                 <span class="px-2 py-1 text-xs rounded-full
                                     {{ $order->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}

@@ -75,7 +75,7 @@
                     <i class="fas fa-dollar-sign text-purple-600"></i>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-gray-900">${{ number_format($summary['valuation']['total'], 0) }}</div>
+                    <div class="text-2xl font-bold text-gray-900">৳{{ number_format($summary['valuation']['total'], 0) }}</div>
                     <div class="text-xs text-gray-500">Inventory Value</div>
                 </div>
             </div>

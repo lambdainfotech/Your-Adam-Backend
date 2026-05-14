@@ -156,23 +156,23 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Catalog</span>
                 </div>
-                <a href="{{ route('admin.products.index') }}" title=">Products" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.products.index') }}" title="Products" class="nav-item {{ request()->routeIs('admin.products.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-box text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Products</span>
                 </a>
-                <a href="{{ route('admin.categories.index') }}" title=">Categories" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.categories.index') }}" title="Categories" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-tags text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Categories</span>
                 </a>
-                <a href="{{ route('admin.attributes.index') }}" title=">Attributes" class="nav-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.attributes.index') }}" title="Attributes" class="nav-item {{ request()->routeIs('admin.attributes.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-sliders-h text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Attributes</span>
                 </a>
-                <a href="{{ route('admin.size-charts.index') }}" title=">Size Charts" class="nav-item {{ request()->routeIs('admin.size-charts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.size-charts.index') }}" title="Size Charts" class="nav-item {{ request()->routeIs('admin.size-charts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-ruler text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Size Charts</span>
                 </a>
-                <a href="{{ route('admin.predefined-descriptions.index') }}" title=">Descriptions" class="nav-item {{ request()->routeIs('admin.predefined-descriptions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.predefined-descriptions.index') }}" title="Descriptions" class="nav-item {{ request()->routeIs('admin.predefined-descriptions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-align-left text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Descriptions</span>
                 </a>
@@ -181,31 +181,31 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sales</span>
                 </div>
-                <a href="{{ route('admin.orders.index') }}" title=">Orders" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.orders.index') }}" title="Orders" class="nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-shopping-cart text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Orders</span>
                 </a>
-                <a href="{{ route('admin.coupons.index') }}" title=">Coupons" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.coupons.index') }}" title="Coupons" class="nav-item {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-ticket-alt text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Coupons</span>
                 </a>
-                <a href="{{ route('admin.campaigns.index') }}" title=">Campaigns" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.campaigns.index') }}" title="Campaigns" class="nav-item {{ request()->routeIs('admin.campaigns.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-bullhorn text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Campaigns</span>
                 </a>
-                <a href="{{ route('admin.pos.index') }}" title=">POS" class="nav-item {{ request()->routeIs('admin.pos.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.pos.index') }}" title="POS" class="nav-item {{ request()->routeIs('admin.pos.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-cash-register text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">POS</span>
                 </a>
-                <a href="{{ route('admin.sliders.index') }}" title=">Hero Sliders" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.sliders.index') }}" title="Hero Sliders" class="nav-item {{ request()->routeIs('admin.sliders.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-images text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Hero Sliders</span>
                 </a>
-                <a href="{{ route('admin.testimonials.index') }}" title=">Testimonials" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.testimonials.index') }}" title="Testimonials" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-comments text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Testimonials</span>
                 </a>
-                <a href="{{ route('admin.brand-values.index') }}" title=">Brand Values" class="nav-item {{ request()->routeIs('admin.brand-values.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.brand-values.index') }}" title="Brand Values" class="nav-item {{ request()->routeIs('admin.brand-values.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-gem text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Brand Values</span>
                 </a>
@@ -214,19 +214,19 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Inventory</span>
                 </div>
-                <a href="{{ route('admin.stock-in.bulk') }}" title=">Stock In" class="nav-item {{ request()->routeIs('admin.stock-in.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.stock-in.bulk') }}" title="Stock In" class="nav-item {{ request()->routeIs('admin.stock-in.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-plus-circle text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Stock In</span>
                 </a>
-                <a href="{{ route('admin.inventory.index') }}" title=">Stock View" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.inventory.index') }}" title="Stock View" class="nav-item {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-warehouse text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Stock View</span>
                 </a>
-                <a href="{{ route('admin.couriers.index') }}" title=">Couriers" class="nav-item {{ request()->routeIs('admin.couriers.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.couriers.index') }}" title="Couriers" class="nav-item {{ request()->routeIs('admin.couriers.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-shipping-fast text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Couriers</span>
                 </a>
-                <a href="{{ route('admin.districts.index') }}" title=">Districts" class="nav-item {{ request()->routeIs('admin.districts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.districts.index') }}" title="Districts" class="nav-item {{ request()->routeIs('admin.districts.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-map-marker-alt text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Districts</span>
                 </a>
@@ -235,19 +235,19 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Users</span>
                 </div>
-                <a href="{{ route('admin.users.index') }}" title=">Users" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.users.index') }}" title="Users" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-users text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Users</span>
                 </a>
-                <a href="{{ route('admin.guests.index') }}" title=">Guests" class="nav-item {{ request()->routeIs('admin.guests.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.guests.index') }}" title="Guests" class="nav-item {{ request()->routeIs('admin.guests.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-user-clock text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Guests</span>
                 </a>
-                <a href="{{ route('admin.roles.index') }}" title=">Roles" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.roles.index') }}" title="Roles" class="nav-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-user-shield text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Roles</span>
                 </a>
-                <a href="{{ route('admin.permissions.index') }}" title=">Permissions" class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.permissions.index') }}" title="Permissions" class="nav-item {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-key text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Permissions</span>
                 </a>
@@ -256,19 +256,19 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System</span>
                 </div>
-                <a href="{{ route('admin.notifications.index') }}" title=">Notifications" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.notifications.index') }}" title="Notifications" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-bell text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Notifications</span>
                 </a>
-                <a href="{{ route('admin.activity-logs.index') }}" title=">Activity Logs" class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.activity-logs.index') }}" title="Activity Logs" class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-history text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Activity Logs</span>
                 </a>
-                <a href="{{ route('admin.settings.index') }}" title=">Settings" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.settings.index') }}" title="Settings" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-cog text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Settings</span>
                 </a>
-                <a href="{{ route('admin.contact-submissions.index') }}" title=">Contact Submissions" class="nav-item {{ request()->routeIs('admin.contact-submissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.contact-submissions.index') }}" title="Contact Submissions" class="nav-item {{ request()->routeIs('admin.contact-submissions.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-address-book text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Contact Submissions</span>
                 </a>
@@ -276,27 +276,27 @@
                     <i class="nav-icon fas fa-paper-plane text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Newsletter Subscribers</span>
                 </a>
-                <a href="{{ route('admin.faqs.index') }}" title=">FAQs" class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.faqs.index') }}" title="FAQs" class="nav-item {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-question-circle text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">FAQs</span>
                 </a>
-                <a href="{{ route('admin.faq-categories.index') }}" title=">FAQ Categories" class="nav-item {{ request()->routeIs('admin.faq-categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium pl-10">
+                <a href="{{ route('admin.faq-categories.index') }}" title="FAQ Categories" class="nav-item {{ request()->routeIs('admin.faq-categories.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium pl-10">
                     <i class="nav-icon fas fa-folder text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">FAQ Categories</span>
                 </a>
-                <a href="{{ route('admin.settings.about') }}" title=">About" class="nav-item {{ request()->routeIs('admin.settings.about') || request()->routeIs('admin.team-members.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.settings.about') }}" title="About" class="nav-item {{ request()->routeIs('admin.settings.about') || request()->routeIs('admin.team-members.*') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-info-circle text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">About</span>
                 </a>
-                <a href="{{ route('admin.settings.terms') }}" title=">Terms & Conditions" class="nav-item {{ request()->routeIs('admin.settings.terms') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.settings.terms') }}" title="Terms & Conditions" class="nav-item {{ request()->routeIs('admin.settings.terms') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-file-contract text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Terms & Conditions</span>
                 </a>
-                <a href="{{ route('admin.settings.privacy') }}" title=">Privacy Policy" class="nav-item {{ request()->routeIs('admin.settings.privacy') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.settings.privacy') }}" title="Privacy Policy" class="nav-item {{ request()->routeIs('admin.settings.privacy') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-shield-alt text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Privacy Policy</span>
                 </a>
-                <a href="{{ route('admin.settings.chat') }}" title=">Chat Settings" class="nav-item {{ request()->routeIs('admin.settings.chat') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.settings.chat') }}" title="Chat Settings" class="nav-item {{ request()->routeIs('admin.settings.chat') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-comments text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Chat Settings</span>
                 </a>
@@ -305,27 +305,27 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reports</span>
                 </div>
-                <a href="{{ route('admin.reports.sales') }}" title=">Sales Report" class="nav-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.sales') }}" title="Sales Report" class="nav-item {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-chart-line text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Sales Report</span>
                 </a>
-                <a href="{{ route('admin.reports.products') }}" title=">Products Report" class="nav-item {{ request()->routeIs('admin.reports.products') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.products') }}" title="Products Report" class="nav-item {{ request()->routeIs('admin.reports.products') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-chart-bar text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Products Report</span>
                 </a>
-                <a href="{{ route('admin.reports.customers') }}" title=">Customers Report" class="nav-item {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.customers') }}" title="Customers Report" class="nav-item {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-chart-pie text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Customers Report</span>
                 </a>
-                <a href="{{ route('admin.reports.inventory') }}" title=">Inventory Report" class="nav-item {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.inventory') }}" title="Inventory Report" class="nav-item {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-warehouse text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Inventory Report</span>
                 </a>
-                <a href="{{ route('admin.reports.profit') }}" title=">Profit Report" class="nav-item {{ request()->routeIs('admin.reports.profit') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.profit') }}" title="Profit Report" class="nav-item {{ request()->routeIs('admin.reports.profit') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-coins text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Profit Report</span>
                 </a>
-                <a href="{{ route('admin.reports.expenses') }}" title=">Expense Report" class="nav-item {{ request()->routeIs('admin.reports.expenses') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.reports.expenses') }}" title="Expense Report" class="nav-item {{ request()->routeIs('admin.reports.expenses') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-chart-pie text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Expense Report</span>
                 </a>
@@ -334,15 +334,15 @@
                 <div class="mt-5 mb-2 px-3 sidebar-text">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Expenses</span>
                 </div>
-                <a href="{{ route('admin.expenses.index') }}" title=">All Expenses" class="nav-item {{ request()->routeIs('admin.expenses.*') && !request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.expenses.index') }}" title="All Expenses" class="nav-item {{ request()->routeIs('admin.expenses.*') && !request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-list text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">All Expenses</span>
                 </a>
-                <a href="{{ route('admin.expenses.create') }}" title=">Add Expense" class="nav-item {{ request()->routeIs('admin.expenses.create') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.expenses.create') }}" title="Add Expense" class="nav-item {{ request()->routeIs('admin.expenses.create') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-plus-circle text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Add Expense</span>
                 </a>
-                <a href="{{ route('admin.expenses.categories') }}" title=">Categories" class="nav-item {{ request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
+                <a href="{{ route('admin.expenses.categories') }}" title="Categories" class="nav-item {{ request()->routeIs('admin.expenses.categories') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-tags text-slate-500 w-5 text-center transition-colors"></i>
                     <span class="sidebar-text whitespace-nowrap">Categories</span>
                 </a>

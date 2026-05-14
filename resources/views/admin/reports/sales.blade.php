@@ -26,7 +26,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <p class="text-sm font-medium text-gray-500">Total Revenue</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">${{ number_format($totalRevenue, 2) }}</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1">৳{{ number_format($totalRevenue, 2) }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <p class="text-sm font-medium text-gray-500">Total Orders</p>
@@ -34,7 +34,7 @@
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <p class="text-sm font-medium text-gray-500">Average Order Value</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">${{ number_format($averageOrderValue, 2) }}</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1">৳{{ number_format($averageOrderValue, 2) }}</p>
         </div>
     </div>
     
@@ -64,8 +64,8 @@
                         <tr>
                             <td class="px-6 py-3">{{ $sale->date }}</td>
                             <td class="px-6 py-3">{{ $sale->orders }}</td>
-                            <td class="px-6 py-3 font-medium">${{ number_format($sale->revenue, 2) }}</td>
-                            <td class="px-6 py-3">${{ number_format($sale->orders > 0 ? $sale->revenue / $sale->orders : 0, 2) }}</td>
+                            <td class="px-6 py-3 font-medium">৳{{ number_format($sale->revenue, 2) }}</td>
+                            <td class="px-6 py-3">৳{{ number_format($sale->orders > 0 ? $sale->revenue / $sale->orders : 0, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -88,7 +88,7 @@
         data: {
             labels: @json($sales->pluck('date')),
             datasets: [{
-                label: 'Revenue ($)',
+                label: 'Revenue (৳)',
                 data: @json($sales->pluck('revenue')),
                 backgroundColor: 'rgba(59, 130, 246, 0.5)',
                 borderColor: 'rgb(59, 130, 246)',
@@ -102,7 +102,7 @@
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value;
+                            return '৳' + value;
                         }
                     }
                 }

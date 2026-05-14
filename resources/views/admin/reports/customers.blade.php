@@ -50,7 +50,7 @@
                             <td class="px-6 py-3">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $customer->orders_count }}</span>
                             </td>
-                            <td class="px-6 py-3 font-medium">${{ number_format($customer->orders_sum_total_amount ?? 0, 2) }}</td>
+                            <td class="px-6 py-3 font-medium">৳{{ number_format($customer->orders_sum_total_amount ?? 0, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
