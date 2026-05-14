@@ -38,6 +38,8 @@ class Order extends Model
         'delivery_address',
         'billing_address',
         'estimated_delivery_date',
+        'transaction_id',
+        'admin_notes',
     ];
 
     protected $casts = [

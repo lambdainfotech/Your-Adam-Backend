@@ -301,15 +301,33 @@ class AamarPayService
 
     /**
      * Find an order by order_number across both legacy and module tables.
+     * First tries exact match, then strips old 4-char tran_id suffix for backward compatibility.
      */
     private function findOrder(string $orderNumber)
     {
+        // 1. Try exact match first
         $order = LegacyOrder::where('order_number', $orderNumber)->first();
         if ($order) {
             return $order;
         }
 
-        return ModuleOrder::where('order_number', $orderNumber)->first();
+        $order = ModuleOrder::where('order_number', $orderNumber)->first();
+        if ($order) {
+            return $order;
+        }
+
+        // 2. Backward compatibility: old code appended '-XXXX' (4 hex chars) to tran_id
+        $stripped = preg_replace('/-[a-f0-9]{4}$/i', '', $orderNumber);
+        if ($stripped !== $orderNumber) {
+            $order = LegacyOrder::where('order_number', $stripped)->first();
+            if ($order) {
+                return $order;
+            }
+
+            return ModuleOrder::where('order_number', $stripped)->first();
+        }
+
+        return null;
     }
 
     /**

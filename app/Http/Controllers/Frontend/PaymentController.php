@@ -123,10 +123,19 @@ class PaymentController extends Controller
         $orderNumber = $request->get('mer_txnid');
         
         if ($orderNumber) {
-            $searchOrderNumber = preg_replace('/-[a-f0-9]{4,}$/i', '', $orderNumber);
-            $order = LegacyOrder::where('order_number', $searchOrderNumber)->first();
+            // Try exact match first, then old 4-char suffix backward compatibility
+            $order = LegacyOrder::where('order_number', $orderNumber)->first();
             if (!$order) {
-                $order = ModuleOrder::where('order_number', $searchOrderNumber)->first();
+                $order = ModuleOrder::where('order_number', $orderNumber)->first();
+            }
+            if (!$order) {
+                $stripped = preg_replace('/-[a-f0-9]{4}$/i', '', $orderNumber);
+                if ($stripped !== $orderNumber) {
+                    $order = LegacyOrder::where('order_number', $stripped)->first();
+                    if (!$order) {
+                        $order = ModuleOrder::where('order_number', $stripped)->first();
+                    }
+                }
             }
             
             if ($order) {
