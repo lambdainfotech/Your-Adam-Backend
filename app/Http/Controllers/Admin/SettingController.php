@@ -216,17 +216,23 @@ class SettingController extends Controller
 
     public function uploadFooterLogo(Request $request)
     {
-        $request->validate([
-            'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
-        ]);
+        try {
+            $request->validate([
+                'footer_logo' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            ]);
 
-        $oldUrl = Setting::get('site_footer_logo_url');
-        $this->fileUploadService->deleteByUrl($oldUrl);
+            $oldUrl = Setting::get('site_footer_logo_url');
+            $this->fileUploadService->deleteByUrl($oldUrl);
 
-        $url = $this->fileUploadService->uploadPath($request->file('footer_logo'), 'settings');
-        Setting::set('site_footer_logo_url', $url, 'site');
+            $url = $this->fileUploadService->uploadPath($request->file('footer_logo'), 'settings');
+            Setting::set('site_footer_logo_url', $url, 'site');
 
-        return redirect()->back()->with('success', 'Footer logo uploaded successfully.');
+            return redirect()->back()->with('success', 'Footer logo uploaded successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()->withErrors($e->validator, 'footerLogo')->withInput();
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
+        }
     }
 
     public function clearCache()

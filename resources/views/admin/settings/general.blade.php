@@ -100,6 +100,11 @@
                 <form action="{{ route('admin.settings.footer-logo') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <label class="block text-sm font-medium text-gray-700 mb-2">Upload Footer Logo</label>
+                    @if($errors->footerLogo->has('footer_logo'))
+                        <div class="mb-2 text-sm text-red-600">
+                            {{ $errors->footerLogo->first('footer_logo') }}
+                        </div>
+                    @endif
                     <div class="flex items-center gap-4">
                         @if($settings['site_footer_logo_url'] ?? false)
                             <img src="{{ $settings['site_footer_logo_url'] }}" alt="Footer Logo" class="h-12">
