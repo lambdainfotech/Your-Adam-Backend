@@ -188,6 +188,10 @@ class AamarPayService
             return [
                 'success' => false,
                 'message' => 'Order not found',
+                'debug' => [
+                    'received_txnid' => $orderNumber,
+                    'searched' => $searchOrderNumber,
+                ],
             ];
         }
 
