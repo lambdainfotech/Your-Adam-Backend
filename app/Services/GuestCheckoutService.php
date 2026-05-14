@@ -59,7 +59,7 @@ class GuestCheckoutService
                 'customer_type' => 'guest',
                 'status' => 'pending',
                 'payment_status' => 'pending',
-                'payment_method' => $data['paymentMethod']['id'] === 'cod' ? 'cod' : 'online',
+                'payment_method' => $data['paymentMethod']['id'],
                 'subtotal' => $financials['subtotal'],
                 'discount_amount' => $financials['discount'],
                 'coupon_code' => null,

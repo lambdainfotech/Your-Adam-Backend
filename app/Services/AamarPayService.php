@@ -20,7 +20,8 @@ class AamarPayService
         
         $this->storeId = $settings['aamarpay_store_id'] ?? env('AAMARPAY_STORE_ID', '');
         $this->signatureKey = $settings['aamarpay_signature_key'] ?? env('AAMARPAY_SIGNATURE_KEY', '');
-        $this->isSandbox = ($settings['aamarpay_mode'] ?? env('AAMARPAY_SANDBOX', 'true')) === 'true';
+        $mode = $settings['aamarpay_mode'] ?? env('AAMARPAY_SANDBOX', 'sandbox');
+        $this->isSandbox = $mode === 'sandbox' || $mode === 'true';
         
         $this->baseUrl = $this->isSandbox 
             ? 'https://sandbox.aamarpay.com'

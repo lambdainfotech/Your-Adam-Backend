@@ -22,6 +22,7 @@ use App\Modules\Sales\Exceptions\EmptyCartException;
 use App\Modules\Sales\Exceptions\OrderCancellationException;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Sales\Repositories\OrderRepository;
+use App\Services\AamarPayService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Validation\ValidationException;
@@ -35,6 +36,7 @@ class OrderService implements OrderServiceInterface
         protected AddressRepositoryInterface $addressRepository,
         protected VariantRepositoryInterface $variantRepository,
         protected DatabaseManager $db,
+        protected AamarPayService $aamarPayService,
     ) {}
 
     public function create(int $userId, CreateOrderDTO $dto): Order
@@ -193,7 +195,7 @@ class OrderService implements OrderServiceInterface
             }
 
             $orderNumber = $this->generateOrderNumber();
-            $paymentMethod = $data['paymentMethod']['id'] === 'cod' ? 'cod' : 'online';
+            $paymentMethod = $data['paymentMethod']['id'];
 
             $order = $this->orderRepository->create([
                 'order_number' => $orderNumber,
