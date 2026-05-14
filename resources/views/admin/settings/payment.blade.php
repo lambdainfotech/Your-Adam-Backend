@@ -132,6 +132,11 @@
                             <option value="live" {{ ($settings['aamarpay_mode'] ?? 'sandbox') == 'live' ? 'selected' : '' }}>Live (Production)</option>
                         </select>
                     </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Frontend Domain URL</label>
+                        <input type="url" name="settings[frontend_url]" value="{{ $settings['frontend_url'] ?? '' }}" placeholder="https://your-frontend-domain.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Aamarpay will redirect users to this domain after payment. Leave empty to use backend URLs.</p>
+                    </div>
                 </div>
 
                 <!-- SSLCommerz Configuration -->
