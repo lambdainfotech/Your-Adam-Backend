@@ -259,6 +259,8 @@ class ProfitReportService
 
         if ($status !== 'all') {
             $query->where('orders.status', $status);
+        } else {
+            $query->where('orders.status', '!=', 'cancelled');
         }
 
         return $query;
@@ -277,6 +279,8 @@ class ProfitReportService
 
         if ($status !== 'all') {
             $query->where('pos_orders.status', $status);
+        } else {
+            $query->where('pos_orders.status', '!=', 'cancelled');
         }
 
         return $query;

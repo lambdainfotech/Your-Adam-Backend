@@ -150,12 +150,12 @@ class ReportController extends Controller
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'status' => 'nullable|in:pending,processing,shipped,delivered,completed,cancelled',
+            'status' => 'nullable|in:all,pending,processing,shipped,delivered,completed,cancelled',
         ]);
 
         $startDate = $validated['start_date'] ?? Carbon::now()->subDays(30)->format('Y-m-d');
         $endDate = $validated['end_date'] ?? Carbon::now()->format('Y-m-d');
-        $status = $validated['status'] ?? 'completed';
+        $status = $validated['status'] ?? 'all';
 
         $filters = ['status' => $status];
 
