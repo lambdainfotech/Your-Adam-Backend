@@ -33,7 +33,7 @@ return [
         'modules' => base_path('app/Modules'),
         'migrations' => 'Database/Migrations',
         'seeders' => 'Database/Seeders',
-        'routes' => 'Routes',
+        'routes' => 'routes',
         'config' => 'Config',
     ],
 

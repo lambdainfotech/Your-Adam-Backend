@@ -13,6 +13,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
@@ -117,6 +120,111 @@
         }
         .toast.hiding {
             animation: slideOut 0.3s ease forwards;
+        }
+
+        /* ============================================
+           Select2 Custom Styles (Tailwind Match)
+           ============================================ */
+        .select2-container .select2-selection--single,
+        .select2-container .select2-selection--multiple {
+            height: auto;
+            min-height: 42px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background-color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        .select2-container .select2-selection--single {
+            padding: 0.5rem 2.5rem 0.5rem 1rem;
+        }
+        .select2-container .select2-selection--multiple {
+            padding: 0.25rem 2.5rem 0.25rem 0.75rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5;
+            padding-left: 0;
+            color: #111827;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+            width: 2rem;
+            right: 0.25rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #6b7280 transparent transparent transparent;
+            border-width: 5px 5px 0 5px;
+        }
+        .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-color: transparent transparent #6b7280 transparent;
+            border-width: 0 5px 5px 5px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__clear {
+            margin-right: 1.5rem;
+            color: #9ca3af;
+        }
+        .select2-container .select2-selection--single:focus,
+        .select2-container .select2-selection--multiple:focus,
+        .select2-container--default.select2-container--focus .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .select2-dropdown {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            overflow: hidden;
+            z-index: 9999 !important;
+        }
+        .select2-container--default .select2-results__option {
+            padding: 0.5rem 1rem;
+            color: #374151;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            outline: none;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .select2-results__options {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        /* Multiple selection tags */
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.375rem;
+            color: #1e40af;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #3b82f6;
+            margin-right: 0.25rem;
+        }
+        /* Fix for inline/modal display */
+        .select2-container {
+            display: block;
         }
     </style>
     
@@ -523,6 +631,111 @@
             if (activeItem) {
                 activeItem.scrollIntoView({ behavior: 'auto', block: 'center' });
             }
+        });
+    </script>
+    
+    <!-- jQuery (required for Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Select2 Global Initialization -->
+    <script>
+        window.initSelect2 = function(context) {
+            var $context = context ? $(context) : $('body');
+            $context.find('select').each(function() {
+                var $select = $(this);
+                
+                // Skip if already initialized
+                if ($select.hasClass('select2-hidden-accessible')) return;
+                
+                // Skip if explicitly disabled
+                if ($select.data('no-select2')) return;
+                
+                // Detect placeholder from empty option
+                var emptyOption = $select.find('option[value=""]').first();
+                var placeholder = emptyOption.length ? emptyOption.text() : '';
+                
+                // Detect if multiple
+                var isMultiple = $select.prop('multiple');
+                
+                // Detect if select is inside a visible modal/dialog for dropdown positioning
+                var $modalParent = $select.closest('.fixed, [role="dialog"], .modal');
+                
+                // Build config
+                var config = {
+                    width: '100%',
+                    minimumResultsForSearch: 8,
+                    allowClear: !!placeholder && !isMultiple,
+                    placeholder: placeholder || undefined
+                };
+                
+                if ($modalParent.length && $modalParent.is(':visible')) {
+                    config.dropdownParent = $modalParent;
+                }
+                
+                // Fix for selects without empty option but with placeholder text
+                if (placeholder && !$select.find('option[value=""]').length) {
+                    $select.prepend('<option value=""></option>');
+                }
+                
+                $select.select2(config);
+                
+                // Alpine.js compatibility: sync Select2 changes back to Alpine
+                var isAlpine = $select.closest('[x-data]').length > 0 || $select.attr('x-model');
+                if (isAlpine) {
+                    $select.on('change.select2', function() {
+                        // Dispatch input event for x-model
+                        this.dispatchEvent(new Event('input', { bubbles: true }));
+                        // Dispatch change event for @change handlers
+                        this.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    
+                    // Bidirectional sync: when Alpine changes the select value programmatically,
+                    // update Select2 to reflect the new value.
+                    var valObserver = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.attributeName === 'value') {
+                                var newVal = $select.val();
+                                if ($select.val() !== $select.data('select2-last-val')) {
+                                    $select.data('select2-last-val', newVal);
+                                    $select.trigger('change.select2');
+                                }
+                            }
+                        });
+                    });
+                    valObserver.observe($select[0], { attributes: true });
+                }
+            });
+        };
+        
+        // Initialize on page load
+        $(function() {
+            window.initSelect2();
+            
+            // Watch for dynamically added selects (e.g., after AJAX, modal open)
+            var observer = new MutationObserver(function(mutations) {
+                var shouldInit = false;
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
+                            if ($(node).is('select') || $(node).find('select').length > 0) {
+                                shouldInit = true;
+                            }
+                        }
+                    });
+                });
+                if (shouldInit) {
+                    window.initSelect2();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+        
+        // Prevent Select2 dropdown clicks from triggering Alpine @click.away on modals
+        $(document).on('mousedown click', '.select2-container', function(e) {
+            e.stopPropagation();
         });
     </script>
     
