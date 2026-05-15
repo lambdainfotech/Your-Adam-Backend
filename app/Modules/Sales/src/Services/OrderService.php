@@ -522,8 +522,8 @@ class OrderService implements OrderServiceInterface
     {
         $settings = Setting::allSettings();
 
-        $subtotal = collect($processedItems)->sum('total_price');
-        $discount = ($couponCode && $userId) ? $this->calculateDiscount($subtotal, $couponCode, $userId) : 0;
+        $subtotal = (float) collect($processedItems)->sum('total_price');
+        $discount = ($couponCode && $userId) ? $this->calculateDiscount($subtotal, $couponCode, $userId) : 0.0;
 
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
         $tax = $subtotal * $taxRate;
@@ -533,7 +533,7 @@ class OrderService implements OrderServiceInterface
         $isFreeShipping = $subtotal >= $freeShippingThreshold;
 
         if ($isFreeShipping) {
-            $shipping = 0;
+            $shipping = 0.0;
         } else {
             $shipping = match ($shippingZone) {
                 'inside_dhaka' => (float) ($settings['shipping_cost_inside_dhaka'] ?? $settings['default_shipping_cost'] ?? 60),
@@ -542,7 +542,7 @@ class OrderService implements OrderServiceInterface
             };
         }
 
-        $total = max(0, $subtotal - $discount + $tax + $shipping);
+        $total = max(0.0, $subtotal - $discount + $tax + $shipping);
 
         return [
             'subtotal' => round($subtotal, 2),

@@ -159,14 +159,14 @@ class Order extends Model
             return $storedTotal;
         }
 
-        // Recalculate: subtotal + tax + shipping - discount - coupon
+        // Recalculate: subtotal + tax + shipping - discount
+        // Note: discount_amount already includes coupon_discount
         $subtotal = (float) ($this->getAttributes()['subtotal'] ?? 0);
         $tax = (float) ($this->getAttributes()['tax_amount'] ?? 0);
         $shipping = $this->shipping_amount; // Uses accessor above
         $discount = (float) ($this->getAttributes()['discount_amount'] ?? 0);
-        $coupon = (float) ($this->getAttributes()['coupon_discount'] ?? 0);
 
-        return max(0, $subtotal + $tax + $shipping - $discount - $coupon);
+        return max(0, $subtotal + $tax + $shipping - $discount);
     }
 
     public function getStatusBadgeClassAttribute(): string
