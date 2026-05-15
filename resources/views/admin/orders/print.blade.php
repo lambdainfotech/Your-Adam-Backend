@@ -439,7 +439,12 @@
                 </div>
                 @if($order->discount_amount > 0)
                 <div class="total-row">
-                    <span class="total-label">Discount</span>
+                    <span class="total-label">
+                        Discount
+                        @if($order->coupon_code)
+                            <small style="font-size: 10px; color: #888;">({{ $order->coupon_code }})</small>
+                        @endif
+                    </span>
                     <span class="total-value discount">-৳{{ number_format($order->discount_amount, 2) }}</span>
                 </div>
                 @endif

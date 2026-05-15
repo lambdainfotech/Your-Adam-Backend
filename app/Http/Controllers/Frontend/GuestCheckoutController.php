@@ -34,6 +34,8 @@ class GuestCheckoutController extends Controller
                 'shipping_amount' => $order->shipping_amount,
                 'tax_amount' => $order->tax_amount,
                 'discount_amount' => $order->discount_amount,
+                'coupon_code' => $order->coupon_code,
+                'coupon_discount' => $order->coupon_discount,
                 'total_amount' => $order->total_amount,
                 'currency' => $order->currency,
                 'notes' => $order->notes,

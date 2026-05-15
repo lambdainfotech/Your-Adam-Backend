@@ -50,6 +50,9 @@ class CustomerOrderRequest extends FormRequest
             'orderSummary.total' => ['nullable', 'numeric', 'min:0'],
             'orderSummary.freeShippingThreshold' => ['nullable', 'numeric', 'min:0'],
 
+            // Coupon
+            'coupon_code' => ['nullable', 'string', 'min:3', 'max:50'],
+
             // Note
             'note' => ['nullable', 'string', 'max:1000'],
         ];

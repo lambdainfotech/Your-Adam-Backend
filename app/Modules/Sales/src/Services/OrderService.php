@@ -158,7 +158,8 @@ class OrderService implements OrderServiceInterface
 
             // Process items and calculate totals
             $processedItems = $this->processItemsDirect($data['items']);
-            $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone']);
+            $couponCode = $data['coupon_code'] ?? null;
+            $financials = $this->calculateFinancialsDirect($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone'], $couponCode, $userId);
 
             // Build delivery address from saved address or inline input
             if (!empty($data['address_id'])) {
@@ -206,8 +207,8 @@ class OrderService implements OrderServiceInterface
                 'payment_method' => $paymentMethod,
                 'subtotal' => $financials['subtotal'],
                 'discount_amount' => $financials['discount'],
-                'coupon_code' => null,
-                'coupon_discount' => 0,
+                'coupon_code' => $couponCode,
+                'coupon_discount' => $financials['discount'],
                 'tax_amount' => $financials['tax'],
                 'shipping_amount' => $financials['shipping'],
                 'total_amount' => $financials['total'],
@@ -248,6 +249,14 @@ class OrderService implements OrderServiceInterface
                     referenceId: $order->id,
                     referenceType: Order::class
                 );
+            }
+
+            // Record coupon usage if coupon was applied
+            if ($couponCode && $financials['discount'] > 0) {
+                $coupon = $this->couponService->getByCode($couponCode);
+                if ($coupon) {
+                    $this->couponService->recordUsage($coupon->id, $userId, $order->id, $financials['discount']);
+                }
             }
 
             OrderCreated::dispatch($order);
@@ -509,12 +518,12 @@ class OrderService implements OrderServiceInterface
     /**
      * Calculate financial totals for direct order
      */
-    protected function calculateFinancialsDirect(array $processedItems, array $orderSummary, string $shippingZone): array
+    protected function calculateFinancialsDirect(array $processedItems, array $orderSummary, string $shippingZone, ?string $couponCode = null, ?int $userId = null): array
     {
         $settings = Setting::allSettings();
 
         $subtotal = collect($processedItems)->sum('total_price');
-        $discount = 0;
+        $discount = ($couponCode && $userId) ? $this->calculateDiscount($subtotal, $couponCode, $userId) : 0;
 
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
         $tax = $subtotal * $taxRate;

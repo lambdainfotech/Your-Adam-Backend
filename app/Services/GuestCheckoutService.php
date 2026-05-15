@@ -9,6 +9,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Variant;
+use App\Modules\Sales\Contracts\CouponServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,7 @@ class GuestCheckoutService
 {
     public function __construct(
         protected AamarPayService $aamarPayService,
+        protected CouponServiceInterface $couponService,
     ) {}
 
     /**
@@ -34,7 +36,8 @@ class GuestCheckoutService
             $processedItems = $this->processItems($data['items']);
 
             // 3. Calculate financials
-            $financials = $this->calculateFinancials($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone']);
+            $couponCode = $data['coupon_code'] ?? null;
+            $financials = $this->calculateFinancials($processedItems, $data['orderSummary'] ?? [], $data['shipping_zone'], $couponCode);
 
             // 4. Generate order number
             $orderNumber = $this->generateOrderNumber();
@@ -62,8 +65,8 @@ class GuestCheckoutService
                 'payment_method' => $data['paymentMethod']['id'],
                 'subtotal' => $financials['subtotal'],
                 'discount_amount' => $financials['discount'],
-                'coupon_code' => null,
-                'coupon_discount' => 0,
+                'coupon_code' => $couponCode,
+                'coupon_discount' => $financials['discount'],
                 'tax_amount' => $financials['tax'],
                 'shipping_amount' => $financials['shipping'],
                 'total_amount' => $financials['total'],
@@ -245,12 +248,12 @@ class GuestCheckoutService
     /**
      * Calculate financial totals
      */
-    protected function calculateFinancials(array $processedItems, array $orderSummary, string $shippingZone): array
+    protected function calculateFinancials(array $processedItems, array $orderSummary, string $shippingZone, ?string $couponCode = null): array
     {
         $settings = Setting::allSettings();
 
         $subtotal = collect($processedItems)->sum('total_price');
-        $discount = 0; // Coupon not supported in v1
+        $discount = $couponCode ? $this->calculateGuestDiscount($subtotal, $couponCode) : 0;
 
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
         $tax = $subtotal * $taxRate;
@@ -283,6 +286,25 @@ class GuestCheckoutService
     /**
      * Generate unique order number
      */
+    protected function calculateGuestDiscount(float $subtotal, string $couponCode): float
+    {
+        try {
+            $coupon = $this->couponService->getByCode($couponCode);
+
+            if (!$coupon || !$coupon->isValid()) {
+                return 0;
+            }
+
+            if ($coupon->min_purchase_amount !== null && $subtotal < $coupon->min_purchase_amount) {
+                return 0;
+            }
+
+            return $coupon->calculateDiscount($subtotal);
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
     protected function generateOrderNumber(): string
     {
         $prefix = 'ORD';
