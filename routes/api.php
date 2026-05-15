@@ -84,6 +84,9 @@ Route::get('/shipping/methods', [\App\Http\Controllers\Frontend\ShippingControll
 Route::post('/coupons/validate', [\App\Http\Controllers\Frontend\CouponController::class, 'validate']);
 Route::get('/coupons/details', [\App\Http\Controllers\Frontend\CouponController::class, 'show']);
 
+// Apply Coupon (Public - Guest + Auth supported)
+Route::post('/cart/apply-coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'applyCoupon']);
+
 // Guest Checkout (Public)
 Route::post('/guest-checkout', [\App\Http\Controllers\Frontend\GuestCheckoutController::class, 'store'])->name('api.guest-checkout')->middleware('throttle:5,1');
 Route::get('/guest-orders/{orderNumber}', [\App\Http\Controllers\Frontend\GuestOrderController::class, 'show'])->name('api.guest-orders.show')->middleware('throttle:10,1');
@@ -164,7 +167,6 @@ Route::middleware('jwt.auth')->group(function () {
     Route::post('/cart/items', [\App\Modules\Sales\Http\Controllers\CartController::class, 'store']);
     Route::put('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'update']);
     Route::delete('/cart/items/{id}', [\App\Modules\Sales\Http\Controllers\CartController::class, 'destroy']);
-    Route::post('/cart/apply-coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'applyCoupon']);
     Route::delete('/cart/coupon', [\App\Modules\Sales\Http\Controllers\CartController::class, 'removeCoupon']);
     Route::get('/cart/summary', [\App\Modules\Sales\Http\Controllers\CartController::class, 'summary']);
     Route::delete('/cart/clear', [\App\Modules\Sales\Http\Controllers\CartController::class, 'clear']);
