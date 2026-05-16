@@ -597,9 +597,32 @@
                                     if ($selectedCategoryValue === null && isset($product)) {
                                         $selectedCategoryValue = $product->sub_category_id ?? $product->category_id;
                                     }
+
+                                    // Check if the selected category exists in the active categories list
+                                    $categoryIdsInList = [];
+                                    foreach ($categories as $cat) {
+                                        $categoryIdsInList[] = $cat->id;
+                                        foreach ($cat->children ?? [] as $child) {
+                                            $categoryIdsInList[] = $child->id;
+                                        }
+                                    }
+                                    $selectedCategoryMissing = $selectedCategoryValue && !in_array($selectedCategoryValue, $categoryIdsInList);
                                 @endphp
                                 <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
                                     <option value="">Select Category</option>
+
+                                    {{-- Show current category if it's missing from active list (e.g. inactive) --}}
+                                    @if($selectedCategoryMissing && isset($product))
+                                        @php
+                                            $missingCategory = \App\Models\Category::find($selectedCategoryValue);
+                                        @endphp
+                                        @if($missingCategory)
+                                            <option value="{{ $missingCategory->id }}" selected disabled>
+                                                {{ $missingCategory->name }} (Inactive)
+                                            </option>
+                                        @endif
+                                    @endif
+
                                     @foreach($categories as $category)
                                         @if($category->children->count() > 0)
                                             <option value="{{ $category->id }}" disabled {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
@@ -617,10 +640,17 @@
                                         @endif
                                     @endforeach
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <span class="mr-2">&#128193; = Category</span>
-                                    <span>&#9492;&#9472; = Sub-category</span>
-                                </p>
+                                @if($selectedCategoryMissing && isset($product))
+                                    <p class="text-xs text-orange-500 mt-1">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Current category is inactive. Please select a new active category.
+                                    </p>
+                                @else
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <span class="mr-2">&#128193; = Category</span>
+                                        <span>&#9492;&#9472; = Sub-category</span>
+                                    </p>
+                                @endif
                             </div>
                         </div>
 
