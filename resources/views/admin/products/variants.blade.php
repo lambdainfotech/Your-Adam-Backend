@@ -127,6 +127,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">Variant</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">SKU</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Price</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Discount</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">WS %</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Stock</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle whitespace-nowrap">Status</th>
@@ -163,6 +164,21 @@
                                             data-original="{{ $variant->price }}">
                                             ৳{{ number_format($variant->price ?: $product->base_price, 2) }}
                                         </div>
+                                    </td>
+                                    <td class="px-4 py-3 align-middle whitespace-nowrap">
+                                        @php
+                                            $effectiveDiscountType = $variant->discount_type ?: $product->discount_type;
+                                            $effectiveDiscountValue = $variant->discount_value ?: $product->discount_value;
+                                        @endphp
+                                        @if($effectiveDiscountValue > 0)
+                                            @if($effectiveDiscountType === 'percentage')
+                                                <span class="text-green-600 text-sm font-medium">-{{ $effectiveDiscountValue }}%</span>
+                                            @else
+                                                <span class="text-green-600 text-sm font-medium">-৳{{ number_format($effectiveDiscountValue, 2) }}</span>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400 text-sm">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 align-middle whitespace-nowrap">
                                         <div class="inline-edit w-16 text-center" contenteditable="true"
@@ -662,20 +678,34 @@
                 document.getElementById('edit_sku').value = data.variant.sku;
                 document.getElementById('edit_barcode').value = data.variant.barcode || '';
                 document.getElementById('edit_price').value = data.variant.price || '';
-                document.getElementById('edit_cost_price').value = data.variant.cost_price || '';
+
+                // Use variant value if set, otherwise fall back to product value
+                const costPrice = data.variant.cost_price ?? data.product?.cost_price ?? '';
+                const discountType = data.variant.discount_type ?? data.product?.discount_type ?? '';
+                const discountValue = data.variant.discount_value ?? data.product?.discount_value ?? '';
+                const wholesalePercentage = data.variant.wholesale_percentage ?? data.product?.wholesale_percentage ?? '';
+
+                document.getElementById('edit_cost_price').value = costPrice;
                 document.getElementById('edit_stock_quantity').value = data.variant.stock_quantity;
                 document.getElementById('edit_stock_status').value = data.variant.stock_status;
                 document.getElementById('edit_manage_stock').checked = data.variant.manage_stock;
                 document.getElementById('edit_is_active').checked = data.variant.is_active;
-                
+
                 // Discount fields
-                document.getElementById('edit_discount_type').value = data.variant.discount_type || '';
-                document.getElementById('edit_discount_value').value = data.variant.discount_value || '';
+                document.getElementById('edit_discount_type').value = discountType;
+                const discountValueInput = document.getElementById('edit_discount_value');
+                if (discountType === '') {
+                    discountValueInput.value = '';
+                    discountValueInput.disabled = true;
+                } else {
+                    discountValueInput.value = discountValue;
+                    discountValueInput.disabled = false;
+                }
                 document.getElementById('edit_sale_price').value = data.variant.sale_price || data.variant.price || '';
-                
+
                 // Wholesale percentage field
-                document.getElementById('edit_wholesale_percentage').value = data.variant.wholesale_percentage || '';
-                
+                document.getElementById('edit_wholesale_percentage').value = wholesalePercentage;
+
                 // Calculate and display savings
                 calculateVariantSalePrice();
                 calculateVariantWholesalePrice();

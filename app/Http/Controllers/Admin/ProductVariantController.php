@@ -170,6 +170,12 @@ class ProductVariantController extends Controller
                 'is_active' => $variant->is_active,
                 'final_price' => $variant->final_price,
             ],
+            'product' => [
+                'cost_price' => $variant->product->cost_price,
+                'discount_type' => $variant->product->discount_type,
+                'discount_value' => $variant->product->discount_value,
+                'wholesale_percentage' => $variant->product->wholesale_percentage,
+            ],
             'attributes' => $variant->attributeValues->map(fn($av) => [
                 'attribute_name' => $av->attribute->name,
                 'value' => $av->value,
