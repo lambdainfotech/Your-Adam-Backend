@@ -519,7 +519,7 @@
                                                 </label>
                                                 <label class="inline-flex items-center">
                                                     <input type="radio" name="discount_type" value=""
-                                                        {{ old('discount_type', $product->discount_type ?? '') == '' ? 'checked' : 'checked' }}
+                                                        {{ old('discount_type', $product->discount_type ?? '') == '' ? 'checked' : '' }}
                                                         class="discount-type-radio text-blue-600">
                                                     <span class="ml-2 text-sm">No Discount</span>
                                                 </label>
@@ -1548,10 +1548,11 @@ if (isset($product)) {
         calculateSalePrice();
         calculateWholesalePriceFromPercentage();
 
-        // Disable discount value if no discount type selected
+        // Disable/clear discount value if no discount type selected
         const selectedType = document.querySelector('input[name="discount_type"]:checked')?.value;
         const discountValueInput = document.getElementById('discountValue');
         if (selectedType === '' || !selectedType) {
+            discountValueInput.value = '';
             discountValueInput.disabled = true;
         }
 
