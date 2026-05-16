@@ -57,6 +57,38 @@
                     <p class="font-medium text-gray-800">৳{{ number_format($product->base_price, 2) }}</p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Cost Price</p>
+                    <p class="font-medium text-gray-800">{{ $product->cost_price ? '৳' . number_format($product->cost_price, 2) : 'N/A' }}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Sale Price</p>
+                    @if($product->is_on_sale && $product->sale_price < $product->base_price)
+                        <p class="font-medium text-gray-800">
+                            <span class="line-through text-gray-400">৳{{ number_format($product->base_price, 2) }}</span>
+                            <span class="text-green-600 ml-2">৳{{ number_format($product->sale_price, 2) }}</span>
+                        </p>
+                    @else
+                        <p class="font-medium text-gray-800">৳{{ number_format($product->base_price, 2) }}</p>
+                    @endif
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Discount</p>
+                    @if($product->discount_value > 0)
+                        <p class="font-medium text-gray-800">
+                            @if($product->discount_type === 'percentage')
+                                {{ $product->discount_value }}% off
+                            @else
+                                ৳{{ number_format($product->discount_value, 2) }} off
+                            @endif
+                        </p>
+                        @if($product->discount_amount > 0)
+                            <p class="text-xs text-green-600 mt-1">Save ৳{{ number_format($product->discount_amount, 2) }}</p>
+                        @endif
+                    @else
+                        <p class="font-medium text-gray-800">No discount</p>
+                    @endif
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm text-gray-500">Wholesale Discount</p>
                     <p class="font-medium text-gray-800">{{ $product->wholesale_percentage ? $product->wholesale_percentage . '% off' : 'N/A' }}</p>
                     @if($product->effective_wholesale_price)
@@ -158,6 +190,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">SKU</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Discount</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stock</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
                     </tr>
@@ -167,6 +200,17 @@
                         <tr>
                             <td class="px-6 py-4 font-medium">{{ $variant->sku }}</td>
                             <td class="px-6 py-4">৳{{ number_format($variant->price, 2) }}</td>
+                            <td class="px-6 py-4">
+                                @if($variant->discount_value > 0)
+                                    @if($variant->discount_type === 'percentage')
+                                        <span class="text-green-600 text-sm font-medium">-{{ $variant->discount_value }}%</span>
+                                    @else
+                                        <span class="text-green-600 text-sm font-medium">-৳{{ number_format($variant->discount_value, 2) }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-sm">-</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 {{ $variant->stock_quantity <= 10 ? 'text-red-600 font-medium' : '' }}">{{ $variant->stock_quantity }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 text-xs rounded-full {{ $variant->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
@@ -176,7 +220,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-8 text-center text-gray-400">No variants found</td>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-400">No variants found</td>
                         </tr>
                     @endforelse
                 </tbody>
