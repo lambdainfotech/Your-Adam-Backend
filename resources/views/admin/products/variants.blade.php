@@ -679,20 +679,26 @@
                 document.getElementById('edit_barcode').value = data.variant.barcode || '';
                 document.getElementById('edit_price').value = data.variant.price || '';
 
-                // Use variant value if set, otherwise fall back to product value
-                const costPrice = data.variant.cost_price ?? data.product?.cost_price ?? '';
-                const discountType = data.variant.discount_type ?? data.product?.discount_type ?? '';
-                const discountValue = data.variant.discount_value ?? data.product?.discount_value ?? '';
-                const wholesalePercentage = data.variant.wholesale_percentage ?? data.product?.wholesale_percentage ?? '';
+                // Use variant value if set (not null/undefined/empty), otherwise fall back to product value
+                const costPrice = (data.variant.cost_price !== null && data.variant.cost_price !== undefined && data.variant.cost_price !== '')
+                    ? data.variant.cost_price : (data.product?.cost_price ?? '');
+                const discountType = (data.variant.discount_type !== null && data.variant.discount_type !== undefined && data.variant.discount_type !== '')
+                    ? data.variant.discount_type : (data.product?.discount_type ?? '');
+                const discountValue = (data.variant.discount_value !== null && data.variant.discount_value !== undefined && data.variant.discount_value !== '')
+                    ? data.variant.discount_value : (data.product?.discount_value ?? '');
+                const wholesalePercentage = (data.variant.wholesale_percentage !== null && data.variant.wholesale_percentage !== undefined && data.variant.wholesale_percentage !== '')
+                    ? data.variant.wholesale_percentage : (data.product?.wholesale_percentage ?? '');
 
                 document.getElementById('edit_cost_price').value = costPrice;
                 document.getElementById('edit_stock_quantity').value = data.variant.stock_quantity;
-                document.getElementById('edit_stock_status').value = data.variant.stock_status;
                 document.getElementById('edit_manage_stock').checked = data.variant.manage_stock;
                 document.getElementById('edit_is_active').checked = data.variant.is_active;
 
+                // Use jQuery .val().trigger('change') to support Select2 synced selects
+                $('#edit_stock_status').val(data.variant.stock_status).trigger('change');
+
                 // Discount fields
-                document.getElementById('edit_discount_type').value = discountType;
+                $('#edit_discount_type').val(discountType).trigger('change');
                 const discountValueInput = document.getElementById('edit_discount_value');
                 if (discountType === '') {
                     discountValueInput.value = '';
