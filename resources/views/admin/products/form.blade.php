@@ -625,7 +625,7 @@
 
                                     @foreach($categories as $category)
                                         @if($category->children->count() > 0)
-                                            <option value="{{ $category->id }}" disabled {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
+                                            <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? '' : 'disabled' }} {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
                                                 &#128193; {{ $category->name }}
                                             </option>
                                             @foreach($category->children as $child)
