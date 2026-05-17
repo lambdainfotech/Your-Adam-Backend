@@ -288,10 +288,33 @@ class Product extends Model
 
     public function getFinalPriceAttribute(): float
     {
+        $basePrice = (float) ($this->base_price ?? 0);
+        $candidates = [$basePrice];
+
+        // 1. Scheduled sale price
         if ($this->is_on_sale && $this->sale_price) {
-            return (float) $this->sale_price;
+            $candidates[] = (float) $this->sale_price;
         }
-        return (float) ($this->base_price ?? 0);
+
+        // 2. Regular product discount
+        if ($this->discount_value && $this->discount_value > 0) {
+            if ($this->discount_type === 'percentage') {
+                $candidates[] = max(0, $basePrice - ($basePrice * $this->discount_value / 100));
+            } elseif ($this->discount_type === 'flat') {
+                $candidates[] = max(0, $basePrice - $this->discount_value);
+            }
+        }
+
+        // 3. Campaign discount (if Marketing module available)
+        try {
+            $campaignService = app(\App\Modules\Marketing\Contracts\CampaignServiceInterface::class);
+            $campaignPrice = $campaignService->calculateFinalPrice($this, $basePrice);
+            $candidates[] = $campaignPrice;
+        } catch (\Exception $e) {
+            // Campaign service not available, ignore
+        }
+
+        return min($candidates);
     }
 
     public function getCalculatedSalePriceAttribute(): float

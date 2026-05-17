@@ -463,11 +463,8 @@ class OrderService implements OrderServiceInterface
                 ]);
             }
 
-            // Accept unit_price from frontend payload if provided, otherwise calculate from variant
-            $calculatedPrice = $variant->final_price;
-            $unitPrice = isset($item['unit_price']) && is_numeric($item['unit_price']) && $item['unit_price'] >= 0
-                ? (float) $item['unit_price']
-                : $calculatedPrice;
+            // Backend calculates price — always use variant->final_price
+            $unitPrice = $variant->final_price;
             $originalPrice = $variant->compare_price ?? $variant->price ?? $variant->product?->base_price ?? $unitPrice;
             $discountAmount = ($originalPrice - $unitPrice) * $item['quantity'];
             $totalPrice = $unitPrice * $item['quantity'];

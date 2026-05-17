@@ -124,22 +124,41 @@ class Variant extends Model
     // Attribute Accessors
     public function getFinalPriceAttribute(): float
     {
-        // Check if variant has sale price with discount
+        $variantPrice = (float) ($this->price ?? 0);
+        $productBasePrice = (float) ($this->product?->base_price ?? 0);
+        $basePrice = $variantPrice > 0 ? $variantPrice : $productBasePrice;
+
+        $candidates = [$basePrice];
+
+        // 1. Variant's own discount
         if ($this->hasDiscount()) {
-            return $this->calculateSalePrice();
+            $candidates[] = $this->calculateSalePrice();
         }
 
-        // If variant has its own price, use it
-        if ($this->price !== null && $this->price > 0) {
-            return (float) $this->price;
+        // 2. Product-level regular discount applied to variant price
+        if ($this->product && $this->product->discount_value > 0) {
+            if ($this->product->discount_type === 'percentage') {
+                $candidates[] = max(0, $basePrice - ($basePrice * $this->product->discount_value / 100));
+            } elseif ($this->product->discount_type === 'flat') {
+                $candidates[] = max(0, $basePrice - $this->product->discount_value);
+            }
         }
 
-        // Otherwise fall back to product price
-        if ($this->relationLoaded('product') && $this->product) {
-            return $this->product->final_price;
+        // 3. Product's scheduled sale
+        if ($this->product && $this->product->is_on_sale && $this->product->sale_price) {
+            $candidates[] = (float) $this->product->sale_price;
         }
 
-        return (float) $this->price;
+        // 4. Campaign discount on the product
+        try {
+            $campaignService = app(\App\Modules\Marketing\Contracts\CampaignServiceInterface::class);
+            $campaignPrice = $campaignService->calculateFinalPrice($this->product, $basePrice);
+            $candidates[] = $campaignPrice;
+        } catch (\Exception $e) {
+            // Campaign service not available, ignore
+        }
+
+        return min($candidates);
     }
 
     public function hasDiscount(): bool
