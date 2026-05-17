@@ -306,15 +306,53 @@ class Product extends Model
         }
 
         // 3. Campaign discount (if Marketing module available)
-        try {
-            $campaignService = app(\App\Modules\Marketing\Contracts\CampaignServiceInterface::class);
-            $campaignPrice = $campaignService->calculateFinalPrice($this, $basePrice);
+        $campaignPrice = $this->calculateCampaignPrice($basePrice);
+        if ($campaignPrice !== null) {
             $candidates[] = $campaignPrice;
-        } catch (\Exception $e) {
-            // Campaign service not available, ignore
         }
 
         return min($candidates);
+    }
+
+    /**
+     * Calculate campaign discount price for this product.
+     * Returns null if no active campaign applies.
+     */
+    public function calculateCampaignPrice(float $basePrice): ?float
+    {
+        try {
+            // Query campaigns directly via DB to avoid model type conflicts
+            $campaignProduct = \DB::table('campaign_products')
+                ->where('product_id', $this->id)
+                ->first();
+
+            if (!$campaignProduct) {
+                return null;
+            }
+
+            $campaign = \DB::table('campaigns')
+                ->where('id', $campaignProduct->campaign_id)
+                ->where('is_active', true)
+                ->where('starts_at', '<=', now())
+                ->where('ends_at', '>=', now())
+                ->first();
+
+            if (!$campaign) {
+                return null;
+            }
+
+            $discount = $campaign->discount_type === 'percentage'
+                ? $basePrice * $campaign->discount_value / 100
+                : $campaign->discount_value;
+
+            if ($campaign->max_discount_amount) {
+                $discount = min($discount, $campaign->max_discount_amount);
+            }
+
+            return max(0, $basePrice - $discount);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public function getCalculatedSalePriceAttribute(): float

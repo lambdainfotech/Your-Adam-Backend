@@ -150,12 +150,11 @@ class Variant extends Model
         }
 
         // 4. Campaign discount on the product
-        try {
-            $campaignService = app(\App\Modules\Marketing\Contracts\CampaignServiceInterface::class);
-            $campaignPrice = $campaignService->calculateFinalPrice($this->product, $basePrice);
-            $candidates[] = $campaignPrice;
-        } catch (\Exception $e) {
-            // Campaign service not available, ignore
+        if ($this->product) {
+            $campaignPrice = $this->product->calculateCampaignPrice($basePrice);
+            if ($campaignPrice !== null) {
+                $candidates[] = $campaignPrice;
+            }
         }
 
         return min($candidates);
