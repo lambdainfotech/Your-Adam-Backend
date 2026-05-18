@@ -25,7 +25,7 @@
                     @forelse($topProducts as $index => $product)
                         <tr>
                             <td class="px-6 py-3">{{ $index + 1 }}</td>
-                            <td class="px-6 py-3 font-medium">{{ $product->name }}</td>
+                            <td class="px-6 py-3 font-medium">{{ $product->product_name ?? 'Unknown' }}</td>
                             <td class="px-6 py-3 text-gray-600">{{ $product->sku_prefix }}</td>
                             <td class="px-6 py-3">
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ $product->total_sold }}</span>
