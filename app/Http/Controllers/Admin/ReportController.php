@@ -99,9 +99,15 @@ class ReportController extends Controller
 
     public function inventory(Request $request)
     {
-        $products = Product::with(['variants', 'category'])
+        $products = Product::with(['variants' => function($query) {
+                $query->where('manage_stock', true)
+                      ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                      ->where('stock_quantity', '>', 0);
+            }, 'category'])
             ->whereHas('variants', function($query) {
-                $query->where('stock_quantity', '<=', 20);
+                $query->where('manage_stock', true)
+                      ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                      ->where('stock_quantity', '>', 0);
             })
             ->get();
         
@@ -111,7 +117,9 @@ class ReportController extends Controller
         })->count();
         
         $lowStock = Product::whereHas('variants', function($query) {
-            $query->where('stock_quantity', '<=', 10)->where('stock_quantity', '>', 0);
+            $query->where('manage_stock', true)
+                  ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                  ->where('stock_quantity', '>', 0);
         })->count();
         
         return view('admin.reports.inventory', compact('products', 'totalProducts', 'outOfStock', 'lowStock'));
