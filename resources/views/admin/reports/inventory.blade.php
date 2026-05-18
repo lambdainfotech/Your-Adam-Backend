@@ -68,15 +68,24 @@
                                 <td class="px-6 py-3">
                                     <div class="flex items-center">
                                         <div class="w-24 bg-gray-200 rounded-full h-2 mr-2">
-                                            <div class="h-2 rounded-full {{ $variant->stock_quantity == 0 ? 'bg-red-500' : ($variant->stock_quantity <= 5 ? 'bg-red-400' : 'bg-yellow-400') }}" 
-                                                 style="width: {{ min(100, ($variant->stock_quantity / 20) * 100) }}%"></div>
+                                            @php
+                                                $isOutOfStock = $variant->stock_quantity == 0;
+                                                $isLowStock = $variant->manage_stock && $variant->stock_quantity > 0 && $variant->stock_quantity <= $variant->low_stock_threshold;
+                                                $barColor = $isOutOfStock ? 'bg-red-500' : ($isLowStock ? 'bg-yellow-400' : 'bg-emerald-400');
+                                                $barWidth = $isOutOfStock ? 0 : min(100, ($variant->stock_quantity / max($variant->low_stock_threshold * 4, 20)) * 100);
+                                            @endphp
+                                            <div class="h-2 rounded-full {{ $barColor }}" style="width: {{ $barWidth }}%"></div>
                                         </div>
                                         <span class="text-sm">{{ $variant->stock_quantity }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-3">
-                                    <span class="px-2 py-1 text-xs rounded-full {{ $variant->stock_quantity == 0 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ $variant->stock_quantity == 0 ? 'Out of Stock' : 'Low Stock' }}
+                                    @php
+                                        $statusClass = $isOutOfStock ? 'bg-red-100 text-red-800' : ($isLowStock ? 'bg-yellow-100 text-yellow-800' : 'bg-emerald-100 text-emerald-800');
+                                        $statusLabel = $isOutOfStock ? 'Out of Stock' : ($isLowStock ? 'Low Stock' : 'In Stock');
+                                    @endphp
+                                    <span class="px-2 py-1 text-xs rounded-full {{ $statusClass }}">
+                                        {{ $statusLabel }}
                                     </span>
                                 </td>
                             </tr>
