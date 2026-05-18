@@ -99,10 +99,36 @@ class ReportController extends Controller
 
     public function inventory(Request $request)
     {
-        // All products with their variants and stock status
-        $products = Product::with(['variants', 'category'])
-            ->orderBy('name')
-            ->get();
+        $status = $request->get('status', 'all');
+        
+        // Build query based on filter
+        $query = Product::with(['variants', 'category'])->orderBy('name');
+        
+        if ($status !== 'all') {
+            $query->whereHas('variants', function($q) use ($status) {
+                switch ($status) {
+                    case 'out_of_stock':
+                        $q->where('stock_quantity', 0);
+                        break;
+                    case 'low_stock':
+                        $q->where('manage_stock', true)
+                          ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
+                          ->where('stock_quantity', '>', 0);
+                        break;
+                    case 'in_stock':
+                        $q->where(function($sq) {
+                            $sq->where('stock_quantity', '>', 0)
+                               ->where(function($ssq) {
+                                   $ssq->where('manage_stock', false)
+                                       ->orWhereColumn('stock_quantity', '>', 'low_stock_threshold');
+                               });
+                        });
+                        break;
+                }
+            });
+        }
+        
+        $products = $query->get();
         
         $totalProducts = Product::count();
         $outOfStock = Product::whereHas('variants', function($query) {

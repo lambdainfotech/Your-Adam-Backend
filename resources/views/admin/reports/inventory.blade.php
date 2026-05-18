@@ -42,10 +42,36 @@
         </div>
     </div>
     
-    <!-- Low Stock Products -->
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+        <form method="GET" action="{{ route('admin.reports.inventory') }}" class="flex flex-wrap gap-3 items-center">
+            <div class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-600">Status:</label>
+                <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+                    <option value="all" {{ request('status', 'all') == 'all' ? 'selected' : '' }}>All Products</option>
+                    <option value="in_stock" {{ request('status') == 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                    <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                    <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                </select>
+            </div>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                <i class="fas fa-filter mr-1"></i>Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Products Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800">Products Needing Attention</h3>
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">
+                @switch(request('status', 'all'))
+                    @case('in_stock') In Stock Products @break
+                    @case('low_stock') Low Stock Products @break
+                    @case('out_of_stock') Out of Stock Products @break
+                    @default All Products
+                @endswitch
+            </h3>
+            <span class="text-sm text-gray-500">{{ $products->count() }} product(s)</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
