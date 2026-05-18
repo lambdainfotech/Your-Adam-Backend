@@ -327,19 +327,33 @@ class Product extends Model
                 ->first();
 
             if (!$campaignProduct) {
+                \Log::debug("Campaign: No campaign_product found for product_id={$this->id}");
                 return null;
             }
+
+            $now = now();
+
+            \Log::debug("Campaign: Found campaign_product for product_id={$this->id}, campaign_id={$campaignProduct->campaign_id}");
 
             $campaign = \DB::table('campaigns')
                 ->where('id', $campaignProduct->campaign_id)
                 ->where('is_active', true)
-                ->where('starts_at', '<=', now())
-                ->where('ends_at', '>=', now())
+                ->where(function ($query) use ($now) {
+                    $query->whereNull('starts_at')
+                          ->orWhere('starts_at', '<=', $now);
+                })
+                ->where(function ($query) use ($now) {
+                    $query->whereNull('ends_at')
+                          ->orWhere('ends_at', '>=', $now);
+                })
                 ->first();
 
             if (!$campaign) {
+                \Log::debug("Campaign: Campaign not active or expired for campaign_id={$campaignProduct->campaign_id}, now={$now}");
                 return null;
             }
+
+            \Log::debug("Campaign: Active campaign found - type={$campaign->discount_type}, value={$campaign->discount_value}, basePrice={$basePrice}");
 
             $discount = $campaign->discount_type === 'percentage'
                 ? $basePrice * $campaign->discount_value / 100
@@ -349,8 +363,12 @@ class Product extends Model
                 $discount = min($discount, $campaign->max_discount_amount);
             }
 
-            return max(0, $basePrice - $discount);
+            $campaignPrice = max(0, $basePrice - $discount);
+            \Log::debug("Campaign: Calculated campaignPrice={$campaignPrice} for product_id={$this->id}");
+
+            return $campaignPrice;
         } catch (\Exception $e) {
+            \Log::error('Campaign price calculation failed: ' . $e->getMessage());
             return null;
         }
     }

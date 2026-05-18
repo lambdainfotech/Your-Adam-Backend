@@ -463,8 +463,17 @@ class OrderService implements OrderServiceInterface
                 ]);
             }
 
-            // Backend calculates price — always use variant->final_price
-            $unitPrice = $variant->final_price;
+            // Use frontend final_price if provided and valid, otherwise calculate from backend
+            $frontendFinalPrice = isset($item['final_price']) ? (float) $item['final_price'] : null;
+            $backendFinalPrice = $variant->final_price;
+            
+            // Validate frontend price matches backend (within tolerance for floating point)
+            if ($frontendFinalPrice !== null && abs($frontendFinalPrice - $backendFinalPrice) < 0.01) {
+                $unitPrice = $frontendFinalPrice;
+            } else {
+                $unitPrice = $backendFinalPrice;
+            }
+            
             $originalPrice = $variant->compare_price ?? $variant->price ?? $variant->product?->base_price ?? $unitPrice;
             $discountAmount = ($originalPrice - $unitPrice) * $item['quantity'];
             $totalPrice = $unitPrice * $item['quantity'];
