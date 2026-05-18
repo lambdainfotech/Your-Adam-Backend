@@ -321,56 +321,84 @@ class Product extends Model
     public function calculateCampaignPrice(float $basePrice): ?float
     {
         try {
-            // Query campaigns directly via DB to avoid model type conflicts
+            $now = now();
+            $today = now()->toDateString();
+
+            // First check if there's a specific campaign for this product
             $campaignProduct = \DB::table('campaign_products')
                 ->where('product_id', $this->id)
                 ->first();
 
-            if (!$campaignProduct) {
-                \Log::debug("Campaign: No campaign_product found for product_id={$this->id}");
-                return null;
+            if ($campaignProduct) {
+                // Product-specific campaign
+                $campaign = \DB::table('campaigns')
+                    ->where('id', $campaignProduct->campaign_id)
+                    ->where('is_active', true)
+                    ->where(function ($query) use ($now, $today) {
+                        $query->whereNull('starts_at')
+                              ->orWhereDate('starts_at', '<=', $today)
+                              ->orWhere('starts_at', '<=', $now);
+                    })
+                    ->where(function ($query) use ($now, $today) {
+                        $query->whereNull('ends_at')
+                              ->orWhereDate('ends_at', '>=', $today)
+                              ->orWhere('ends_at', '>=', $now);
+                    })
+                    ->first();
+
+                if ($campaign) {
+                    return $this->applyCampaignDiscount($campaign, $basePrice);
+                }
             }
 
-            $now = now();
-
-            \Log::debug("Campaign: Found campaign_product for product_id={$this->id}, campaign_id={$campaignProduct->campaign_id}");
-
-            $campaign = \DB::table('campaigns')
-                ->where('id', $campaignProduct->campaign_id)
+            // Check for "All Products" campaigns (apply_to_all = true)
+            $allProductsCampaign = \DB::table('campaigns')
                 ->where('is_active', true)
-                ->where(function ($query) use ($now) {
+                ->where('apply_to_all', true)
+                ->where(function ($query) use ($now, $today) {
                     $query->whereNull('starts_at')
+                          ->orWhereDate('starts_at', '<=', $today)
                           ->orWhere('starts_at', '<=', $now);
                 })
-                ->where(function ($query) use ($now) {
+                ->where(function ($query) use ($now, $today) {
                     $query->whereNull('ends_at')
+                          ->orWhereDate('ends_at', '>=', $today)
                           ->orWhere('ends_at', '>=', $now);
                 })
                 ->first();
 
-            if (!$campaign) {
-                \Log::debug("Campaign: Campaign not active or expired for campaign_id={$campaignProduct->campaign_id}, now={$now}");
-                return null;
+            if ($allProductsCampaign) {
+                \Log::debug("Campaign: Found all-products campaign for product_id={$this->id}");
+                return $this->applyCampaignDiscount($allProductsCampaign, $basePrice);
             }
 
-            \Log::debug("Campaign: Active campaign found - type={$campaign->discount_type}, value={$campaign->discount_value}, basePrice={$basePrice}");
-
-            $discount = $campaign->discount_type === 'percentage'
-                ? $basePrice * $campaign->discount_value / 100
-                : $campaign->discount_value;
-
-            if ($campaign->max_discount_amount) {
-                $discount = min($discount, $campaign->max_discount_amount);
-            }
-
-            $campaignPrice = max(0, $basePrice - $discount);
-            \Log::debug("Campaign: Calculated campaignPrice={$campaignPrice} for product_id={$this->id}");
-
-            return $campaignPrice;
+            \Log::debug("Campaign: No active campaign found for product_id={$this->id}");
+            return null;
         } catch (\Exception $e) {
             \Log::error('Campaign price calculation failed: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Apply campaign discount to base price
+     */
+    protected function applyCampaignDiscount($campaign, float $basePrice): float
+    {
+        \Log::debug("Campaign: Active campaign found - type={$campaign->discount_type}, value={$campaign->discount_value}, basePrice={$basePrice}");
+
+        $discount = $campaign->discount_type === 'percentage'
+            ? $basePrice * $campaign->discount_value / 100
+            : $campaign->discount_value;
+
+        if ($campaign->max_discount_amount) {
+            $discount = min($discount, $campaign->max_discount_amount);
+        }
+
+        $campaignPrice = max(0, $basePrice - $discount);
+        \Log::debug("Campaign: Calculated campaignPrice={$campaignPrice} for product_id={$this->id}");
+
+        return $campaignPrice;
     }
 
     public function getCalculatedSalePriceAttribute(): float
