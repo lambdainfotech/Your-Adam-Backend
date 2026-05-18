@@ -126,38 +126,43 @@ class Variant extends Model
     {
         $variantPrice = (float) ($this->price ?? 0);
         $productBasePrice = (float) ($this->product?->base_price ?? 0);
-        $basePrice = $variantPrice > 0 ? $variantPrice : $productBasePrice;
 
-        $candidates = [$basePrice];
+        // If variant has its own price, calculate discounts on variant price
+        // If no variant price, fall back to product's final price (simple product behavior)
+        if ($variantPrice > 0) {
+            $candidates = [$variantPrice];
 
-        // 1. Variant's own discount
-        if ($this->hasDiscount()) {
-            $candidates[] = $this->calculateSalePrice();
-        }
-
-        // 2. Product-level regular discount applied to variant price
-        if ($this->product && $this->product->discount_value > 0) {
-            if ($this->product->discount_type === 'percentage') {
-                $candidates[] = max(0, $basePrice - ($basePrice * $this->product->discount_value / 100));
-            } elseif ($this->product->discount_type === 'flat') {
-                $candidates[] = max(0, $basePrice - $this->product->discount_value);
+            // 1. Variant's own discount
+            if ($this->hasDiscount()) {
+                $candidates[] = $this->calculateSalePrice();
             }
-        }
 
-        // 3. Product's scheduled sale
-        if ($this->product && $this->product->is_on_sale && $this->product->sale_price) {
-            $candidates[] = (float) $this->product->sale_price;
-        }
-
-        // 4. Campaign discount on the product
-        if ($this->product) {
-            $campaignPrice = $this->product->calculateCampaignPrice($basePrice);
-            if ($campaignPrice !== null) {
-                $candidates[] = $campaignPrice;
+            // 2. Product-level regular discount applied to VARIANT price (not base price)
+            if ($this->product && $this->product->discount_value > 0) {
+                if ($this->product->discount_type === 'percentage') {
+                    $candidates[] = max(0, $variantPrice - ($variantPrice * $this->product->discount_value / 100));
+                } elseif ($this->product->discount_type === 'flat') {
+                    $candidates[] = max(0, $variantPrice - $this->product->discount_value);
+                }
             }
+
+            // 3. Campaign discount on variant price
+            if ($this->product) {
+                $campaignPrice = $this->product->calculateCampaignPrice($variantPrice);
+                if ($campaignPrice !== null) {
+                    $candidates[] = $campaignPrice;
+                }
+            }
+
+            return min($candidates);
         }
 
-        return min($candidates);
+        // No variant price — fall back to product's final price
+        if ($this->relationLoaded('product') && $this->product) {
+            return $this->product->final_price;
+        }
+
+        return $productBasePrice;
     }
 
     public function hasDiscount(): bool
