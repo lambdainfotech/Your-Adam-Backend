@@ -19,7 +19,7 @@ class OrderItem extends Model
         $query = DB::table('order_items')
             ->select(
                 'products.id',
-                'products.name',
+                'products.name as product_name',
                 'products.sku_prefix',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
                 DB::raw('SUM(order_items.quantity * order_items.unit_price) as total_revenue')
