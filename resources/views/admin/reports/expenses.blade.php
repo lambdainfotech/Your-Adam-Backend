@@ -30,8 +30,8 @@
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <p class="text-sm font-medium text-gray-500">Top Category</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $topCategory['name'] ?? 'N/A' }}</p>
-            <p class="text-sm text-gray-500">৳{{ number_format($topCategory['amount'] ?? 0, 2) }}</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $topCategory['category_name'] ?? 'N/A' }}</p>
+            <p class="text-sm text-gray-500">৳{{ number_format($topCategory['total_amount'] ?? 0, 2) }}</p>
         </div>
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <p class="text-sm font-medium text-gray-500">Avg Daily Expense</p>
