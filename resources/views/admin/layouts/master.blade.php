@@ -23,10 +23,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        html, body { height: 100%; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; overscroll-behavior: none; }
 
         /* Sidebar Transitions */
-        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overscroll-behavior: contain;
+        }
         .sidebar-collapsed { width: 72px; }
         .sidebar-expanded { width: 264px; }
 
@@ -50,10 +54,13 @@
         }
 
         /* Sidebar Scrollbar */
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .sidebar nav::-webkit-scrollbar { width: 4px; }
+        .sidebar nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .sidebar nav::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Contain scroll on main content too */
+        main { overscroll-behavior: contain; }
 
         /* Nav Item */
         .nav-item {
@@ -234,9 +241,9 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
     
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden" id="appContainer">
         <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar sidebar-expanded bg-slate-900 text-slate-300 flex-shrink-0 overflow-y-auto flex flex-col">
+        <aside id="sidebar" class="sidebar sidebar-expanded bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col h-full">
             <!-- Logo Header -->
             <div class="p-4 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3 sidebar-logo overflow-hidden">
@@ -253,7 +260,7 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-3 pb-4">
+            <nav class="flex-1 overflow-y-auto px-3 pb-4">
                 <!-- Dashboard -->
                 <a href="{{ route('admin.dashboard') }}" title="Dashboard" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }} flex items-center gap-3 text-sm font-medium">
                     <i class="nav-icon fas fa-house text-slate-500 w-5 text-center transition-colors"></i>
@@ -631,6 +638,36 @@
             if (activeItem) {
                 activeItem.scrollIntoView({ behavior: 'auto', block: 'center' });
             }
+        });
+
+        // Prevent overscroll/bounce effect that shows blank space
+        document.addEventListener('DOMContentLoaded', function() {
+            const appContainer = document.getElementById('appContainer');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('main');
+
+            // Helper: stop wheel from propagating when scrollable area is at boundary
+            function containScroll(element) {
+                if (!element) return;
+                element.addEventListener('wheel', function(e) {
+                    const isAtTop = element.scrollTop <= 0;
+                    const isAtBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
+                    const hasScrollableContent = element.scrollHeight > element.clientHeight;
+
+                    // If at boundary AND has scrollable content, stop propagation to prevent parent scroll
+                    if (hasScrollableContent && ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom))) {
+                        e.stopPropagation();
+                    }
+                    // Never prevent default here - let the element scroll normally
+                }, { passive: true });
+            }
+
+            // Apply to sidebar nav and main content
+            if (sidebar) {
+                const sidebarNav = sidebar.querySelector('nav');
+                containScroll(sidebarNav);
+            }
+            containScroll(mainContent);
         });
     </script>
     

@@ -4,107 +4,26 @@
 
 @push('styles')
 <style>
-    /* Modern Tab Navigation */
-    .product-tabs-wrapper {
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    .form-card {
+        background: #f9fafb;
         border: 1px solid #e5e7eb;
-        overflow: hidden;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
     }
     
-    .product-tabs-nav {
-        display: flex;
-        background: linear-gradient(to bottom, #fafbfc, #f3f4f6);
-        border-bottom: 1px solid #e5e7eb;
-        padding: 0 4px;
-        position: relative;
-    }
-    
-    .product-tab {
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 20px;
+    .form-card-title {
         font-size: 14px;
-        font-weight: 500;
-        color: #6b7280;
-        background: transparent;
-        border: none;
-        border-bottom: 3px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-    
-    .product-tab:hover {
+        font-weight: 600;
         color: #374151;
-        background: rgba(255,255,255,0.6);
-    }
-    
-    .product-tab.active {
-        color: #2563eb;
-        background: #fff;
-        border-bottom-color: #2563eb;
-        font-weight: 600;
-    }
-    
-    .product-tab.active::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #2563eb;
-    }
-    
-    .product-tab i {
-        font-size: 16px;
-        width: 20px;
-        text-align: center;
-    }
-    
-    .product-tab .tab-badge {
-        display: inline-flex;
+        margin-bottom: 16px;
+        display: flex;
         align-items: center;
-        justify-content: center;
-        min-width: 18px;
-        height: 18px;
-        padding: 0 5px;
-        font-size: 11px;
-        font-weight: 600;
-        background: #e5e7eb;
+    }
+    
+    .form-card-title i {
+        margin-right: 8px;
         color: #6b7280;
-        border-radius: 9px;
-        margin-left: 4px;
-    }
-    
-    .product-tab.active .tab-badge {
-        background: #dbeafe;
-        color: #2563eb;
-    }
-    
-    /* Tab Content Panels */
-    .product-tab-panel {
-        display: none;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    .product-tab-panel.active {
-        display: block;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Tab Content Styling */
-    .tab-content-wrapper {
-        padding: 24px;
-        background: #fff;
     }
     
     .section-title {
@@ -131,30 +50,6 @@
         font-size: 14px;
     }
     
-    /* Form Card Styling */
-    .form-card {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .form-card-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-    }
-    
-    .form-card-title i {
-        margin-right: 8px;
-        color: #6b7280;
-    }
-    
-    /* Variant Preview Table */
     .variant-preview-table {
         width: 100%;
         border-collapse: collapse;
@@ -194,31 +89,6 @@
         ring-color: #bfdbfe;
     }
     
-    /* CKEditor Height */
-    .ck-editor__editable {
-        min-height: 250px !important;
-    }
-    .ck.ck-editor__main > .ck-editor__editable {
-        min-height: 250px;
-    }
-    
-    /* Responsive Tabs */
-    @media (max-width: 768px) {
-        .product-tabs-nav {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .product-tabs-nav::-webkit-scrollbar {
-            display: none;
-        }
-        .product-tab {
-            padding: 12px 16px;
-            font-size: 13px;
-        }
-    }
-    
-    /* Attribute Selector */
     .attribute-selector-card {
         border: 2px solid #e5e7eb;
         border-radius: 8px;
@@ -252,11 +122,19 @@
         border-radius: 4px;
         font-size: 12px;
     }
+    
+    /* CKEditor Height */
+    .ck-editor__editable {
+        min-height: 250px !important;
+    }
+    .ck.ck-editor__main > .ck-editor__editable {
+        min-height: 250px;
+    }
 </style>
 @endpush
 
 @section('content')
-<div class="p-6">
+<div>
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <div>
@@ -323,620 +201,604 @@
                     </div>
                 </div>
 
-                <!-- Modern Tab Navigation -->
-                <div class="product-tabs-wrapper">
-                    <nav class="product-tabs-nav">
-                        <button type="button" class="product-tab active" data-tab="general">
-                            <i class="fas fa-info-circle"></i>
-                            <span>General</span>
-                        </button>
-                        <button type="button" class="product-tab" data-tab="inventory">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Inventory</span>
-                        </button>
-                        <button type="button" class="product-tab {{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}" data-tab="variants" id="variantsTab">
-                            <i class="fas fa-layer-group"></i>
-                            <span>Variants</span>
-                            <span class="tab-badge variant-count-badge hidden">0</span>
-                        </button>
-                        <button type="button" class="product-tab" data-tab="images">
-                            <i class="fas fa-images"></i>
-                            <span>Images</span>
-                        </button>
-                        <button type="button" class="product-tab" data-tab="seo">
-                            <i class="fas fa-search"></i>
-                            <span>SEO</span>
-                        </button>
-                    </nav>
+                <!-- Basic Information Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Basic Information</span>
+                    </div>
+                    
+                    <div class="form-card">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" id="productName" value="{{ old('name', $product->name ?? '') }}" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter product name" required>
+                        @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                    </div>
 
-                    <!-- Tab Panels -->
-                    <div class="tab-content-wrapper">
-                        <!-- General Tab -->
-                        <div id="general" class="product-tab-panel active">
-                            <div class="section-title">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Basic Information</span>
+                    <!-- Description Section -->
+                    <div class="form-card">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-medium text-gray-700">Description</label>
+                            <div class="flex items-center gap-2 text-sm">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="desc_source" value="predefined" 
+                                        {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
+                                        class="desc-source-radio text-blue-600">
+                                    <span class="ml-1">Predefined</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer ml-3">
+                                    <input type="radio" name="desc_source" value="custom" 
+                                        {{ old('desc_source', ($product->predefined_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
+                                        class="desc-source-radio text-blue-600">
+                                    <span class="ml-1">Custom</span>
+                                </label>
                             </div>
-                            
-                            <div class="form-card">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Product Name <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" id="productName" value="{{ old('name', $product->name ?? '') }}" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter product name" required>
-                                @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
-                            </div>
+                        </div>
+                        
+                        <!-- Predefined Description Dropdown -->
+                        <div id="predefinedDescSection" class="mb-3 {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
+                            <select name="predefined_description_id" id="predefinedDescriptionId" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select a predefined description...</option>
+                                @foreach($predefinedDescriptions as $desc)
+                                    <option value="{{ $desc->id }}" 
+                                        data-content="{{ e($desc->content) }}"
+                                        {{ old('predefined_description_id', $product->predefined_description_id ?? '') == $desc->id ? 'selected' : '' }}>
+                                        {{ $desc->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <!-- Custom Description Editor -->
+                        <textarea name="description" id="descriptionField" rows="4" 
+                            class="tinymce-editor w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter product description">{{ old('description', $product->description ?? '') }}</textarea>
+                    </div>
 
-                            <!-- Description Section -->
-                            <div class="form-card">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="text-sm font-medium text-gray-700">Description</label>
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <label class="inline-flex items-center cursor-pointer">
-                                            <input type="radio" name="desc_source" value="predefined" 
-                                                {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
-                                                class="desc-source-radio text-blue-600">
-                                            <span class="ml-1">Predefined</span>
+                    <!-- Short Description Section -->
+                    <div class="form-card">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-medium text-gray-700">Short Description</label>
+                            <div class="flex items-center gap-2 text-sm">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="short_desc_source" value="predefined" 
+                                        {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
+                                        class="short-desc-source-radio text-blue-600">
+                                    <span class="ml-1">Predefined</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer ml-3">
+                                    <input type="radio" name="short_desc_source" value="custom" 
+                                        {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
+                                        class="short-desc-source-radio text-blue-600">
+                                    <span class="ml-1">Custom</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Predefined Short Description Dropdown -->
+                        <div id="predefinedShortDescSection" class="mb-3 {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
+                            <select name="predefined_short_description_id" id="predefinedShortDescriptionId" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select a predefined short description...</option>
+                                @foreach($predefinedShortDescriptions as $desc)
+                                    <option value="{{ $desc->id }}" 
+                                        data-content="{{ e($desc->content) }}"
+                                        {{ old('predefined_short_description_id', $product->predefined_short_description_id ?? '') == $desc->id ? 'selected' : '' }}>
+                                        {{ $desc->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <!-- Custom Short Description Textarea -->
+                        <textarea name="short_description" id="shortDescriptionField" rows="2" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Brief product summary">{{ old('short_description', $product->short_description ?? '') }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-tag"></i>
+                        <span>Pricing</span>
+                    </div>
+                    
+                    <div class="form-card">
+                        <!-- Cost, Regular Price, Wholesale Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Item (৳)</label>
+                                <input type="number" name="cost_price" id="costPrice" step="0.01" min="0"
+                                    value="{{ old('cost_price', $product->cost_price ?? '') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="0.00">
+                                <p class="text-xs text-gray-500 mt-1">Your cost for profit calculations</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Regular Price (৳) <span class="text-red-500">*</span></label>
+                                <input type="number" name="base_price" id="basePrice" step="0.01" min="0"
+                                    value="{{ old('base_price', $product->base_price ?? '') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="0.00" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Wholesale Discount %</label>
+                                <input type="number" name="wholesale_percentage" id="wholesalePercentage" step="0.01" min="0" max="99.99"
+                                    value="{{ old('wholesale_percentage', $product->wholesale_percentage ?? '') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="0">
+                                <p class="text-xs text-gray-500 mt-1">% off retail price for wholesale</p>
+                            </div>
+                        </div>
+
+                        <!-- Calculated Wholesale Price -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Calculated Wholesale Price</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Auto-calculated Wholesale Price</label>
+                                    <div class="relative">
+                                        <input type="text" id="calculatedWholesalePrice"
+                                            class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
+                                            placeholder="0.00" readonly>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Based on regular price minus wholesale %</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Discount Section -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Discount</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Discount Type -->
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Discount Type</label>
+                                    <div class="flex gap-4">
+                                        <label class="inline-flex items-center">
+                                            <input type="radio" name="discount_type" value="percentage" 
+                                                {{ old('discount_type', $product->discount_type ?? '') == 'percentage' ? 'checked' : '' }}
+                                                class="discount-type-radio text-blue-600">
+                                            <span class="ml-2 text-sm">Percentage (%)</span>
                                         </label>
-                                        <label class="inline-flex items-center cursor-pointer ml-3">
-                                            <input type="radio" name="desc_source" value="custom" 
-                                                {{ old('desc_source', ($product->predefined_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
-                                                class="desc-source-radio text-blue-600">
-                                            <span class="ml-1">Custom</span>
+                                        <label class="inline-flex items-center">
+                                            <input type="radio" name="discount_type" value="flat"
+                                                {{ old('discount_type', $product->discount_type ?? '') == 'flat' ? 'checked' : '' }}
+                                                class="discount-type-radio text-blue-600">
+                                            <span class="ml-2 text-sm">Flat (৳)</span>
+                                        </label>
+                                        <label class="inline-flex items-center">
+                                            <input type="radio" name="discount_type" value=""
+                                                {{ old('discount_type', $product->discount_type ?? '') == '' ? 'checked' : '' }}
+                                                class="discount-type-radio text-blue-600">
+                                            <span class="ml-2 text-sm">No Discount</span>
                                         </label>
                                     </div>
                                 </div>
                                 
-                                <!-- Predefined Description Dropdown -->
-                                <div id="predefinedDescSection" class="mb-3 {{ old('desc_source', ($product->predefined_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
-                                    <select name="predefined_description_id" id="predefinedDescriptionId" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        <option value="">Select a predefined description...</option>
-                                        @foreach($predefinedDescriptions as $desc)
-                                            <option value="{{ $desc->id }}" 
-                                                data-content="{{ e($desc->content) }}"
-                                                {{ old('predefined_description_id', $product->predefined_description_id ?? '') == $desc->id ? 'selected' : '' }}>
-                                                {{ $desc->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                <!-- Discount Value -->
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Discount Value</label>
+                                    <input type="number" name="discount_value" id="discountValue" step="0.01" min="0"
+                                        value="{{ old('discount_value', $product->discount_value ?? '') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="0">
+                                    <p class="text-xs text-gray-500 mt-1" id="discountHint">Enter percentage (1-99) or flat amount</p>
                                 </div>
                                 
-                                <!-- Custom Description Editor -->
-                                <textarea name="description" id="descriptionField" rows="4" 
-                                    class="tinymce-editor w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter product description">{{ old('description', $product->description ?? '') }}</textarea>
-                            </div>
-
-                            <!-- Short Description Section -->
-                            <div class="form-card">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="text-sm font-medium text-gray-700">Short Description</label>
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <label class="inline-flex items-center cursor-pointer">
-                                            <input type="radio" name="short_desc_source" value="predefined" 
-                                                {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? 'checked' : '' }}
-                                                class="short-desc-source-radio text-blue-600">
-                                            <span class="ml-1">Predefined</span>
-                                        </label>
-                                        <label class="inline-flex items-center cursor-pointer ml-3">
-                                            <input type="radio" name="short_desc_source" value="custom" 
-                                                {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? '' : 'custom') == 'custom' ? 'checked' : 'checked' }}
-                                                class="short-desc-source-radio text-blue-600">
-                                            <span class="ml-1">Custom</span>
-                                        </label>
+                                <!-- Sale Price (Auto-calculated, Read-only) -->
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Sale Price <span class="text-gray-400">(Auto-calculated)</span></label>
+                                    <div class="relative">
+                                        <input type="number" name="sale_price" id="salePrice" step="0.01" min="0"
+                                            value="{{ old('sale_price', $product->sale_price ?? '') }}"
+                                            class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
+                                            placeholder="0.00" readonly>
+                                        <span id="discountBadge" class="absolute right-3 top-2 text-xs font-medium {{ ($product->discount_value ?? 0) > 0 ? '' : 'hidden' }}">
+                                            @if(($product->discount_type ?? '') == 'percentage')
+                                                <span class="text-green-600">-{{ $product->discount_value }}%</span>
+                                            @elseif(($product->discount_type ?? '') == 'flat')
+                                                <span class="text-green-600">-৳{{ number_format($product->discount_value, 2) }}</span>
+                                            @endif
+                                        </span>
                                     </div>
-                                </div>
-                                
-                                <!-- Predefined Short Description Dropdown -->
-                                <div id="predefinedShortDescSection" class="mb-3 {{ old('short_desc_source', ($product->predefined_short_description_id ?? false) ? 'predefined' : '') == 'predefined' ? '' : 'hidden' }}">
-                                    <select name="predefined_short_description_id" id="predefinedShortDescriptionId" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        <option value="">Select a predefined short description...</option>
-                                        @foreach($predefinedShortDescriptions as $desc)
-                                            <option value="{{ $desc->id }}" 
-                                                data-content="{{ e($desc->content) }}"
-                                                {{ old('predefined_short_description_id', $product->predefined_short_description_id ?? '') == $desc->id ? 'selected' : '' }}>
-                                                {{ $desc->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                
-                                <!-- Custom Short Description Textarea -->
-                                <textarea name="short_description" id="shortDescriptionField" rows="2" 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Brief product summary">{{ old('short_description', $product->short_description ?? '') }}</textarea>
-                            </div>
-
-                            <div class="form-card">
-                                <div class="form-card-title">
-                                    <i class="fas fa-tag"></i>
-                                    <span>Pricing</span>
-                                </div>
-                                
-                                <!-- Cost, Regular Price, Wholesale Row -->
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cost per Item (৳)</label>
-                                        <input type="number" name="cost_price" id="costPrice" step="0.01" min="0"
-                                            value="{{ old('cost_price', $product->cost_price ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0.00">
-                                        <p class="text-xs text-gray-500 mt-1">Your cost for profit calculations</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Regular Price (৳) <span class="text-red-500">*</span></label>
-                                        <input type="number" name="base_price" id="basePrice" step="0.01" min="0"
-                                            value="{{ old('base_price', $product->base_price ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0.00" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Wholesale Discount %</label>
-                                        <input type="number" name="wholesale_percentage" id="wholesalePercentage" step="0.01" min="0" max="99.99"
-                                            value="{{ old('wholesale_percentage', $product->wholesale_percentage ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="0">
-                                        <p class="text-xs text-gray-500 mt-1">% off retail price for wholesale</p>
-                                    </div>
-                                </div>
-
-                                <!-- Calculated Wholesale Price -->
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <label class="block text-sm font-medium text-gray-700 mb-3">Calculated Wholesale Price</label>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-xs text-gray-500 mb-1">Auto-calculated Wholesale Price</label>
-                                            <div class="relative">
-                                                <input type="text" id="calculatedWholesalePrice"
-                                                    class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
-                                                    placeholder="0.00" readonly>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mt-1">Based on regular price minus wholesale %</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Discount Section -->
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <label class="block text-sm font-medium text-gray-700 mb-3">Discount</label>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <!-- Discount Type -->
-                                        <div>
-                                            <label class="block text-xs text-gray-500 mb-1">Discount Type</label>
-                                            <div class="flex gap-4">
-                                                <label class="inline-flex items-center">
-                                                    <input type="radio" name="discount_type" value="percentage" 
-                                                        {{ old('discount_type', $product->discount_type ?? '') == 'percentage' ? 'checked' : '' }}
-                                                        class="discount-type-radio text-blue-600">
-                                                    <span class="ml-2 text-sm">Percentage (%)</span>
-                                                </label>
-                                                <label class="inline-flex items-center">
-                                                    <input type="radio" name="discount_type" value="flat"
-                                                        {{ old('discount_type', $product->discount_type ?? '') == 'flat' ? 'checked' : '' }}
-                                                        class="discount-type-radio text-blue-600">
-                                                    <span class="ml-2 text-sm">Flat (৳)</span>
-                                                </label>
-                                                <label class="inline-flex items-center">
-                                                    <input type="radio" name="discount_type" value=""
-                                                        {{ old('discount_type', $product->discount_type ?? '') == '' ? 'checked' : '' }}
-                                                        class="discount-type-radio text-blue-600">
-                                                    <span class="ml-2 text-sm">No Discount</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Discount Value -->
-                                        <div>
-                                            <label class="block text-xs text-gray-500 mb-1">Discount Value</label>
-                                            <input type="number" name="discount_value" id="discountValue" step="0.01" min="0"
-                                                value="{{ old('discount_value', $product->discount_value ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="0">
-                                            <p class="text-xs text-gray-500 mt-1" id="discountHint">Enter percentage (1-99) or flat amount</p>
-                                        </div>
-                                        
-                                        <!-- Sale Price (Auto-calculated, Read-only) -->
-                                        <div>
-                                            <label class="block text-xs text-gray-500 mb-1">Sale Price <span class="text-gray-400">(Auto-calculated)</span></label>
-                                            <div class="relative">
-                                                <input type="number" name="sale_price" id="salePrice" step="0.01" min="0"
-                                                    value="{{ old('sale_price', $product->sale_price ?? '') }}"
-                                                    class="w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-600"
-                                                    placeholder="0.00" readonly>
-                                                <span id="discountBadge" class="absolute right-3 top-2 text-xs font-medium {{ ($product->discount_value ?? 0) > 0 ? '' : 'hidden' }}">
-                                                    @if(($product->discount_type ?? '') == 'percentage')
-                                                        <span class="text-green-600">-{{ $product->discount_value }}%</span>
-                                                    @elseif(($product->discount_type ?? '') == 'flat')
-                                                        <span class="text-green-600">-৳{{ number_format($product->discount_value, 2) }}</span>
-                                                    @endif
-                                                </span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mt-1" id="savingsText">
-                                                @if(($product->discount_value ?? 0) > 0 && ($product->base_price ?? 0) > 0)
-                                                    Save ৳{{ number_format($product->discount_amount, 2) }}
-                                                @else
-                                                    No discount applied
-                                                @endif
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Sale Schedule -->
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <label class="text-sm font-medium text-gray-700">Sale Schedule <span class="text-gray-400 font-normal">(Optional)</span></label>
-                                        <button type="button" id="toggleSaleSchedule" class="text-sm text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-calendar-alt mr-1"></i>Toggle Schedule
-                                        </button>
-                                    </div>
-                                    <div class="sale-schedule hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <input type="datetime-local" name="sale_start_date"
-                                                value="{{ old('sale_start_date', isset($product) && $product->sale_start_date ? $product->sale_start_date->format('Y-m-d\TH:i') : '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <p class="text-xs text-gray-500 mt-1">Sale Start Date</p>
-                                        </div>
-                                        <div>
-                                            <input type="datetime-local" name="sale_end_date"
-                                                value="{{ old('sale_end_date', isset($product) && $product->sale_end_date ? $product->sale_end_date->format('Y-m-d\TH:i') : '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <p class="text-xs text-gray-500 mt-1">Sale End Date</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-card">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
-                                @php
-                                    // Determine which value should be pre-selected in the dropdown
-                                    // If product has sub_category_id, show that; otherwise show category_id
-                                    $selectedCategoryValue = old('category_id');
-                                    if ($selectedCategoryValue === null && isset($product)) {
-                                        $selectedCategoryValue = $product->sub_category_id ?? $product->category_id;
-                                    }
-
-                                    // Check if the selected category exists in the active categories list
-                                    $categoryIdsInList = [];
-                                    foreach ($categories as $cat) {
-                                        $categoryIdsInList[] = $cat->id;
-                                        foreach ($cat->children ?? [] as $child) {
-                                            $categoryIdsInList[] = $child->id;
-                                        }
-                                    }
-                                    $selectedCategoryMissing = $selectedCategoryValue && !in_array($selectedCategoryValue, $categoryIdsInList);
-                                @endphp
-                                <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                    <option value="">Select Category</option>
-
-                                    {{-- Show current category if it's missing from active list (e.g. inactive) --}}
-                                    @if($selectedCategoryMissing && isset($product))
-                                        @php
-                                            $missingCategory = \App\Models\Category::find($selectedCategoryValue);
-                                        @endphp
-                                        @if($missingCategory)
-                                            <option value="{{ $missingCategory->id }}" selected disabled>
-                                                {{ $missingCategory->name }} (Inactive)
-                                            </option>
-                                        @endif
-                                    @endif
-
-                                    @foreach($categories as $category)
-                                        @if($category->children->count() > 0)
-                                            <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? '' : 'disabled' }} {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
-                                                &#128193; {{ $category->name }}
-                                            </option>
-                                            @foreach($category->children as $child)
-                                                <option value="{{ $child->id }}" {{ $selectedCategoryValue == $child->id ? 'selected' : '' }}>
-                                                    &nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
-                                                </option>
-                                            @endforeach
+                                    <p class="text-xs text-gray-500 mt-1" id="savingsText">
+                                        @if(($product->discount_value ?? 0) > 0 && ($product->base_price ?? 0) > 0)
+                                            Save ৳{{ number_format($product->discount_amount, 2) }}
                                         @else
-                                            <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
+                                            No discount applied
                                         @endif
-                                    @endforeach
-                                </select>
-                                @if($selectedCategoryMissing && isset($product))
-                                    <p class="text-xs text-orange-500 mt-1">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                        Current category is inactive. Please select a new active category.
                                     </p>
-                                @else
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        <span class="mr-2">&#128193; = Category</span>
-                                        <span>&#9492;&#9472; = Sub-category</span>
-                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sale Schedule -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="text-sm font-medium text-gray-700">Sale Schedule <span class="text-gray-400 font-normal">(Optional)</span></label>
+                                <button type="button" id="toggleSaleSchedule" class="text-sm text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-calendar-alt mr-1"></i>Toggle Schedule
+                                </button>
+                            </div>
+                            <div class="sale-schedule hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <input type="datetime-local" name="sale_start_date"
+                                        value="{{ old('sale_start_date', isset($product) && $product->sale_start_date ? $product->sale_start_date->format('Y-m-d\TH:i') : '') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <p class="text-xs text-gray-500 mt-1">Sale Start Date</p>
+                                </div>
+                                <div>
+                                    <input type="datetime-local" name="sale_end_date"
+                                        value="{{ old('sale_end_date', isset($product) && $product->sale_end_date ? $product->sale_end_date->format('Y-m-d\TH:i') : '') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <p class="text-xs text-gray-500 mt-1">Sale End Date</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-folder"></i>
+                        <span>Category</span>
+                    </div>
+                    
+                    <div class="form-card">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
+                        @php
+                            // Determine which value should be pre-selected in the dropdown
+                            // If product has sub_category_id, show that; otherwise show category_id
+                            $selectedCategoryValue = old('category_id');
+                            if ($selectedCategoryValue === null && isset($product)) {
+                                $selectedCategoryValue = $product->sub_category_id ?? $product->category_id;
+                            }
+
+                            // Check if the selected category exists in the active categories list
+                            $categoryIdsInList = [];
+                            foreach ($categories as $cat) {
+                                $categoryIdsInList[] = $cat->id;
+                                foreach ($cat->children ?? [] as $child) {
+                                    $categoryIdsInList[] = $child->id;
+                                }
+                            }
+                            $selectedCategoryMissing = $selectedCategoryValue && !in_array($selectedCategoryValue, $categoryIdsInList);
+                        @endphp
+                        <select name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Select Category</option>
+
+                            {{-- Show current category if it's missing from active list (e.g. inactive) --}}
+                            @if($selectedCategoryMissing && isset($product))
+                                @php
+                                    $missingCategory = \App\Models\Category::find($selectedCategoryValue);
+                                @endphp
+                                @if($missingCategory)
+                                    <option value="{{ $missingCategory->id }}" selected disabled>
+                                        {{ $missingCategory->name }} (Inactive)
+                                    </option>
                                 @endif
+                            @endif
+
+                            @foreach($categories as $category)
+                                @if($category->children->count() > 0)
+                                    <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? '' : 'disabled' }} {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
+                                        &#128193; {{ $category->name }}
+                                    </option>
+                                    @foreach($category->children as $child)
+                                        <option value="{{ $child->id }}" {{ $selectedCategoryValue == $child->id ? 'selected' : '' }}>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&#9492;&#9472; {{ $child->name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="{{ $category->id }}" {{ $selectedCategoryValue == $category->id ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                        @if($selectedCategoryMissing && isset($product))
+                            <p class="text-xs text-orange-500 mt-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Current category is inactive. Please select a new active category.
+                            </p>
+                        @else
+                            <p class="text-xs text-gray-500 mt-1">
+                                <span class="mr-2">&#128193; = Category</span>
+                                <span>&#9492;&#9472; = Sub-category</span>
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Inventory Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Inventory</span>
+                    </div>
+                    
+                    <!-- SKU Section -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <i class="fas fa-barcode"></i>
+                            <span>SKU Configuration</span>
+                        </div>
+                        
+                        <div id="simpleSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : 'simple') === 'simple' ? '' : 'hidden' }}">
+                            <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                    <div class="text-sm text-blue-700">
+                                        <p class="font-medium mb-1">Auto-Generation Enabled</p>
+                                        <p class="mb-1">• SKU Format: <code>CATEGORY-YYYYMMDD-XXXX</code></p>
+                                        <p>• Barcode Format: <code>200XXXXXXXXXC</code> (EAN-13)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">SKU <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
+                                    <input type="text" name="sku" 
+                                        value="{{ old('sku', $product->sku ?? '') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Leave empty for auto-generation">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Barcode <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
+                                    <input type="text" name="barcode" 
+                                        value="{{ old('barcode', $product->barcode ?? '') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Leave empty for auto-generation">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Inventory Tab -->
-                        <div id="inventory" class="product-tab-panel">
-                            <!-- SKU Section -->
-                            <div class="form-card">
-                                <div class="form-card-title">
-                                    <i class="fas fa-barcode"></i>
-                                    <span>SKU Configuration</span>
-                                </div>
-                                
-                                <div id="simpleSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : 'simple') === 'simple' ? '' : 'hidden' }}">
-                                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <div class="flex items-start gap-2">
-                                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                                            <div class="text-sm text-blue-700">
-                                                <p class="font-medium mb-1">Auto-Generation Enabled</p>
-                                                <p class="mb-1">• SKU Format: <code>CATEGORY-YYYYMMDD-XXXX</code></p>
-                                                <p>• Barcode Format: <code>200XXXXXXXXXC</code> (EAN-13)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
-                                            <input type="text" name="sku" 
-                                                value="{{ old('sku', $product->sku ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="Leave empty for auto-generation">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Barcode <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
-                                            <input type="text" name="barcode" 
-                                                value="{{ old('barcode', $product->barcode ?? '') }}"
-                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="Leave empty for auto-generation">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="variableSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
-                                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <div class="flex items-start gap-2">
-                                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
-                                            <div class="text-sm text-blue-700">
-                                                <p class="font-medium mb-1">Auto-Generation for Variants</p>
-                                                <p class="mb-1">• SKU Prefix: Auto-generated from category if empty</p>
-                                                <p class="mb-1">• Variant SKU: <code>PREFIX-XXXX-XXX-ATTR</code></p>
-                                                <p>• Variant Barcode: <code>200{PRODUCT_ID}{SEQ}C</code> (Related to product)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">SKU Prefix <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
-                                        <input type="text" name="sku_prefix" id="skuPrefix"
-                                            value="{{ old('sku_prefix', $product->sku_prefix ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Leave empty for auto-generation (e.g., SHIRT)">
-                                        <p class="text-xs text-gray-500 mt-1">Each variant SKU will be: PREFIX-PROD_ID-VARIANT_SEQ-ATTR</p>
+                        <div id="variableSkuSection" class="{{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
+                            <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                    <div class="text-sm text-blue-700">
+                                        <p class="font-medium mb-1">Auto-Generation for Variants</p>
+                                        <p class="mb-1">• SKU Prefix: Auto-generated from category if empty</p>
+                                        <p class="mb-1">• Variant SKU: <code>PREFIX-XXXX-XXX-ATTR</code></p>
+                                        <p>• Variant Barcode: <code>200{PRODUCT_ID}{SEQ}C</code> (Related to product)</p>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Stock Management (Simple Product Only) -->
-                            <div id="simpleStockSection" class="form-card {{ old('product_type', isset($product) ? $product->product_type : 'simple') === 'simple' ? '' : 'hidden' }}">
-                                <div class="form-card-title">
-                                    <i class="fas fa-boxes"></i>
-                                    <span>Stock Management</span>
-                                </div>
-                                
-                                <div class="flex items-center mb-4">
-                                    <input type="checkbox" name="manage_stock" id="manage_stock" value="1" 
-                                        {{ old('manage_stock', $product->manage_stock ?? true) ? 'checked' : '' }}
-                                        class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                                    <label for="manage_stock" class="ml-2 text-sm font-medium text-gray-700">Manage Stock</label>
-                                </div>
-
-                                <div id="stockFields" class="grid grid-cols-1 md:grid-cols-3 gap-4 {{ old('manage_stock', $product->manage_stock ?? true) ? '' : 'opacity-50' }}">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                                        <input type="number" name="stock_quantity" min="0"
-                                            value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            {{ old('manage_stock', $product->manage_stock ?? true) ? '' : 'disabled' }}>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
-                                        <select name="stock_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                            <option value="in_stock" {{ old('stock_status', $product->stock_status ?? '') === 'in_stock' ? 'selected' : '' }}>In Stock</option>
-                                            <option value="out_of_stock" {{ old('stock_status', $product->stock_status ?? '') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
-                                            <option value="on_backorder" {{ old('stock_status', $product->stock_status ?? '') === 'on_backorder' ? 'selected' : '' }}>On Backorder</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Threshold</label>
-                                        <input type="number" name="low_stock_threshold" min="0"
-                                            value="{{ old('low_stock_threshold', $product->low_stock_threshold ?? 10) }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        <p class="text-xs text-gray-500 mt-1">Alert when stock falls below</p>
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SKU Prefix <span class="text-xs text-gray-500 font-normal">(Optional)</span></label>
+                                <input type="text" name="sku_prefix" id="skuPrefix"
+                                    value="{{ old('sku_prefix', $product->sku_prefix ?? '') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Leave empty for auto-generation (e.g., SHIRT)">
+                                <p class="text-xs text-gray-500 mt-1">Each variant SKU will be: PREFIX-PROD_ID-VARIANT_SEQ-ATTR</p>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Stock Management Info (Variable Product) -->
-                            <div id="variableStockSection" class="form-card {{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
-                                <div class="form-card-title">
-                                    <i class="fas fa-boxes"></i>
-                                    <span>Stock Management</span>
-                                </div>
-                                
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                    <div class="flex items-start">
-                                        <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
-                                        <div>
-                                            <h4 class="font-medium text-blue-900">Variant-Level Stock Management</h4>
-                                            <p class="text-sm text-blue-800 mt-1">
-                                                For variable products, stock is managed individually for each variant. Go to the <strong>Variants</strong> tab to configure.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
+                    <!-- Stock Management (Simple Product Only) -->
+                    <div id="simpleStockSection" class="form-card {{ old('product_type', isset($product) ? $product->product_type : 'simple') === 'simple' ? '' : 'hidden' }}">
+                        <div class="form-card-title">
+                            <i class="fas fa-boxes"></i>
+                            <span>Stock Management</span>
+                        </div>
+                        
+                        <div class="flex items-center mb-4">
+                            <input type="checkbox" name="manage_stock" id="manage_stock" value="1" 
+                                {{ old('manage_stock', $product->manage_stock ?? true) ? 'checked' : '' }}
+                                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <label for="manage_stock" class="ml-2 text-sm font-medium text-gray-700">Manage Stock</label>
                         </div>
 
-                        <!-- Variants Tab - WITH GENERATION DURING CREATION -->
-                        <div id="variants" class="product-tab-panel">
-                            <div class="section-title">
+                        <div id="stockFields" class="grid grid-cols-1 md:grid-cols-3 gap-4 {{ old('manage_stock', $product->manage_stock ?? true) ? '' : 'opacity-50' }}">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                                <input type="number" name="stock_quantity" min="0"
+                                    value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    {{ old('manage_stock', $product->manage_stock ?? true) ? '' : 'disabled' }}>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
+                                <select name="stock_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="in_stock" {{ old('stock_status', $product->stock_status ?? '') === 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                                    <option value="out_of_stock" {{ old('stock_status', $product->stock_status ?? '') === 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+                                    <option value="on_backorder" {{ old('stock_status', $product->stock_status ?? '') === 'on_backorder' ? 'selected' : '' }}>On Backorder</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Low Stock Threshold</label>
+                                <input type="number" name="low_stock_threshold" min="0"
+                                    value="{{ old('low_stock_threshold', $product->low_stock_threshold ?? 10) }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <p class="text-xs text-gray-500 mt-1">Alert when stock falls below</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock Management Info (Variable Product) -->
+                    <div id="variableStockSection" class="form-card {{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
+                        <div class="form-card-title">
+                            <i class="fas fa-boxes"></i>
+                            <span>Stock Management</span>
+                        </div>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-blue-900">Variant-Level Stock Management</h4>
+                                    <p class="text-sm text-blue-800 mt-1">
+                                        For variable products, stock is managed individually for each variant. Go to the <strong>Variants</strong> section to configure.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Variants Section - WITH GENERATION DURING CREATION -->
+                <div id="variantsSection" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 {{ old('product_type', isset($product) ? $product->product_type : '') === 'variable' ? '' : 'hidden' }}">
+                    <div class="section-title">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Product Variants</span>
+                    </div>
+                    
+                    @if($attributes->count() > 0)
+                        <!-- Step 1: Select Attributes -->
+                        <div class="form-card" id="variantAttributesSelector">
+                            <div class="form-card-title">
                                 <i class="fas fa-layer-group"></i>
                                 <span>Product Variants</span>
                             </div>
-                            
-                            @if($attributes->count() > 0)
-                                <!-- Step 1: Select Attributes -->
-                                <div class="form-card" id="variantAttributesSelector">
-                                    <div class="form-card-title">
-                                        <i class="fas fa-layer-group"></i>
-                                        <span>Product Variants</span>
-                                    </div>
-                                    <p class="text-gray-500 text-sm mb-4">Configure variant combinations for this product.</p>
-                                    <div class="text-center py-8">
-                                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <i class="fas fa-magic text-2xl text-blue-500"></i>
-                                        </div>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Generate Variants</h3>
-                                        <p class="text-gray-500 mb-4">Select attributes and values to create variant combinations.</p>
-                                        <button type="button" onclick="openGenerateModal()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                            <i class="fas fa-cogs mr-2"></i>Configure Variants
-                                        </button>
-                                    </div>
+                            <p class="text-gray-500 text-sm mb-4">Configure variant combinations for this product.</p>
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-magic text-2xl text-blue-500"></i>
                                 </div>
-
-                                <!-- Step 2: Variant Preview & Configuration -->
-                                <div class="form-card hidden" id="variantConfiguration">
-                                    <div class="form-card-title">
-                                        <i class="fas fa-edit"></i>
-                                        <span>Step 2: Configure Variants</span>
-                                    </div>
-                                    
-                                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-sm text-gray-600">Base Price: ৳<span id="displayBasePrice">0.00</span></span>
-                                            <button type="button" onclick="applyBasePriceToAll()" class="text-sm text-blue-600 hover:text-blue-800">
-                                                Apply to all variants
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="overflow-x-auto">
-                                        <table class="variant-preview-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Variant</th>
-                                                    <th>SKU</th>
-                                                    <th>Price (৳)</th>
-                                                    <th>Stock Qty</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="variantPreviewBody">
-                                                <!-- Generated by JavaScript -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    
-                                    <div class="mt-4 flex justify-between">
-                                        <button type="button" onclick="backToAttributeSelection()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                            <i class="fas fa-arrow-left mr-2"></i>Back to Attributes
-                                        </button>
-                                        <button type="button" onclick="regenerateVariants()" class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
-                                            <i class="fas fa-redo mr-2"></i>Regenerate
-                                        </button>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="form-card text-center py-12">
-                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <i class="fas fa-tags text-2xl text-gray-400"></i>
-                                    </div>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Attributes Found</h3>
-                                    <p class="text-gray-500 mb-4">Create attributes first to generate variants.</p>
-                                    <a href="{{ route('admin.attributes.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        <i class="fas fa-plus mr-2"></i>Create Attributes
-                                    </a>
-                                </div>
-                            @endif
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Generate Variants</h3>
+                                <p class="text-gray-500 mb-4">Select attributes and values to create variant combinations.</p>
+                                <button type="button" onclick="openGenerateModal()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-cogs mr-2"></i>Configure Variants
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Images Tab -->
-                        <div id="images" class="product-tab-panel">
-                            <div class="section-title">
-                                <i class="fas fa-images"></i>
-                                <span>Product Images</span>
+                        <!-- Step 2: Variant Preview & Configuration -->
+                        <div class="form-card hidden" id="variantConfiguration">
+                            <div class="form-card-title">
+                                <i class="fas fa-edit"></i>
+                                <span>Step 2: Configure Variants</span>
                             </div>
                             
-                            <div class="form-card">
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                    <p class="text-gray-600 mb-2">Drag and drop images here, or click to browse</p>
-                                    <p class="text-gray-400 text-sm mb-4">Supports: JPG, PNG, WebP (Max 5MB each)</p>
-                                    <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" 
-                                        class="hidden" id="imageInput">
-                                    <button type="button" onclick="document.getElementById('imageInput').click()" 
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        Select Images
+                            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">Base Price: ৳<span id="displayBasePrice">0.00</span></span>
+                                    <button type="button" onclick="applyBasePriceToAll()" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Apply to all variants
                                     </button>
                                 </div>
-
-                                <div id="imagePreviewContainer" class="grid grid-cols-4 gap-4 mt-4">
-                                    @if(isset($product) && $product->images->count() > 0)
-                                        @foreach($product->images as $image)
-                                            <div class="relative group">
-                                                <img src="{{ $image->full_image_url }}" class="w-full h-32 object-cover rounded-lg">
-                                                @if($image->is_main)
-                                                    <span class="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">Main</span>
-                                                @endif
-                                                <button type="button" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                        @endforeach
-                                    @endif
-                                </div>
                             </div>
-                        </div>
 
-                        <!-- SEO Tab -->
-                        <div id="seo" class="product-tab-panel">
-                            <div class="section-title">
-                                <i class="fas fa-search"></i>
-                                <span>Search Engine Optimization</span>
+                            <div class="overflow-x-auto">
+                                <table class="variant-preview-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Variant</th>
+                                            <th>SKU</th>
+                                            <th>Price (৳)</th>
+                                            <th>Stock Qty</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="variantPreviewBody">
+                                        <!-- Generated by JavaScript -->
+                                    </tbody>
+                                </table>
                             </div>
                             
-                            <div class="form-card">
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">SEO Title</label>
-                                        <input type="text" name="seo_title" 
-                                            value="{{ old('seo_title', $product->seo_title ?? '') }}"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Page title for search engines">
-                                        <p class="text-xs text-gray-500 mt-1">Recommended: 50-60 characters</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">SEO Description</label>
-                                        <textarea name="seo_description" rows="3"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            placeholder="Meta description for search engines">{{ old('seo_description', $product->seo_description ?? '') }}</textarea>
-                                        <p class="text-xs text-gray-500 mt-1">Recommended: 150-160 characters</p>
-                                    </div>
+                            <div class="mt-4 flex justify-between">
+                                <button type="button" onclick="backToAttributeSelection()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-arrow-left mr-2"></i>Back to Attributes
+                                </button>
+                                <button type="button" onclick="regenerateVariants()" class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                    <i class="fas fa-redo mr-2"></i>Regenerate
+                                </button>
+                            </div>
+                        </div>
+                    @else
+                        <div class="form-card text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-tags text-2xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No Attributes Found</h3>
+                            <p class="text-gray-500 mb-4">Create attributes first to generate variants.</p>
+                            <a href="{{ route('admin.attributes.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i>Create Attributes
+                            </a>
+                        </div>
+                    @endif
+                </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
-                                        <div class="flex items-center">
-                                            <span class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-500 text-sm">
-                                                {{ url('/products/') }}/
-                                            </span>
-                                            <input type="text" name="slug" 
-                                                value="{{ old('slug', $product->slug ?? '') }}"
-                                                class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500"
-                                                placeholder="product-url-slug">
-                                        </div>
+                <!-- Images Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-images"></i>
+                        <span>Product Images</span>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                            <p class="text-gray-600 mb-2">Drag and drop images here, or click to browse</p>
+                            <p class="text-gray-400 text-sm mb-4">Supports: JPG, PNG, WebP (Max 5MB each)</p>
+                            <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp" 
+                                class="hidden" id="imageInput">
+                            <button type="button" onclick="document.getElementById('imageInput').click()" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Select Images
+                            </button>
+                        </div>
+
+                        <div id="imagePreviewContainer" class="grid grid-cols-4 gap-4 mt-4">
+                            @if(isset($product) && $product->images->count() > 0)
+                                @foreach($product->images as $image)
+                                    <div class="relative group">
+                                        <img src="{{ $image->full_image_url }}" class="w-full h-32 object-cover rounded-lg">
+                                        @if($image->is_main)
+                                            <span class="absolute top-2 left-2 px-2 py-1 bg-blue-600 text-white text-xs rounded">Main</span>
+                                        @endif
+                                        <button type="button" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
+                                @endforeach
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                    <div class="section-title">
+                        <i class="fas fa-search"></i>
+                        <span>Search Engine Optimization</span>
+                    </div>
+                    
+                    <div class="form-card">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SEO Title</label>
+                                <input type="text" name="seo_title" 
+                                    value="{{ old('seo_title', $product->seo_title ?? '') }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Page title for search engines">
+                                <p class="text-xs text-gray-500 mt-1">Recommended: 50-60 characters</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SEO Description</label>
+                                <textarea name="seo_description" rows="3"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Meta description for search engines">{{ old('seo_description', $product->seo_description ?? '') }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">Recommended: 150-160 characters</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
+                                <div class="flex items-center">
+                                    <span class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-500 text-sm">
+                                        {{ url('/products/') }}/
+                                    </span>
+                                    <input type="text" name="slug" 
+                                        value="{{ old('slug', $product->slug ?? '') }}"
+                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="product-url-slug">
                                 </div>
                             </div>
                         </div>
@@ -1087,17 +949,6 @@ if (isset($product)) {
     const existingVariants = @json($existingVariantsForJs);
     let generatedVariants = [];
 
-    // Tab switching
-    document.querySelectorAll('.product-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const targetId = this.dataset.tab;
-            document.querySelectorAll('.product-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            document.querySelectorAll('.product-tab-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(targetId).classList.add('active');
-        });
-    });
-
     // Product type selector
     document.querySelectorAll('.product-type-radio').forEach(radio => {
         radio.addEventListener('change', function() {
@@ -1114,16 +965,7 @@ if (isset($product)) {
             document.getElementById('variableSkuSection').classList.toggle('hidden', !isVariable);
             document.getElementById('simpleStockSection').classList.toggle('hidden', isVariable);
             document.getElementById('variableStockSection').classList.toggle('hidden', !isVariable);
-            
-            const variantsTab = document.getElementById('variantsTab');
-            if (isVariable) {
-                variantsTab.classList.remove('hidden');
-            } else {
-                variantsTab.classList.add('hidden');
-                if (document.querySelector('.product-tab[data-tab="variants"]').classList.contains('active')) {
-                    document.querySelector('[data-tab="general"]').click();
-                }
-            }
+            document.getElementById('variantsSection').classList.toggle('hidden', !isVariable);
         });
     });
 
@@ -1494,7 +1336,7 @@ if (isset($product)) {
             if (discountType === 'percentage') {
                 discountBadge.innerHTML = `<span class="text-green-600">-${discountValue}%</span>`;
             } else {
-                discountBadge.innerHTML = `<span class="text-green-600">-৳{discountValue.toFixed(2)}</span>`;
+                discountBadge.innerHTML = `<span class="text-green-600">-৳${discountValue.toFixed(2)}</span>`;
             }
         } else {
             discountBadge.classList.add('hidden');
@@ -1502,7 +1344,7 @@ if (isset($product)) {
         
         // Update savings text
         if (savings > 0) {
-            savingsText.innerHTML = `<span class="text-green-600 font-medium">Save ৳{savings.toFixed(2)}</span>`;
+            savingsText.innerHTML = `<span class="text-green-600 font-medium">Save ৳${savings.toFixed(2)}</span>`;
         } else {
             savingsText.textContent = 'No discount applied';
         }
