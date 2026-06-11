@@ -17,7 +17,7 @@
             font-size: 13px;
             line-height: 1.5;
             background: #f5f5f5;
-            padding: 40px 20px;
+            padding: 20px;
         }
         .invoice-container {
             max-width: 600px;
@@ -30,7 +30,7 @@
         .invoice-header {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
-            padding: 40px;
+            padding: 30px;
         }
         .header-top {
             display: flex;
@@ -88,7 +88,7 @@
             font-weight: 600;
         }
         .invoice-body {
-            padding: 40px;
+            padding: 30px;
         }
         .section-title {
             font-size: 12px;
@@ -257,7 +257,7 @@
         }
         .invoice-footer {
             background: #f8f9fa;
-            padding: 30px 40px;
+            padding: 25px 30px;
             text-align: center;
         }
         .thank-you {
@@ -307,16 +307,38 @@
             transform: translateY(-2px);
         }
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
             body {
                 background: white;
                 padding: 0;
+                margin: 0;
             }
             .invoice-container {
                 box-shadow: none;
                 max-width: 100%;
+                border-radius: 0;
+                page-break-inside: avoid;
             }
             .print-btn {
                 display: none;
+            }
+            .invoice-header,
+            .invoice-body,
+            .invoice-footer {
+                page-break-inside: avoid;
+            }
+            .items-table {
+                page-break-inside: avoid;
+            }
+            .items-table tr {
+                page-break-inside: avoid;
+            }
+            .totals-section,
+            .payment-info {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -501,11 +523,15 @@
     </div>
 
     <script>
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 800);
-        };
+        // Only auto-print if no parameter to skip it (allows viewing without auto-print)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auto_print') === '1') {
+            window.onload = function() {
+                setTimeout(function() {
+                    window.print();
+                }, 800);
+            };
+        }
     </script>
 </body>
 </html>
